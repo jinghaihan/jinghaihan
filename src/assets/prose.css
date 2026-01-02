@@ -1,0 +1,81 @@
+.prose {
+  --fg-light: #888;
+  --fg: #555;
+  --fg-deep: #222;
+  --fg-deeper: #000;
+
+  color: var(--fg);
+}
+
+html.dark .prose {
+  --fg-light: #888;
+  --fg: #bbb;
+  --fg-deep: #ddd;
+  --fg-deeper: #fff;
+}
+
+.prose .shiki {
+  font-family: 'Geist Mono', 'Fira Code', monospace;
+  line-height: 1.4;
+  margin: 0.5em 0;
+}
+
+.prose {
+  color: var(--fg);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.prose p {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+
+.prose strong {
+  color: var(--fg-deep);
+  font-weight: 600;
+}
+
+.prose hr {
+  width: 50px;
+  margin: 2em auto;
+  border-color: rgba(125, 125, 125, 0.3);
+}
+
+.prose a {
+  color: var(--fg-deeper);
+  font-weight: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(125, 125, 125, 0.3);
+  transition: border 0.3s ease-in-out;
+}
+
+.prose a:hover {
+  border-bottom: 1px solid var(--fg);
+}
+
+.prose a code {
+  color: inherit;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: var(--fg-deeper);
+}
+
+.prose h1 {
+  font-weight: 800;
+  font-size: 2.25em;
+  margin-top: 0;
+}
+
+.prose code {
+  --uno: font-mono;
+  color: var(--fg-deep);
+  font-weight: 500;
+  background-color: #aaaaaa18;
+}

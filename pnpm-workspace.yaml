@@ -1,0 +1,67 @@
+packages: []
+
+catalogs:
+  build:
+    '@vitejs/plugin-vue': ^6.0.3
+    unplugin-auto-import: ^20.3.0
+    unplugin-vue-components: ^30.0.0
+    unplugin-vue-markdown: ^29.2.0
+    unplugin-vue-router: ^0.19.2
+    vite: ^7.3.0
+    vite-ssg: ^28.2.2
+  cli:
+    bumpp: ^10.3.2
+    pncat: ^0.7.7
+    taze: ^19.9.2
+  dev:
+    feed: ^5.1.0
+    gray-matter: ^4.0.3
+  frontend:
+    '@unhead/vue': ^2.1.1
+    nprogress: ^0.2.0
+    pinia: ^3.0.4
+    vue: ^3.5.26
+    vue-router: ^4.6.4
+  i18n:
+    vue-i18n: ^11.2.8
+  icons:
+    '@iconify/json': ^2.2.424
+  lint:
+    '@antfu/eslint-config': ^6.7.3
+    '@unocss/eslint-config': ^66.5.12
+    eslint: ^9.39.2
+    eslint-plugin-format: ^1.1.0
+    lint-staged: ^16.2.7
+    simple-git-hooks: ^2.13.1
+  markdown:
+    '@shikijs/markdown-it': ^3.20.0
+    markdown-it: ^14.1.0
+    markdown-it-anchor: ^9.2.0
+    markdown-it-github-alerts: ^1.0.0
+    markdown-it-link-attributes: ^4.0.1
+    markdown-it-magic-link: ^0.1.4
+    markdown-it-table-of-contents: ^1.1.0
+  node:
+    tinyglobby: ^0.2.15
+  script:
+    tsx: ^4.21.0
+  style:
+    '@unocss/preset-web-fonts': ^66.5.12
+    '@unocss/reset': ^66.5.12
+    unocss: ^66.5.12
+  test:
+    vitest: ^4.0.16
+  tsc:
+    typescript: ^5.9.3
+    vue-tsc: ^3.2.1
+  types:
+    '@types/markdown-it': ^14.1.2
+    '@types/markdown-it-link-attributes': ^3.0.5
+    '@types/node': ^25.0.3
+    '@types/nprogress': ^0.2.3
+  utils:
+    '@vueuse/core': ^14.1.0
+onlyBuiltDependencies:
+  - esbuild
+  - simple-git-hooks
+  - '@swc/core'
