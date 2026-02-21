@@ -1,0 +1,455 @@
+---
+title: 重新思考微前端治理 - octohash
+display: 重新思考微前端治理
+date: 2026-01-15
+duration: 20min
+lang: zh-CN
+---
+
+[[toc]]
+
+2021 年作为一个入行不久的新人，我将公司平台拆分成微前端体系。
+
+## 2021: 困境
+
+**技术栈混杂**
+
+公司多个业务线并行开发，技术栈各不相同。有的团队用 `Angular`，有的用 `Vue2`。我们需要将这些业务线集成为统一的 App 完成交付，每次集成都要消耗的大量的研发与测试人力。
+
+**交付困境**
+
+客户购买的是特定业务模块，我们不能将合同外的源码一并交付。对于一个大型应用，交付时需要手动删除无关代码，这个过程既耗时又容易出错。
+
+集成与交付，都需要大量人力成本。
+
+**为什么不选 iframe**
+
+iframe 是最简单的方案，但问题也很明显：
+
+- **全量加载**：每个 iframe 都是完整的页面加载，性能开销大
+- **定位问题**：Modal、Drawer 等组件的遮罩层无法覆盖父窗口
+- **路由同步**：浏览器前进后退按钮难以处理
+- **通信复杂**：postMessage 的协议治理成本高
+
+### 为什么选择 Qiankun
+
+坦诚地说，2021 年的选择并不多。我们选择 `Qiankun` 主要基于以下考虑：
+
+**社区活跃度**
+
+阿里背书，社区响应活跃，遇到问题能找到解决方案。这对于一个不算大的团队快速进行方案落地很重要。
+
+**JS 沙箱 + CSS 隔离**
+
+技术栈不统一的场景下，样式冲突和全局变量污染是大问题。Qiankun 的沙箱机制能够天然解决这些问题。
+
+PS: 当然，`Shadow Dom` 会带来另一些问题。
+
+**生命周期管理**
+
+清晰的 `bootstrap` `mount` `unmount` 钩子，让子应用的加载和卸载变得易于维护。
+
+**可控的渲染 API**
+
+这是我最看重的特性。Qiankun 提供了 `loadMicroApp` 和 `registerMicroApps` 两种渲染方式，让我能够更灵活地控制子应用的生命周期。
+
+例如：对于一个存在 Tab 的管理系统，我可以控制所有 Tab 关闭后再进行子应用卸载，实现**跨应用 KeepAlive**：
+
+```ts
+function unmountApp(appName: string) {
+  const openTabs = getOpenTabsByApp(appName)
+  if (openTabs.length === 0)
+    apps[appName].unmountMicroApp(appName)
+}
+```
+
+## 从 0 到 1：搭建微前端底座
+
+### 架构设计
+
+我们的部署架构大致如下：
+
+- **容器化**：使用 Docker Compose 管理容器编排
+- **K8s 部署**：通过 Helm Charts 进行微服务版本管理，支持快速回滚
+- **请求流程**：
+  - 浏览器访问外层 Nginx
+  - `location /` 转发到主应用
+  - 对应 entry 路径转发到各个子应用
+
+<Mermaid
+  code='graph TD
+  Browser[Browser] --> Nginx[Nginx]
+  Nginx -->|"location /"| MainApp[Main App]
+  Nginx -->|/foo| SubApp1[Sub App 1]
+  Nginx -->|/bar| SubApp2[Sub App 2]'
+/>
+
+### 运行时配置：一次构建，多次部署
+
+**多环境部署的挑战**
+
+随着业务发展，我们需要在不同客户环境部署同一套代码。如果在构建时硬编码环境配置，就需要为每个环境单独构建，这会带来几个问题：
+
+- 构建产物不一致，增加测试风险
+- CI/CD 流程复杂，构建时间成倍增长
+- 难以快速切换环境进行问题排查
+
+**运行时配置方案**
+
+我设计了一个简单但有效的方案：通过 `config.js` 在运行时注入配置。
+
+在 `index.html` 中引入配置文件：
+
+```html
+<script src="/config.js"></script>
+```
+
+配置文件结构：
+
+```js
+window.AppConfig = {
+  app: {
+    foo: '/foo',
+    bar: '/bar'
+  }
+}
+```
+
+主应用和子应用都从 `window.AppConfig` 读取配置：
+
+```ts
+const appEntry = window.AppConfig.app[appName]
+loadMicroApp({
+  name: appName,
+  entry: appEntry,
+  container: '#container',
+})
+```
+
+**部署流程**
+
+1. 构建一次，生成统一的产物
+2. 通过容器挂载的形式在不同环境编写不同的特定配置
+
+**收益**
+
+- **一次构建，多次部署**：同一份产物可以部署到所有环境
+- **配置与代码分离**：环境差异通过配置管理，不侵入代码
+- **快速环境切换**：只需替换配置文件，无需重新构建
+
+### 基础设施建设
+
+**早期的教训**
+
+初期经验不足，我犯了一个错误：让每个子应用自己处理路由注册、权限校验、国际化等逻辑。
+
+这导致每次修改集成策略，都需要让多个业务模块配合修改。例如动态路由的生成策略调整，需要通知所有子应用同步修改配置。这造成了巨大的人力成本浪费。
+
+**解决方案：统一入口 NPM 包**
+
+我决定将登录、权限、路由等平台基础模块封装为 NPM 包，暴露 `renderWithQiankun` API，将方案迭代的复杂度消化在框架内部。
+
+子应用只需提供简单的配置：
+
+```ts
+const options: RenderAppOptions = {
+  pages: import.meta.glob('./views/**/index.vue'),
+  i18n: import.meta.glob('./locales/*.json'),
+  svg: import.meta.glob('./assets/svg/**', {
+    eager: true,
+    query: '?raw',
+  }),
+}
+
+export interface AppContext {
+  app: App
+  router: Router
+}
+
+export declare function renderWithQiankun(options: RenderAppOptions): Promise<AppContext>
+```
+
+框架内部会自动处理：
+
+- 根据 `pages` 配置生成动态路由
+- 注册国际化资源
+- 批量导入 SVG 图标，注册为 iconify
+- 集成权限校验
+- 统一错误处理和监控埋点
+
+**收益**
+
+- 集成策略调整只需升级 NPM 包版本
+- 成员不需要理解复杂的集成逻辑
+
+## 依赖共享的演进之路
+
+团队技术栈逐渐统一到 Vue 后，此时我站在整体平台角度上希望将公有依赖尽可能共享，减少整体加载体积。
+
+### External + Script 标签（2021）
+
+最开始，我采用了最简单的方案：
+
+**实现方式**
+
+- 将共享依赖（Vue、Vue Router、Ant Design Vue）通过 webpack external 排除
+- 在主应用通过 `<script>` 标签统一引入
+- 子应用从 window 对象获取这些依赖，或者从统一地址进行依赖加载，依托 http 缓存策略
+
+**遇到的问题**
+
+1. **加载顺序约定**：moment.js 必须在 UI 框架之前加载，否则日期选择器会报错。这种隐式依赖引入顺序很难维护。
+
+2. **依赖升级复杂**：依赖主应用进行版本修改，子应用完全丧失了版本治理能力。
+
+3. **版本冲突难排查**：当某个子应用依赖的版本与主应用不一致时，问题很难定位。造成了运行时行为不一致隐患。
+
+### Module Federation（2022）
+
+我将 vue-cli 升级到 webpack5，引入 `Module Federation`。这是一个关键的架构决策。
+
+**依赖分层设计**
+
+我对依赖进行了分层设计：
+
+| 分层         | 依赖示例        | 策略                 | 原因                   |
+| ------------ | --------------- | -------------------- | ---------------------- |
+| 核心运行时   | Vue、Vue Router | singleton + 严格版本 | 全局单例，不允许多版本 |
+| 核心 UI 框架 | Ant Design Vue  | singleton            | 保证 UI 一致性         |
+| 工具库       | -               | 不共享               | treeshaking 价值更高   |
+| 业务 SDK     | 内部 SDK        | 不共享               | 变化快，共享收益低     |
+| 超大依赖     | Monaco Editor   | CDN + HTTP 缓存      | 减少构建体积           |
+
+#### 共享取舍
+
+对于工具库，我会考虑三个指标来决定是否共享：
+
+1. **变化速度**：是否频繁升级
+2. **多版本共存**：是否允许不同版本
+3. **Treeshaking 收益**：按需引入能节省多少体积
+
+如果符合 "变化快 + 允许多版本 + treeshaking 收益高" 的情境，我不会选择共享这个工具库。
+
+### Vite 时代（2024）
+
+2024 年，团队从 Vue2 迁移到 Vue3。我在 Vite 中重新实现了一遍 Module Federation 配置，为了减少配置成本我同样封装了 `vite-config`，将其暴露成更易用的配置，并且能够在构建层面严格限制可共享的依赖集合。
+
+```ts
+import { defineConfig } from '@platform-config/vite'
+
+export default defineConfig(async () => {
+  return {
+    app: {
+      host: true,
+      name: 'foo',
+      shared: ['vue', 'vue-router', 'pinia', 'ant-design-vue'],
+      exposes: {
+        './Bar': './src/components/Bar.vue',
+      }
+    }
+  }
+})
+```
+
+**动态 Remotes：运行时加载远程组件**
+
+在多环境部署场景下，远程模块的地址不能在构建时写死。我需要在运行时根据 `window.AppConfig` 动态解析远程模块地址，因此在 `vite-config` 中对 external 进行了统一处理：
+
+```ts
+// @platform-config/vite
+remotes[appName] = {
+  external: `Promise.resolve(window.AppConfig.app['${app}']).then(url => url + 'assets/remoteEntry.js')`,
+  externalType: 'promise',
+  from: 'vite',
+}
+```
+
+为此，我设计了一个简单的接口来抽象远程组件：
+
+```ts
+interface RemoteComponentConfig {
+  appName: string
+  component: string
+}
+```
+
+使用时只需要提供应用名和组件路径：
+
+```vue
+<template>
+  <RemoteComponent :app="appName" :component="component" />
+</template>
+```
+
+这样做的好处：
+
+- **环境无关**：同一份代码可以在任何环境运行
+- **类型安全**：通过 TypeScript 接口约束参数
+- **统一抽象**：隐藏 Module Federation 的复杂性
+
+## 治理实践
+
+### 版本冲突处理
+
+**不兼容模块**
+
+对于不兼容的模块，可以采用非单例模式，允许多版本共存。前提是这个模块对全局无副作用。
+
+**全局副作用模块**
+
+对于有全局副作用的模块（如 polyfill），必须严格单例：
+
+**不重复消费原则**
+
+从架构层面避免重复依赖。例如代码编辑器：
+
+- 如果选择 `Monaco Editor`，就不要再引入 `CodeMirror`
+- 超大依赖统一走 `CDN` + HTTP 缓存策略
+
+这不仅是为了减少体积，更是为了降低维护成本，毕竟不重复消费才是真的省钱。
+
+### 运行时污染防治
+
+**CSS 污染**
+
+共享组件必须采用 scoped 样式：
+
+```vue
+<style scoped>
+.foo {
+  color: red;
+}
+</style>
+```
+
+**JS 污染**
+
+制定代码规范，做好 Code Review：
+
+- 禁止修改 window 对象
+- 禁止修改 Array.prototype 等原生对象
+- 在 unmount 钩子中销毁所有监听器
+
+### 通信治理：架构即约束
+
+**核心原则**
+
+我的核心原则是：**尽可能避免子应用直接通信**。
+
+通信本质上是弱约束、难治理的。一旦开放了全局事件总线，很难控制团队不滥用。
+
+**实践策略**
+
+**1. 核心能力 NPM 包化**
+
+将权限、主题、路由等核心能力通过 NPM 包提供，事件同步在架构内部处理，子应用通过简单的引入即可拿到通信数据。
+
+```ts
+import { preferences } from '@platform-core/shared'
+```
+
+子应用依赖稳定的 API 而非广播事件。
+
+**2. 跨应用跳转 API 化**
+
+对于跨应用跳转，我提供了统一的 API：
+
+```ts
+import { microApp } from '@platform-core/shared'
+
+// Incorrect
+eventBus.emit('navigate', {
+  app: 'foo',
+  path: '/bar',
+  query: {
+    name: 'octohash'
+  }
+})
+
+// Correct
+microApp.router.push({
+  path: '/foo/bar',
+  data: {
+    name: 'octohash',
+    from: 'somewhere'
+  },
+})
+```
+
+这样做的好处：
+
+- 通信逻辑消化在架构内部
+- TypeScript 类型约束，编译时检查
+- 统一的错误处理和日志记录
+
+**3. 全局通信的适用场景**
+
+只有在弱耦合场景下才使用全局通信：
+
+- 埋点上报
+- Sentry 日志
+
+```ts
+eventBus.emit('analytics:track', {
+  event: 'button_click',
+  properties: { button_id: 'submit' },
+})
+```
+
+## 2026: 重新思考
+
+### 微前端的业务价值
+
+回顾这几年的实践，我认为业务解耦是微前端带来的核心价值。
+
+**独立演进与团队自治**
+
+我们团队后期将平台拆分为多个微前端应用，最大的收益是各业务线可以独立演进。产品团队可以按照自己的节奏迭代功能，不需要等待其他团队的发布窗口。这种自治能力大幅降低了跨团队协作成本。
+
+**灵活的产品组合**
+
+对于 ToB 业务，客户购买的是特定模块的组合。微前端让我们可以极低成本地拆分、组合业务模块进行产品包装。这不仅解决了交付问题，也让商务团队有了更灵活的销售策略。
+
+**靶向更新与缓存友好**
+
+微前端的更新是靶向的。当某个业务模块发布新版本时，只有该模块的用户会重新加载资源，其他模块继续使用缓存。这对平台的缓存策略天然友好，也提升了用户体验。
+
+从这个角度看，微前端延续了微服务的思想，这种架构模式的业务价值是确定的。
+
+### 利与弊
+
+**优势**
+
+- **独立部署**：各模块可以独立发布，互不影响
+- **技术灵活性**：允许不同技术栈共存
+- **故障隔离**：单个模块的问题不会影响整个平台
+
+**劣势**
+
+- **运维负担**：部署的应用数量成倍增加
+- **过度拆分的代价**：如果拆分粒度过细，部署会变得非常麻烦
+- **环境限制**：在缺乏 Helm Charts 等容器编排工具的环境下，部署微前端应用是一件非常折磨的事情
+
+### 方案选型
+
+从现实角度看：
+
+- [qiankun](https://github.com/umijs/qiankun) 从 `2023.11.15` 后就没再发布过新版本。
+- [micro-app](https://github.com/jd-opensource/micro-app/) 仍在持续演进，但是相对社区热度较小。
+- [module-federation](https://github.com/module-federation/core) 有了构建工具无关的选择。
+
+当前 3 种方案各有利弊：
+
+| 方案                  | 适用场景                    | 核心优势                  | 主要劣势                     | 维护状态            |
+| --------------------- | --------------------------- | ------------------------- | ---------------------------- | ------------------- |
+| **Qiankun**           | 技术栈混杂<br/>需要强隔离   | JS 沙箱成熟<br/>生态完善  | 已停止维护<br/>Vite 支持不佳 | ⚠️ 2023.11 后无发布 |
+| **Micro-App**         | 技术栈混杂<br/>需要强隔离   | 具备沙箱机制<br/>持续演进 | 社区相对较小                 | ✅ 持续维护         |
+| **Module Federation** | 技术栈统一<br/>构建工具统一 | 原生依赖共享<br/>类型安全 | 需要规范约束<br/>无沙箱隔离  | ✅ 生态多样         |
+
+## 总结
+
+**架构设计的本质是权衡**，基于实际业务需求和团队能力来选择。
+
+如果团队规模小、技术栈统一、没有独立部署需求，Monorepo + Turborepo 可能是更简单的选择。但如果面临多团队协作、技术栈混杂、灵活交付等场景，微前端的价值就会凸显。
+
+技术服务于业务，架构服务于组织。不要为了微前端而微前端。

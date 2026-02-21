@@ -1,0 +1,93 @@
+{
+  "name": "octohash",
+  "type": "module",
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.29.3",
+  "description": "",
+  "author": "jinghaihan",
+  "license": "MIT",
+  "homepage": "https://github.com/jinghaihan/jinghaihan#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jinghaihan/jinghaihan.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jinghaihan/jinghaihan/issues"
+  },
+  "keywords": [],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite-ssg build && pnpm build:og && pnpm build:rss",
+    "build:og": "tsx ./scripts/og.ts",
+    "build:rss": "tsx ./scripts/rss.ts",
+    "deps": "taze major -I",
+    "lint": "eslint",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest",
+    "release": "bumpp",
+    "bootstrap": "pnpm install",
+    "prepare": "simple-git-hooks",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@unhead/vue": "catalog:frontend",
+    "@unocss/reset": "catalog:frontend",
+    "@vueuse/core": "catalog:frontend",
+    "pinia": "catalog:frontend",
+    "vue": "catalog:frontend",
+    "vue-router": "catalog:frontend",
+    "beautiful-mermaid": "catalog:prod",
+    "medium-zoom": "catalog:prod",
+    "nprogress": "catalog:prod"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:build",
+    "unplugin-auto-import": "catalog:build",
+    "unplugin-vue-components": "catalog:build",
+    "unplugin-vue-markdown": "catalog:build",
+    "unplugin-vue-router": "catalog:build",
+    "vite": "catalog:build",
+    "vite-ssg": "catalog:build",
+    "@antfu/utils": "catalog:dev",
+    "@resvg/resvg-js": "catalog:dev",
+    "@shikijs/markdown-it": "catalog:dev",
+    "bumpp": "catalog:dev",
+    "feed": "catalog:dev",
+    "gh-statskit": "catalog:dev",
+    "gray-matter": "catalog:dev",
+    "markdown-it": "catalog:dev",
+    "markdown-it-anchor": "catalog:dev",
+    "markdown-it-github-alerts": "catalog:dev",
+    "markdown-it-link-attributes": "catalog:dev",
+    "markdown-it-magic-link": "catalog:dev",
+    "markdown-it-table-of-contents": "catalog:dev",
+    "pncat": "catalog:dev",
+    "satori": "catalog:dev",
+    "satori-html": "catalog:dev",
+    "simple-git-hooks": "catalog:dev",
+    "taze": "catalog:dev",
+    "tinyglobby": "catalog:dev",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev",
+    "@unocss/preset-web-fonts": "catalog:frontend",
+    "unocss": "catalog:frontend",
+    "@iconify/json": "catalog:icons",
+    "@octohash/eslint-config": "catalog:lint",
+    "@unocss/eslint-config": "catalog:lint",
+    "eslint": "catalog:lint",
+    "eslint-plugin-format": "catalog:lint",
+    "lint-staged": "catalog:lint",
+    "vue-tsc": "catalog:lint",
+    "vitest": "catalog:test",
+    "@types/markdown-it": "catalog:types",
+    "@types/markdown-it-link-attributes": "catalog:types",
+    "@types/node": "catalog:types",
+    "@types/nprogress": "catalog:types"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
+  }
+}
