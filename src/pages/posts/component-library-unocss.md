@@ -1,0 +1,67 @@
+---
+title: 使用 UnoCSS 开发组件库 - octohash
+display: 使用 UnoCSS 开发组件库
+date: 2026-02-27
+duration: 5min
+lang: zh-CN
+---
+
+[[toc]]
+
+我一直喜欢 Atomic CSS，写样式快、改样式也快，开发时非常顺手。
+问题在于：组件库作者喜欢 UnoCSS，不代表使用方也想跟着装一整套 UnoCSS。
+
+我要的结果很简单：
+
+- 研发阶段继续享受 UnoCSS 的效率；
+- 发布出去是普通 CSS，使用方开箱即用。
+
+## 我一开始试过什么
+
+我先参考了 [starter-vue-webcomponent-uno](https://github.com/antfu/starter-vue-webcomponent-uno)。
+
+这个方案基于 Web Components + Shadow DOM，隔离效果确实很好，思路也很完整。
+但放到我的场景里，问题也很直接：
+
+- 一些业务同学对 Web Components 不熟，接入成本会变高；
+- SSR 相关链路不够友好；
+- 组件库本身的维护心智变重。
+
+所以最后我没有走“全量 Shadow DOM 隔离”这条路。
+
+## 我最后采用的方案
+
+核心思路是两句话：
+
+- 开发阶段：正常写 UnoCSS；
+- 构建阶段：把它编译成命名空间收敛后的普通 CSS。
+
+落地上主要做了这几步：
+
+1. 在构建时收集 UnoCSS token，生成最终样式。
+2. 和组件库原有样式合并，统一输出。
+3. 给选择器加 namespace，避免污染宿主页面。
+4. 给 CSS 变量加前缀，避免变量名冲突。
+5. 处理 `:root` / `:host` 落点，保证变量作用域可控。
+
+实现脚本在这里：
+[build-css.ts](https://github.com/jinghaihan/vue-stream-markdown/blob/main/scripts/build-css.ts)
+
+## 实际效果
+
+目前这套方案基本满足预期：
+
+1. 组件库内部继续用 Atomic CSS，开发速度没掉。
+2. 使用方只拿到 CSS 文件，不需要安装 UnoCSS / Tailwind。
+
+## 边界和取舍
+
+这里我不回避取舍。
+
+这套方案不是“绝对隔离”，而是“可控隔离”：
+
+- 组件库尽量不污染外部；
+- 外部样式按 CSS 层叠规则仍然可能影响内部。
+
+如果你追求绝对隔离，可以继续提高选择器权重，甚至回到 Shadow DOM。
+但代价是：用户想覆盖你的样式会更难。

@@ -51,6 +51,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/posts/component-library-unocss': RouteRecordInfo<
+      '/posts/component-library-unocss',
+      '/posts/component-library-unocss',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/posts/reimagine-micro-frontend': RouteRecordInfo<
       '/posts/reimagine-micro-frontend',
       '/posts/reimagine-micro-frontend',
@@ -106,6 +113,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/posts/coding-for-laziness.md': {
       routes:
         | '/posts/coding-for-laziness'
+      views:
+        | never
+    }
+    'src/pages/posts/component-library-unocss.md': {
+      routes:
+        | '/posts/component-library-unocss'
       views:
         | never
     }
