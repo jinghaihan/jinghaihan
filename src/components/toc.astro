@@ -11,12 +11,17 @@ const tocHeadings = headings.filter(heading => heading.depth >= 1 && heading.dep
 
 {
   tocHeadings.length > 0 && (
-    <nav class="table-of-contents">
-      <ul>
+    <nav class="table-of-contents pl-4 border-l border-border/70 max-h-[calc(100vh-6rem)] overflow-y-auto lg:top-8 lg:sticky">
+      <ul class="m-0 p-0 list-none space-y-1">
         {
           tocHeadings.map(heading => (
             <li style={`padding-inline-start: ${Math.max(0, heading.depth - 1) * 0.75}rem`}>
-              <a href={`#${heading.slug}`}>{heading.text}</a>
+              <a
+                href={`#${heading.slug}`}
+                class="text-sm text-muted-foreground/90 block transition-colors duration-150 hover:text-foreground no-underline!"
+              >
+                {heading.text}
+              </a>
             </li>
           ))
         }

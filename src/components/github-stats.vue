@@ -55,25 +55,25 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex gap-6 lg:gap-12">
-    <section class="flex flex-col gap-1">
+  <div class="flex flex-col gap-4 sm:flex-row lg:gap-12 sm:gap-6">
+    <section class="flex flex-col gap-1 min-w-0">
       <a
         v-for="stat in basicStats"
         :key="stat.name"
-        class="flex gap-2 cursor-pointer items-center"
+        class="flex gap-2 min-w-0 cursor-pointer items-center"
         target="_blank"
         rel="noopener"
         :href="stat.href"
       >
         <i class="mb-0.5" :class="[stat.icon]" />
-        <span class="text-foreground/85 w-28">
+        <span class="text-foreground/85 min-w-36 whitespace-nowrap">
           {{ stat.name }}:
         </span>
-        <span>{{ stat.value }}</span>
+        <span class="whitespace-nowrap">{{ stat.value }}</span>
       </a>
     </section>
 
-    <section>
+    <section class="self-start">
       <RankChart v-if="percentile" :rank="ranksLevel" :percentile="percentile" />
       <Spinner v-else-if="loading" />
       <Spinner v-else />

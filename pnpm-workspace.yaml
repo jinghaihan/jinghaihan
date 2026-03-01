@@ -46,3 +46,4 @@ onlyBuiltDependencies:
   - esbuild
   - simple-git-hooks
   - '@swc/core'
+  - sharp

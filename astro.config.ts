@@ -4,7 +4,6 @@ import mdx from '@astrojs/mdx'
 import vue from '@astrojs/vue'
 import Unocss from '@unocss/astro'
 import { defineConfig } from 'astro/config'
-import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeExternalLinks from 'rehype-external-links'
 import rehypeSlug from 'rehype-slug'
 import { DOMAIN } from './scripts/shared'
@@ -25,20 +24,6 @@ export default defineConfig({
     },
     rehypePlugins: [
       rehypeSlug,
-      [
-        rehypeAutolinkHeadings,
-        {
-          behavior: 'prepend',
-          content: {
-            type: 'text',
-            value: '#',
-          },
-          properties: {
-            className: ['header-anchor'],
-            ariaHidden: 'true',
-          },
-        },
-      ],
       [
         rehypeExternalLinks,
         {

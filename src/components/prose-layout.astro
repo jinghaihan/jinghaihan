@@ -20,45 +20,62 @@ const {
   backPath = frontmatter.date ? '/posts' : '/',
   showBack = (frontmatter.display || frontmatter.title) !== 'About',
 } = Astro.props
+const hasTocSlot = Astro.slots.has('toc')
+const proseGridClass = 'xl:grid xl:grid-cols-[12rem_minmax(0,50rem)_12rem] 2xl:grid-cols-[14rem_minmax(0,52rem)_14rem]'
 ---
 
 <div class="m-auto mb-8">
-  <div id="prose-container">
-    <div class="flex items-center justify-between">
-      <h1 class="text-4xl leading-tight font-bold mb-0">
-        {frontmatter.display || frontmatter.title}
-      </h1>
+  <div
+    id="prose-container"
+    class={hasTocSlot ? proseGridClass : undefined}
+  >
+    <div class={hasTocSlot ? 'min-w-0 xl:col-start-2 xl:self-start' : undefined}>
+      <div class="flex items-center justify-between">
+        <h1 class="text-4xl leading-tight font-bold mb-0">
+          {frontmatter.display || frontmatter.title}
+        </h1>
+      </div>
+
+      {
+        frontmatter.subtitle && (
+          <p class="text-lg text-foreground/85 !mt-0.5">
+            {frontmatter.subtitle}
+          </p>
+        )
+      }
+      {
+        frontmatter.date && (
+          <p class="text-foreground/85 !mt-0.5">
+            {formatDate(frontmatter.date, false)} {frontmatter.duration && <span>· {frontmatter.duration}</span>}
+          </p>
+        )
+      }
+
+      <article>
+        <div class="prose">
+          <slot />
+        </div>
+      </article>
     </div>
 
     {
-      frontmatter.subtitle && (
-        <p class="text-lg text-foreground/85 !mt-0.5">
-          {frontmatter.subtitle}
-        </p>
+      hasTocSlot && (
+        <aside class="hidden xl:col-start-3 xl:w-full xl:block xl:self-stretch">
+          <slot name="toc" />
+        </aside>
       )
     }
-    {
-      frontmatter.date && (
-        <p class="text-foreground/85 !mt-0.5">
-          {formatDate(frontmatter.date, false)} {frontmatter.duration && <span>· {frontmatter.duration}</span>}
-        </p>
-      )
-    }
-
-    <article>
-      <div class="prose">
-        <slot />
-      </div>
-    </article>
   </div>
 
   {
     showBack && (
-      <div>
-        <span class="text-muted-foreground/75 font-mono">{'>'} </span>
-        <a href={backPath} class="text-muted-foreground/75 font-mono hover:text-foreground/85">
-          cd..
-        </a>
+      <div class={hasTocSlot ? proseGridClass : undefined}>
+        <div class={hasTocSlot ? 'xl:col-start-2' : undefined}>
+          <span class="text-muted-foreground/75 font-mono">{'>'} </span>
+          <a href={backPath} class="text-muted-foreground/75 font-mono hover:text-foreground/85">
+            cd..
+          </a>
+        </div>
       </div>
     )
   }

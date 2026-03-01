@@ -10,11 +10,13 @@ import '@/styles/main.css'
 interface Props {
   title?: string
   description?: string
+  wide?: boolean
 }
 
 const {
   title = 'octohash',
   description = 'Personal website of octohash.',
+  wide = false,
 } = Astro.props
 
 const canonical = new URL(Astro.url.pathname, Astro.site || DOMAIN).toString()
@@ -72,7 +74,11 @@ const ogImage = new URL('/og.png', Astro.site || DOMAIN).toString()
   <body>
     <Noise />
 
-    <div class="mx-auto flex flex-col h-screen max-w-160 w-full overflow-hidden">
+    <div class:list={[
+      'mx-auto flex flex-col h-screen w-full overflow-hidden',
+      wide ? 'max-w-[80rem]' : 'max-w-160',
+    ]}
+    >
       <SiteHeader />
 
       <main

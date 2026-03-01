@@ -27,9 +27,9 @@ const { Content, headings } = await render(post)
 const pageTitle = post.data.title || `${post.id} - octohash`
 ---
 
-<BaseLayout title={pageTitle}>
+<BaseLayout title={pageTitle} wide>
   <ProseLayout frontmatter={post.data} backPath="/posts">
-    <Toc headings={headings} />
+    <Toc slot="toc" headings={headings} />
     <Content components={{ Mermaid: MermaidIsland, MagicLink, RubyAnnotation }} />
   </ProseLayout>
 </BaseLayout>
