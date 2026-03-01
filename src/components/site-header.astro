@@ -4,6 +4,12 @@ import DarkToggle from '@/components/dark-toggle.astro'
 import Github from '@/components/github.astro'
 import Twitter from '@/components/twitter.astro'
 
+interface Props {
+  overlay?: boolean
+}
+
+const { overlay = false } = Astro.props
+
 const navTextClass = 'no-underline text-muted-foreground hover:text-foreground transition-colors'
 ---
 
@@ -11,7 +17,10 @@ const navTextClass = 'no-underline text-muted-foreground hover:text-foreground t
   transition:name="site-header"
   transition:persist
   data-site-header
-  class="p-6 bg-transparent flex w-full items-center justify-between z-100"
+  class:list={[
+    'p-6 bg-transparent flex w-full items-center justify-between z-100',
+    overlay && 'fixed top-0 left-0 pointer-events-auto',
+  ]}
 >
   <a
     href="/"
@@ -68,38 +77,7 @@ const navTextClass = 'no-underline text-muted-foreground hover:text-foreground t
 </header>
 
 <script>
-(() => {
-  const header = document.querySelector<HTMLElement>('[data-site-header]')
-  if (!header || header.dataset.navGuardBound)
-    return
+import { useSiteHeader } from '@/composables/use-site-header'
 
-  header.dataset.navGuardBound = '1'
-
-  const normalizePath = (path: string) => {
-    const normalized = path.replace(/\/+$/, '')
-    return normalized || '/'
-  }
-
-  header.addEventListener('click', (event) => {
-    const mouse = event
-    if (mouse.button !== 0)
-      return
-    if (mouse.metaKey || mouse.ctrlKey || mouse.altKey || mouse.shiftKey)
-      return
-
-    const target = event.target as HTMLElement
-    if (!target)
-      return
-
-    const link = target.closest<HTMLAnchorElement>('a[data-nav-link]')
-    if (!link)
-      return
-
-    const path = normalizePath(window.location.pathname)
-    const nextPath = normalizePath(new URL(link.href, window.location.href).pathname)
-
-    if (path === nextPath)
-      event.preventDefault()
-  })
-})()
+useSiteHeader(document.querySelector<HTMLElement>('[data-site-header]'))
 </script>

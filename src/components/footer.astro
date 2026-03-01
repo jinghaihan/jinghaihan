@@ -2,7 +2,7 @@
 import { timeline } from '@/constants/profile'
 ---
 
-<footer transition:name="site-footer" transition:persist class="text-sm py-6 w-full">
+<footer transition:name="site-footer" transition:persist data-site-footer class="text-sm py-6 w-full">
   <div class="flex items-center justify-between">
     <button
       type="button"
@@ -38,21 +38,8 @@ import { timeline } from '@/constants/profile'
   </div>
 </footer>
 
-<script is:inline>
-  (() => {
-    const footer = document.currentScript?.previousElementSibling
-    if (!(footer instanceof HTMLElement))
-      return
+<script>
+  import { useSiteFooter } from '@/composables/use-site-footer'
 
-    const toggle = footer.querySelector('[data-footer-toggle]')
-    const panel = footer.querySelector('[data-footer-panel]')
-    if (!(toggle instanceof HTMLButtonElement) || !(panel instanceof HTMLElement))
-      return
-
-    toggle.addEventListener('click', () => {
-      const expanded = toggle.getAttribute('aria-expanded') === 'true'
-      toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true')
-      panel.classList.toggle('hidden', expanded)
-    })
-  })()
+  useSiteFooter(document.querySelector<HTMLElement>('[data-site-footer]'))
 </script>

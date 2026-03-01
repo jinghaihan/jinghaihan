@@ -82,18 +82,7 @@ const proseGridClass = 'xl:grid xl:grid-cols-[12rem_minmax(0,50rem)_12rem] 2xl:g
 </div>
 
 <script>
-  import mediumZoom from 'medium-zoom'
+  import { useProse } from '@/composables/use-prose'
 
-  const selector = '[data-zoomable]'
-  const zoom = mediumZoom({ background: 'oklab(0 0 0 / 0.5)' })
-
-  document.addEventListener('astro:before-swap', () => {
-    zoom.close()
-  })
-  document.addEventListener('astro:page-load', () => {
-    zoom.detach()
-    const images = document.querySelectorAll(selector)
-    if (images.length > 0)
-      zoom.attach(images)
-  })
+  useProse()
 </script>

@@ -28,7 +28,7 @@ const pageTitle = post.data.title || `${post.id} - octohash`
 const postOgImage = `/posts/${post.id}/og.png`
 ---
 
-<BaseLayout title={pageTitle} ogImage={postOgImage} wide>
+<BaseLayout title={pageTitle} ogImage={postOgImage} layout="wide">
   <ProseLayout frontmatter={post.data} backPath="/posts">
     <Toc slot="toc" headings={headings} />
     <Content components={{ Mermaid: MermaidIsland, MagicLink, RubyAnnotation }} />
