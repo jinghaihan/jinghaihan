@@ -1,5 +1,4 @@
 ---
-import Back from '@/components/back.vue'
 import { formatDate } from '@/utils'
 
 interface FrontmatterLike {
@@ -8,7 +7,6 @@ interface FrontmatterLike {
   display?: string
   date?: string | Date
   duration?: string
-  layout?: 'default' | 'compact'
 }
 
 interface Props {
@@ -24,7 +22,7 @@ const {
 } = Astro.props
 ---
 
-<div class:list={['m-auto mb-8 prose', { 'prose-compact': frontmatter.layout === 'compact' }]}>
+<div class="m-auto mb-8 prose">
   <div id="prose-container">
     <div class="flex items-center justify-between">
       <h1 mb-0>
@@ -54,7 +52,16 @@ const {
     </article>
   </div>
 
-  {showBack && <Back path={backPath} />}
+  {
+    showBack && (
+      <div class="prose">
+        <span class="font-mono op50">{'>'} </span>
+        <a href={backPath} class="font-mono op50 hover:op75">
+          cd..
+        </a>
+      </div>
+    )
+  }
 </div>
 
 <script>

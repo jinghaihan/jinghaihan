@@ -1,0 +1,11 @@
+---
+interface Props {
+  class?: string
+}
+
+const { class: className = '' } = Astro.props
+---
+
+<a href="https://bsky.app/profile/octohash.bsky.social" target="_blank" rel="noopener" class={className}>
+  <div class="i-ri:bluesky-line hover:i-ri:bluesky-fill cursor-pointer" />
+</a>

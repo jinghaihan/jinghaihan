@@ -1,18 +1,16 @@
 ---
-import Bluesky from '@/components/bluesky.vue'
-import DarkToggle from '@/components/dark-toggle.vue'
-import Footer from '@/components/footer.vue'
-import Github from '@/components/github.vue'
-import Noise from '@/components/noise.vue'
-import Twitter from '@/components/twitter.vue'
+import Bluesky from '@/components/bluesky.astro'
+import DarkToggle from '@/components/dark-toggle.astro'
+import Footer from '@/components/footer.astro'
+import Github from '@/components/github.astro'
+import Noise from '@/components/noise.astro'
+import Twitter from '@/components/twitter.astro'
 import { DOMAIN } from '../../scripts/shared'
 import '@unocss/reset/tailwind.css'
 import '@/styles/main.css'
 import '@/styles/prose.css'
 import '@/styles/markdown.css'
 import '@/styles/global.css'
-import '@/styles/print.css'
-import '@/styles/compact.css'
 
 interface Props {
   title?: string
@@ -26,6 +24,7 @@ const {
 
 const navTextClass = 'no-underline text-muted-foreground hover:text-foreground transition-colors'
 const canonical = new URL(Astro.url.pathname, Astro.site || DOMAIN).toString()
+const ogImage = new URL('/og.png', Astro.site || DOMAIN).toString()
 ---
 
 <!doctype html>
@@ -47,10 +46,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site || DOMAIN).toString()
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
     <title>{title}</title>
   </head>
   <body>
-    <Noise client:load />
+    <Noise />
 
     <div class="mx-auto flex min-h-screen w-full max-w-160 flex-col">
       <header class="sticky top-0 z-100 flex w-full items-center justify-between bg-background p-6">
@@ -98,7 +106,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site || DOMAIN).toString()
           <Github class={navTextClass} />
           <Twitter class={navTextClass} />
           <Bluesky class={navTextClass} />
-          <DarkToggle class={navTextClass} client:load />
+          <DarkToggle class={navTextClass} />
         </nav>
       </header>
 
@@ -106,7 +114,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site || DOMAIN).toString()
         <slot />
       </main>
 
-      <Footer client:load />
+      <Footer />
     </div>
   </body>
 </html>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useIntersectionObserver } from '@vueuse/core'
+import { onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 
 const props = withDefaults(defineProps<{
   rank?: string
@@ -32,6 +33,7 @@ const { stop } = useIntersectionObserver(chartRef, ([{ isIntersecting }]) => {
     stop()
   }
 })
+let classObserver: MutationObserver | null = null
 
 function render() {
   requestAnimationFrame(() => {
@@ -45,17 +47,22 @@ function getColors() {
   colors.value.progress = computedStyle.getPropertyValue('--primary')
 }
 
-watch(
-  isDark,
-  () => {
-    nextTick(() => {
-      getColors()
-    })
-  },
-  { immediate: true },
-)
+onMounted(() => {
+  getColors()
 
-onBeforeUnmount(stop)
+  classObserver = new MutationObserver(() => {
+    getColors()
+  })
+  classObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  })
+})
+
+onBeforeUnmount(() => {
+  classObserver?.disconnect()
+  stop()
+})
 </script>
 
 <template>

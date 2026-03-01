@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { formatNumber } from '@/utils'
+import { computed, onMounted, ref } from 'vue'
+import { formatNumber, loadGithubData } from '@/utils'
 import RankChart from './rank-chart.vue'
+import Spinner from './spinner.vue'
 
-const store = useGitHubStatsStore()
+const snapshot = ref<Awaited<ReturnType<typeof loadGithubData>> | null>(null)
+const loading = ref(true)
 
-const stargazers = computed((): number => store.stats?.repositories.totalStargazers ?? 0)
-const commits = computed((): number => store.stats?.commits ?? 0)
-const prs = computed((): number => store.stats?.pullRequest.totalCount ?? 0)
-const issues = computed((): number => store.stats?.issues.totalCount ?? 0)
-const contributed = computed((): number => store.stats?.repositoriesContributedTo ?? 0)
+const stats = computed(() => snapshot.value?.stats ?? null)
+const stargazers = computed((): number => stats.value?.repositories.totalStargazers ?? 0)
+const commits = computed((): number => stats.value?.commits ?? 0)
+const prs = computed((): number => stats.value?.pullRequest.totalCount ?? 0)
+const issues = computed((): number => stats.value?.issues.totalCount ?? 0)
+const contributed = computed((): number => stats.value?.repositoriesContributedTo ?? 0)
 
 const basicStats = computed(() => {
   return [
@@ -41,8 +45,13 @@ const basicStats = computed(() => {
   ]
 })
 
-const ranksLevel = computed((): string => store.stats?.rank.level ?? 'C')
-const percentile = computed((): number => store.stats?.rank.percentile ?? 0)
+const ranksLevel = computed((): string => stats.value?.rank.level ?? 'C')
+const percentile = computed((): number => stats.value?.rank.percentile ?? 0)
+
+onMounted(async () => {
+  snapshot.value = await loadGithubData()
+  loading.value = false
+})
 </script>
 
 <template>
@@ -66,6 +75,7 @@ const percentile = computed((): number => store.stats?.rank.percentile ?? 0)
 
     <section>
       <RankChart v-if="percentile" :rank="ranksLevel" :percentile="percentile" />
+      <Spinner v-else-if="loading" />
       <Spinner v-else />
     </section>
   </div>

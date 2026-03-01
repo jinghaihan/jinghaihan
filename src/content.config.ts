@@ -9,7 +9,6 @@ const frontmatterSchema = z.object({
   date: z.union([z.string(), z.date()]).optional(),
   duration: z.string().optional(),
   lang: z.enum(['zh-CN', 'en-US']).optional(),
-  layout: z.enum(['default', 'compact']).optional(),
 })
 
 const posts = defineCollection({

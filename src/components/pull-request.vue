@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PullRequest } from 'gh-statskit'
+import { useTimeAgo } from '@vueuse/core'
 
 defineProps<{
   data: PullRequest

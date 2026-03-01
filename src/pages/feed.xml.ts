@@ -1,7 +1,6 @@
 import type { CollectionEntry } from 'astro:content'
 import rss from '@astrojs/rss'
 import { getCollection } from 'astro:content'
-import MarkdownIt from 'markdown-it'
 import { DOMAIN } from '../../scripts/shared'
 
 const AUTHOR = {
@@ -9,12 +8,6 @@ const AUTHOR = {
   email: 'jhh19980114@gmail.com',
   link: DOMAIN,
 }
-
-const markdown = MarkdownIt({
-  html: true,
-  breaks: true,
-  linkify: true,
-})
 
 export async function GET(context: { site?: URL }) {
   const posts = (await getCollection('posts'))
@@ -41,8 +34,6 @@ export async function GET(context: { site?: URL }) {
         : undefined,
       description: post.data.display || post.data.title || post.id,
       link: `/posts/${post.id}`,
-      content: markdown.render(post.body)
-        .replace(/src="\//g, `src="${DOMAIN}/`),
     })),
   })
 }

@@ -7,15 +7,13 @@ import { defineConfig } from 'astro/config'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeExternalLinks from 'rehype-external-links'
 import rehypeSlug from 'rehype-slug'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
 import { DOMAIN } from './scripts/shared'
 
 export default defineConfig({
   site: DOMAIN,
   integrations: [
     mdx({ extendMarkdownConfig: true }),
-    vue({ appEntrypoint: '/src/modules/vue-app.ts' }),
+    vue(),
     Unocss(),
   ],
   markdown: {
@@ -56,26 +54,6 @@ export default defineConfig({
         '@': resolve(process.cwd(), './src'),
       },
     },
-    plugins: [
-      AutoImport({
-        imports: [
-          'vue',
-          '@vueuse/core',
-          'pinia',
-        ],
-        dirs: [
-          'src/composables',
-          'src/stores',
-        ],
-        vueTemplate: true,
-        dts: 'src/typings/auto-imports.d.ts',
-      }) as any,
-      Components({
-        include: [/\.vue$/, /\.vue\?vue/],
-        extensions: ['vue'],
-        dts: 'src/typings/components.d.ts',
-      }) as any,
-    ],
     optimizeDeps: {
       exclude: ['@resvg/resvg-js'],
     },

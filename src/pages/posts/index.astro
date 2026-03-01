@@ -1,6 +1,6 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content'
-import PostList from '@/components/post-list.vue'
+import { formatDate } from '@/utils'
 import BaseLayout from '@/layouts/base-layout.astro'
 
 interface PostListItem {
@@ -82,6 +82,37 @@ const groupedPosts = (Object.entries(groupedMap) as [string, PostListItem[]][])
       </a>
     </div>
 
-    <PostList posts={groupedPosts} />
+    {
+      groupedPosts.map(group => (
+        <div class="prose mb-8">
+          <h2 class="mb-4 text-xl font-semibold op75">
+            {group.year}
+          </h2>
+          {
+            group.posts.map(post => (
+              <div class="mb-3 flex flex-col items-baseline gap-2 lg:flex-row lg:gap-4">
+                <div class="text-base text-left op60 lg:text-lg">
+                  {formatDate(post.date)}
+                </div>
+                <div>
+                  <a
+                    href={post.path}
+                    class="group no-underline cursor-pointer text-lg font-semibold op75 transition-opacity duration-200 hover:op100"
+                  >
+                    {post.title || 'Untitled'}
+                    {post.duration && (
+                      <span class="text-sm op50 group-hover:op75">
+                        {' · '}
+                        {post.duration}
+                      </span>
+                    )}
+                  </a>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      ))
+    }
   </div>
 </BaseLayout>

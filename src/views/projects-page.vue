@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import type { Project, ProjectCategory } from '@/types'
+import type { Project } from '@/types'
+import { computed, onMounted, ref } from 'vue'
+import ProjectCard from '@/components/project-card.vue'
+import Spinner from '@/components/spinner.vue'
+import { loadGithubData, sortProjectsByStargazers } from '@/utils'
 
-const store = useGitHubStatsStore()
+const snapshot = ref<Awaited<ReturnType<typeof loadGithubData>> | null>(null)
+const projectCategoriesLoading = ref(true)
+const projectCategories = computed(() => snapshot.value?.projectCategories ?? null)
 
 const pinnedProjects = computed(() => {
-  const data = store.projectCategories?.flatMap((category: ProjectCategory) => {
+  const data = projectCategories.value?.flatMap((category) => {
     return category.projects
       .filter((project: Project) => project.pinned)
       .map((project: Project) => ({
@@ -13,7 +19,12 @@ const pinnedProjects = computed(() => {
   })
   if (!data)
     return null
-  return store.sortProjectsByStargazers(data)
+  return sortProjectsByStargazers(data, snapshot.value?.stats ?? null)
+})
+
+onMounted(async () => {
+  snapshot.value = await loadGithubData()
+  projectCategoriesLoading.value = false
 })
 </script>
 
@@ -68,7 +79,7 @@ const pinnedProjects = computed(() => {
 
     <div space-y-12>
       <div
-        v-for="category in store.projectCategories"
+        v-for="category in projectCategories"
         :key="category.name"
       >
         <div mb-6 flex items-center space-x-3>
@@ -88,6 +99,6 @@ const pinnedProjects = computed(() => {
       </div>
     </div>
 
-    <Spinner v-if="store.projectCategoriesLoading" />
+    <Spinner v-if="projectCategoriesLoading" />
   </div>
 </template>

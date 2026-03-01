@@ -1,0 +1,58 @@
+---
+import { timeline } from '@/constants'
+---
+
+<footer class="py-6 w-full text-sm">
+  <div class="flex items-center justify-between">
+    <button
+      type="button"
+      class="btn-slate border-none bg-transparent"
+      data-footer-toggle
+      aria-expanded="false"
+    >
+      About This Site
+      <i i-ri:expand-up-down-line />
+    </button>
+    <span class="op60">2025-PRESENT © octohash</span>
+  </div>
+
+  <div
+    class="prose hidden mt-4 border-t border-gray-200 pt-4 dark:border-gray-700"
+    data-footer-panel
+  >
+    <div class="timeline-container">
+      {
+        timeline.map(event => (
+          <div
+            class="mb-3 grid items-baseline gap-4 grid-cols-[100px_1fr]"
+          >
+            <div class="text-right">{event.date}</div>
+            <div>
+              <div class="font-semibold">{event.title}</div>
+              <div class="mt-1" set:html={event.description} />
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</footer>
+
+<script is:inline>
+  (() => {
+    const footer = document.currentScript?.previousElementSibling
+    if (!(footer instanceof HTMLElement))
+      return
+
+    const toggle = footer.querySelector('[data-footer-toggle]')
+    const panel = footer.querySelector('[data-footer-panel]')
+    if (!(toggle instanceof HTMLButtonElement) || !(panel instanceof HTMLElement))
+      return
+
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true'
+      toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true')
+      panel.classList.toggle('hidden', expanded)
+    })
+  })()
+</script>

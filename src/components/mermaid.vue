@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { renderMermaid, THEMES } from 'beautiful-mermaid'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const props = withDefaults(defineProps<{
   code?: string
@@ -8,6 +9,9 @@ const props = withDefaults(defineProps<{
 })
 
 const svg = ref<string>('')
+const isDark = ref(false)
+let classObserver: MutationObserver | null = null
+
 const theme = computed(() => isDark.value ? THEMES['github-dark'] : THEMES['github-light'])
 
 async function render() {
@@ -17,8 +21,29 @@ async function render() {
   })
 }
 
-onMounted(render)
-watch(isDark, render)
+function updateDarkState() {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
+onMounted(() => {
+  updateDarkState()
+  render()
+
+  classObserver = new MutationObserver(() => {
+    const previous = isDark.value
+    updateDarkState()
+    if (previous !== isDark.value)
+      render()
+  })
+  classObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  })
+})
+
+onBeforeUnmount(() => {
+  classObserver?.disconnect()
+})
 </script>
 
 <template>

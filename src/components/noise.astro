@@ -1,0 +1,78 @@
+---
+interface Props {
+  patternRefreshInterval?: number
+  patternAlpha?: number
+  mixBlendMode?: string
+}
+
+const {
+  patternRefreshInterval = 2,
+  patternAlpha = 10,
+  mixBlendMode = 'normal',
+} = Astro.props
+---
+
+<canvas
+  class="h-screen w-screen pointer-events-none left-0 top-0 fixed z-1000"
+  style={`image-rendering: pixelated; mix-blend-mode: ${mixBlendMode}`}
+  data-noise-refresh={patternRefreshInterval}
+  data-noise-alpha={patternAlpha}
+/>
+
+<script is:inline>
+  (() => {
+    const canvas = document.currentScript?.previousElementSibling
+    if (!(canvas instanceof HTMLCanvasElement))
+      return
+
+    const refreshInterval = Math.max(1, Math.round(Number(canvas.dataset.noiseRefresh ?? '2')))
+    const patternAlpha = Number(canvas.dataset.noiseAlpha ?? '10')
+    const canvasSize = 1024
+
+    const ctx = canvas.getContext('2d', { alpha: true })
+    if (!ctx)
+      return
+
+    let animationId = 0
+    let frame = 0
+    let noiseData = ctx.createImageData(canvasSize, canvasSize)
+    let noise32 = new Uint32Array(noiseData.data.buffer)
+
+    function resize() {
+      canvas.width = canvasSize
+      canvas.height = canvasSize
+      canvas.style.width = '100vw'
+      canvas.style.height = '100vh'
+    }
+
+    function drawGrain() {
+      const alpha = patternAlpha << 24
+      for (let i = 0; i < noise32.length; i++) {
+        const value = (Math.random() * 255) | 0
+        noise32[i] = alpha | (value << 16) | (value << 8) | value
+      }
+    }
+
+    function loop() {
+      if (frame % refreshInterval === 0) {
+        drawGrain()
+        ctx.putImageData(noiseData, 0, 0)
+      }
+      frame++
+      animationId = requestAnimationFrame(loop)
+    }
+
+    function cleanup() {
+      window.removeEventListener('resize', resize)
+      cancelAnimationFrame(animationId)
+    }
+
+    resize()
+    drawGrain()
+    ctx.putImageData(noiseData, 0, 0)
+    loop()
+
+    window.addEventListener('resize', resize)
+    window.addEventListener('beforeunload', cleanup, { once: true })
+  })()
+</script>
