@@ -4,12 +4,6 @@ import DarkToggle from '@/components/dark-toggle.astro'
 import Github from '@/components/github.astro'
 import Twitter from '@/components/twitter.astro'
 
-interface Props {
-  overlay?: boolean
-}
-
-const { overlay = false } = Astro.props
-
 const navTextClass = 'no-underline text-muted-foreground hover:text-foreground transition-colors'
 ---
 
@@ -17,10 +11,7 @@ const navTextClass = 'no-underline text-muted-foreground hover:text-foreground t
   transition:name="site-header"
   transition:persist
   data-site-header
-  class:list={[
-    'p-6 bg-transparent flex w-full items-center justify-between z-100',
-    overlay && 'fixed top-0 left-0 pointer-events-auto',
-  ]}
+  class="px-6 py-4 bg-transparent flex w-full items-center justify-between z-100"
 >
   <a
     href="/"

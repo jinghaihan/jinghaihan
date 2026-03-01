@@ -33,7 +33,6 @@
     "@astrojs/vue": "catalog:frontend",
     "@unocss/astro": "catalog:frontend",
     "@unocss/reset": "catalog:frontend",
-    "@vue-flow/core": "catalog:frontend",
     "@vueuse/core": "catalog:frontend",
     "vue": "catalog:frontend",
     "@astrojs/mdx": "catalog:prod",
@@ -42,7 +41,7 @@
     "astro": "catalog:prod",
     "astro-expressive-code": "catalog:prod",
     "beautiful-mermaid": "catalog:prod",
-    "elkjs": "catalog:prod",
+    "d3": "catalog:prod",
     "gh-statskit": "catalog:prod",
     "medium-zoom": "catalog:prod",
     "rehype-autolink-headings": "catalog:prod",
@@ -68,6 +67,7 @@
     "lint-staged": "catalog:lint",
     "vue-tsc": "catalog:lint",
     "vitest": "catalog:test",
+    "@types/d3": "catalog:types",
     "@types/node": "catalog:types"
   },
   "simple-git-hooks": {

@@ -1,28 +1,31 @@
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'unknown'
-export type ProblemId = string
-export type TopicId = string
-export type GroupId = string
+export type Difficulty = 'easy' | 'medium' | 'hard'
 
 export interface Group {
-  id: GroupId
+  id: string
   title: string
 }
 
 export interface Topic {
-  id: TopicId
+  id: string
   title: string
-  groupId?: GroupId | null
+  groupId?: string
   difficulty: Difficulty
-  problemIds: ProblemId[]
+  problemIds: string[]
 }
 
-export interface Edge {
-  source: TopicId
-  target: TopicId
+export interface TopicGroup {
+  id: string
+  title: string
+  topics: Topic[]
+}
+
+export interface Relation {
+  source: string
+  target: string
 }
 
 export interface Problem {
-  id: ProblemId
+  id: string
   number: string | null
   slug: string
   title: string
@@ -33,8 +36,7 @@ export interface AlgorithmRoadmapData {
   version: number
   groups: Group[]
   topics: Topic[]
-  edges: Edge[]
-  problems: Record<ProblemId, Problem>
+  problems: Record<string, Problem>
 }
 
-export type AlgorithmProgress = Record<ProblemId, boolean>
+export type AlgorithmProgress = Partial<Record<string, true>>

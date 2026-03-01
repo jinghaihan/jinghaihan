@@ -75,7 +75,7 @@ const isFullscreen = layout === 'fullscreen'
     <ClientRouter />
     <title>{title}</title>
   </head>
-  <body data-layout-mode={layout}>
+  <body>
     <Noise />
 
     <div class:list={[
@@ -83,7 +83,7 @@ const isFullscreen = layout === 'fullscreen'
       isFullscreen ? 'max-w-none' : isWide ? 'max-w-[80rem]' : 'max-w-160',
     ]}
     >
-      <SiteHeader overlay={isFullscreen} />
+      <SiteHeader />
 
       <main
         transition:name="page"
