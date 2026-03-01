@@ -1,6 +1,6 @@
 import type { GitHubStats, Repository } from 'gh-statskit'
 import type { Project, ProjectCategory } from '@/types'
-import { GIST_PROJECTS_URL, GIST_STATS_URL } from '@/constants'
+import { GIST_PROJECTS_URL, GIST_STATS_URL } from '@/constants/profile'
 
 export interface GithubDataSnapshot {
   stats: GitHubStats | null

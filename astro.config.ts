@@ -5,23 +5,25 @@ import Vue from '@astrojs/vue'
 import Unocss from '@unocss/astro'
 import ExpressiveCode from 'astro-expressive-code'
 import { defineConfig } from 'astro/config'
-import rehypeExternalLinks from 'rehype-external-links'
-import rehypeSlug from 'rehype-slug'
-import { DOMAIN } from './scripts/shared'
+import ExternalLinks from 'rehype-external-links'
+import Slug from 'rehype-slug'
+import { DOMAIN } from './src/constants/site'
 
 export default defineConfig({
   site: DOMAIN,
   integrations: [
     ExpressiveCode(),
-    Mdx({ extendMarkdownConfig: true }),
+    Mdx({
+      extendMarkdownConfig: true,
+    }),
     Vue(),
     Unocss(),
   ],
   markdown: {
     rehypePlugins: [
-      rehypeSlug,
+      Slug,
       [
-        rehypeExternalLinks,
+        ExternalLinks,
         {
           target: '_blank',
           rel: ['noopener'],

@@ -3,7 +3,7 @@ import { ClientRouter } from 'astro:transitions'
 import Footer from '@/components/footer.astro'
 import Noise from '@/components/noise.astro'
 import SiteHeader from '@/components/site-header.astro'
-import { DOMAIN } from '../../scripts/shared'
+import { DOMAIN } from '@/constants/site'
 import '@unocss/reset/tailwind.css'
 import '@/styles/main.css'
 
@@ -11,16 +11,18 @@ interface Props {
   title?: string
   description?: string
   wide?: boolean
+  ogImage?: string
 }
 
 const {
   title = 'octohash',
   description = 'Personal website of octohash.',
   wide = false,
+  ogImage: ogImagePath = '/og.png',
 } = Astro.props
 
 const canonical = new URL(Astro.url.pathname, Astro.site || DOMAIN).toString()
-const ogImage = new URL('/og.png', Astro.site || DOMAIN).toString()
+const ogImage = new URL(ogImagePath, Astro.site || DOMAIN).toString()
 ---
 
 <!doctype html>

@@ -25,9 +25,10 @@ const { post } = Astro.props as {
 }
 const { Content, headings } = await render(post)
 const pageTitle = post.data.title || `${post.id} - octohash`
+const postOgImage = `/posts/${post.id}/og.png`
 ---
 
-<BaseLayout title={pageTitle} wide>
+<BaseLayout title={pageTitle} ogImage={postOgImage} wide>
   <ProseLayout frontmatter={post.data} backPath="/posts">
     <Toc slot="toc" headings={headings} />
     <Content components={{ Mermaid: MermaidIsland, MagicLink, RubyAnnotation }} />
