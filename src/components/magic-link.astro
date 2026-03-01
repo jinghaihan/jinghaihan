@@ -37,18 +37,29 @@ function resolveDefaultImageUrl() {
 const resolvedImageUrl = imageUrl === false
   ? false
   : (imageUrl || resolveDefaultImageUrl())
+
+const baseClasses = 'inline-flex items-center gap-1 rounded px1.5 py1 leading-[1] border-0! no-underline! bg-accent text-muted-foreground! transition translate-y-[3px] hover:(bg-muted text-foreground!)'
+const githubAtClasses = 'translate-y-[6px] pl0 py0 pr2 ml0.5 text-sm gap-[0.3rem] rounded-full'
+const baseImageClasses = 'inline-block h-[1.1em] w-[1.1em] bg-cover bg-no-repeat bg-center rounded-[2px]'
+const githubAtImageClasses = 'h-[1.6em] w-[1.6em] rounded-full'
 ---
 
 <a
   href={resolvedLink}
-  class:list={['markdown-magic-link', `markdown-magic-link-${type}`]}
+  class:list={[
+    baseClasses,
+    type === 'github-at' && githubAtClasses,
+  ]}
   target={newTab ? '_blank' : undefined}
   rel={newTab ? 'noopener' : undefined}
 >
   {
     resolvedImageUrl && (
       <span
-        class="markdown-magic-link-image"
+        class:list={[
+          baseImageClasses,
+          type === 'github-at' && githubAtImageClasses,
+        ]}
         style={`background-image:url("${resolvedImageUrl}")`}
       />
     )
