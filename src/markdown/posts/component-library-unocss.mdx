@@ -14,7 +14,11 @@ lang: zh-CN
 - 研发阶段继续享受 UnoCSS 的效率；
 - 发布出去是普通 CSS，使用方开箱即用。
 
-## 我一开始试过什么
+实现脚本在这里：
+
+[build-css.ts](https://github.com/jinghaihan/vue-stream-markdown/blob/main/scripts/build-css.ts)
+
+## 灵感
 
 我先参考了 [starter-vue-webcomponent-uno](https://github.com/antfu/starter-vue-webcomponent-uno)。
 
@@ -27,9 +31,9 @@ lang: zh-CN
 
 所以最后我没有走“全量 Shadow DOM 隔离”这条路。
 
-## 我最后采用的方案
+## 方案
 
-核心思路是两句话：
+思路很直接：
 
 - 开发阶段：正常写 UnoCSS；
 - 构建阶段：把它编译成命名空间收敛后的普通 CSS。
@@ -42,12 +46,9 @@ lang: zh-CN
 4. 给 CSS 变量加前缀，避免变量名冲突。
 5. 处理 `:root` / `:host` 落点，保证变量作用域可控。
 
-实现脚本在这里：
-[build-css.ts](https://github.com/jinghaihan/vue-stream-markdown/blob/main/scripts/build-css.ts)
+## 效果
 
-## 实际效果
-
-目前这套方案基本满足预期：
+目前这套方案满足了开头的两个目标：
 
 1. 组件库内部继续用 Atomic CSS，开发速度没掉。
 2. 使用方只拿到 CSS 文件，不需要安装 UnoCSS / Tailwind。
@@ -56,7 +57,7 @@ lang: zh-CN
 
 这里我不回避取舍。
 
-这套方案不是“绝对隔离”，而是“可控隔离”：
+这套方案做不到“绝对隔离”，但能做到“可控隔离”：
 
 - 组件库尽量不污染外部；
 - 外部样式按 CSS 层叠规则仍然可能影响内部。

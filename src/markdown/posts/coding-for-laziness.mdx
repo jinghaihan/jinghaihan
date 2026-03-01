@@ -25,7 +25,7 @@ lang: zh-CN
 3. 再到 `package.json` 里把版本号替换成 `catalog:category` 格式；
 4. 再来一次又一次...
 
-于是我写了 [pncat](https://github.com/jinghaihan/pncat)，实现了几个核心命令：
+于是我写了 [pncat](https://github.com/jinghaihan/pncat)，做了几个命令：
 
 - <code class="important-text-lime">detect</code>: 扫描项目，找出可以迁移到 catalog 的依赖
 - <code class="important-text-purple">migrate</code>: 按规则自动分类并迁移
@@ -35,7 +35,7 @@ lang: zh-CN
 
 当然，分类没有标准答案。同一个依赖在不同类型的仓库中意图不同，往往适合不同的 `catalog:`，所以我实现了一套容易继承和扩展的规则系统。
 
-```ts
+```ts title="pncat.config.ts"
 import { defineConfig, mergeCatalogRules } from 'pncat'
 
 export default defineConfig({
@@ -93,7 +93,7 @@ export default defineConfig({
 
 Cursor 最让我难受的是，它第一次打开项目时会强制打开 Chat 界面。我不觉得上来就和 LLM 聊天是个好的开发方式，我为此写了 [vscode-auto-chat-blocker](https://github.com/jinghaihan/vscode-auto-chat-blocker)，总共 15 行代码，但 Cursor 就是不愿意给一个简单的 Toggle。
 
-我通常用 [Raycast](https://www.raycast.com/) 的插件来打开项目，但因为我同时用 VS Code 和 Cursor，所以写了 [raycast-code-finder](https://github.com/jinghaihan/raycast-code-finder) 合并 VS Code Base IDE 的历史打开记录。值得一提的是，它也有 [VS Code](https://github.com/jinghaihan/vscode-crosside-code-finder) 插件版本。为了更方便地同步历史记录，我还做了个 [CLI](https://github.com/jinghaihan/code-finder) 版本，支持扫描指定目录并添加到 IDE 的 SQLite 文件中。
+我通常用 [Raycast](https://www.raycast.com/) 插件打开项目，但我同时用 VS Code 和 Cursor，所以写了 [raycast-code-finder](https://github.com/jinghaihan/raycast-code-finder) 来合并 VS Code Base IDE 的历史打开记录。它也有 [VS Code](https://github.com/jinghaihan/vscode-crosside-code-finder) 插件版本。为了同步历史记录更方便，我还做了 [CLI](https://github.com/jinghaihan/code-finder) 版本，支持扫描指定目录并写入 IDE 的 SQLite 文件。
 
 后来我对 Raycast 把插件中心化管理到一个[仓库](https://github.com/raycast/extensions)感到异常的迷惑，于是写了 [rayext](https://github.com/jinghaihan/rayext) ，一个去中心化的 Raycast 包管理器。
 
@@ -101,9 +101,9 @@ Cursor 最让我难受的是，它第一次打开项目时会强制打开 Chat �
 
 ## 开发
 
-我的公司团队今年主要在做智能体方向，问答过程中的 Markdown 渲染有一些自定义要求。我学习了 [streamdown](https://github.com/vercel/streamdown) 的 AST 解析方式后，写了 [vue-stream-markdown](https://github.com/jinghaihan/vue-stream-markdown)。它支持流式渲染、代码高亮、Mermaid 图表等功能，而且能够满足各种定制化刁难。
+我的公司团队今年主要在做智能体方向，问答过程里的 Markdown 渲染有不少自定义要求。学习了 [streamdown](https://github.com/vercel/streamdown) 的 AST 解析方式后，我写了 [vue-stream-markdown](https://github.com/jinghaihan/vue-stream-markdown)。它支持流式渲染、代码高亮、Mermaid 图表，也能满足各种定制化刁难。
 
-开发组件库时遇到一个问题：[tsdown](https://github.com/rolldown/tsdown) 之类的 bundler 不会自动给 SFC 写法的 Vue 组件引入自己的 CSS。通常我需要手动把 CSS 合并到一个文件里，但这样开发体验不太好。我希望开发时能用 SFC 写法，构建时再合并样式，于是我把 Vite 的 CSS Code Splitting 搬到了 [tsdown](https://github.com/rolldown/tsdown/pull/654)。
+开发组件库时我碰到一个问题：[tsdown](https://github.com/rolldown/tsdown) 这类 bundler 不会自动给 SFC 写法的 Vue 组件引入自己的 CSS。通常只能手动把 CSS 合并到一个文件里，但这样开发体验不太好。我希望开发时继续用 SFC 写法，构建时再合并样式，所以把 Vite 的 CSS Code Splitting 搬到了 [tsdown](https://github.com/rolldown/tsdown/pull/654)。
 
 ## 最后
 

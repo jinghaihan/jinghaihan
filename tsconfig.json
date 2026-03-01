@@ -30,7 +30,7 @@
     "src",
     "scripts",
     "astro.config.ts",
-    "eslint.config.mjs"
+    "eslint.config.ts"
   ],
   "exclude": [
     "dist",
