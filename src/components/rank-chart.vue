@@ -99,7 +99,7 @@ onBeforeUnmount(() => {
       />
     </svg>
 
-    <div text-4xl font-bold flex items-center inset-0 justify-center absolute>
+    <div class="text-4xl font-bold flex items-center inset-0 justify-center absolute">
       {{ rank }}
     </div>
   </div>

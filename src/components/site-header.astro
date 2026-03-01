@@ -1,0 +1,57 @@
+---
+import Bluesky from '@/components/bluesky.astro'
+import DarkToggle from '@/components/dark-toggle.astro'
+import Github from '@/components/github.astro'
+import Twitter from '@/components/twitter.astro'
+
+const navTextClass = 'no-underline text-muted-foreground hover:text-foreground transition-colors'
+---
+
+<header class="sticky top-0 z-100 flex w-full items-center justify-between bg-background p-6">
+  <a
+    href="/"
+    class="font-mono text-xl font-semibold text-foreground"
+  >
+    octohash
+  </a>
+
+  <nav class="flex items-center gap-4">
+    <a
+      href="/"
+      class:list={[navTextClass, 'relative hidden text-sm sm:inline']}
+    >
+      About
+    </a>
+
+    <a
+      href="/posts"
+      class:list={[navTextClass, 'relative sm:hidden']}
+    >
+      <div class="i-ri:article-line cursor-pointer transition-all hover:i-ri:article-fill" />
+    </a>
+    <a
+      href="/posts"
+      class:list={[navTextClass, 'relative hidden text-sm sm:inline']}
+    >
+      Posts
+    </a>
+
+    <a
+      href="/projects"
+      class:list={[navTextClass, 'relative sm:hidden']}
+    >
+      <div class="i-ri:lightbulb-line cursor-pointer transition-all hover:i-ri:lightbulb-fill" />
+    </a>
+    <a
+      href="/projects"
+      class:list={[navTextClass, 'relative hidden text-sm sm:inline']}
+    >
+      Projects
+    </a>
+
+    <Github class={navTextClass} />
+    <Twitter class={navTextClass} />
+    <Bluesky class={navTextClass} />
+    <DarkToggle class={navTextClass} />
+  </nav>
+</header>

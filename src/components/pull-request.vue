@@ -21,79 +21,79 @@ const stateIcons: Record<PullRequest['state'], string> = {
 }
 
 const stateColors: Record<PullRequest['state'], string> = {
-  open: 'text-green-500 op75 dark:text-green-400',
-  draft: 'text-neutral-500 op75 dark:text-neutral-400',
-  merged: 'text-purple-500 op75 dark:text-purple-400',
-  closed: 'text-red-500 op75 dark:text-red-400',
+  open: 'text-green-500/85 dark:text-green-400/85',
+  draft: 'text-neutral-500/85 dark:text-neutral-400/85',
+  merged: 'text-purple-500/85 dark:text-purple-400/85',
+  closed: 'text-red-500/85 dark:text-red-400/85',
 }
 </script>
 
 <template>
   <div
-    op75 flex gap-2 cursor-pointer transition-opacity duration-200 hover:op100 lg:gap-4
+    class="text-foreground/85 flex gap-2 cursor-pointer transition-colors duration-200 hover:text-foreground lg:gap-4"
   >
     <a
       :href="`https://github.com/${data.repo}`"
       target="_blank"
       rel="noopener"
-      border border-border shrink-0 size-10 shadow-sm overflow-hidden sm:size-12
+      class="border border-border shrink-0 size-10 shadow-sm overflow-hidden sm:size-12"
       :class="[data.type === 'Organization' ? 'rounded-lg' : 'rounded-full']"
     >
-      <img :src="`https://github.com/${data.repo.split('/')[0]}.png`" :alt="data.repo" size-full>
+      <img class="size-full" :src="`https://github.com/${data.repo.split('/')[0]}.png`" :alt="data.repo">
     </a>
 
-    <div flex flex-1 min-w-0>
-      <div flex flex-1 flex-col gap-1 min-w-0>
+    <div class="flex flex-1 min-w-0">
+      <div class="flex flex-1 flex-col gap-1 min-w-0">
         <a
           :href="data.url"
           target="_blank"
           rel="noopener"
-          flex gap-1 items-center hover:underline
+          class="flex gap-1 items-center hover:underline"
         >
           <i
-            shrink-0 size-4
+            class="shrink-0 size-4"
             :class="[stateIcons[data.state], stateColors[data.state]]"
           />
-          <span text-normal op75 truncate>
+          <span class="text-normal text-foreground/85 truncate">
             {{ data.title }}
           </span>
         </a>
 
-        <div flex gap-2 items-center>
+        <div class="flex gap-2 items-center">
           <a
             :href="`https://github.com/${data.repo}`"
             target="_blank"
             rel="noopener"
-            font-normal.5 text-sm op50 inline-flex gap-1 truncate hover:op75
+            class="font-normal.5 text-sm text-muted-foreground/75 inline-flex gap-1 truncate hover:text-foreground/85"
           >
             <span>{{ data.repo.split('/')[0] }}</span>
             <span>/</span>
-            <span truncate>{{ data.repo.split('/')[1] }}</span>
+            <span class="truncate">{{ data.repo.split('/')[1] }}</span>
           </a>
           <a
             :href="`https://github.com/${data.repo}`"
             target="_blank"
             rel="noopener"
-            text-sm mt-0.5 op50 inline-flex gap-0.5 items-center hover:op75
+            class="text-sm text-muted-foreground/75 mt-0.5 inline-flex gap-0.5 items-center hover:text-foreground/85"
           >
-            <i i-lucide:star shrink-0 size-3 />
-            <span text-xs>{{ formatStars(data.stars) }}</span>
+            <i class="i-lucide:star shrink-0 size-3" />
+            <span class="text-xs">{{ formatStars(data.stars) }}</span>
           </a>
         </div>
       </div>
 
-      <div ml-2 text-right flex shrink-0 flex-col gap-1 lg:ml-4>
+      <div class="ml-2 text-right flex shrink-0 flex-col gap-1 lg:ml-4">
         <a
           :href="data.url"
           target="_blank"
           rel="noopener"
-          text-sm leading-6 font-normal op50 h-6 hover:op75
+          class="text-sm text-muted-foreground/75 leading-6 font-normal h-6 hover:text-foreground/85"
         >
           #{{ data.number }}
         </a>
         <time
           :datetime="data.created_at"
-          text-sm font-normal op50
+          class="text-sm text-muted-foreground/75 font-normal"
         >
           {{ useTimeAgo(new Date(data.created_at)) }}
         </time>

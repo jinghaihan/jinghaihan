@@ -1,6 +1,5 @@
 import {
   defineConfig,
-  presetAttributify,
   presetIcons,
   presetTypography,
   presetWebFonts,
@@ -52,7 +51,6 @@ export default defineConfig({
   ],
   presets: [
     presetWind4(),
-    presetAttributify(),
     presetIcons({
       extraProperties: {
         'display': 'inline-block',

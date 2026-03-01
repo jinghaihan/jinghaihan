@@ -20,18 +20,18 @@ onMounted(async () => {
 
 <template>
   <div>
-    <div flex flex-col items-center>
-      <a v-if="userUrl" mb-2 :href="userUrl" target="_blank">
+    <div class="flex flex-col items-center">
+      <a v-if="userUrl" class="mb-2" :href="userUrl" target="_blank">
         <img
-          rounded-full size-18 shadow
+          class="rounded-full size-18 shadow"
           :src="user?.avatar"
           :alt="user?.name"
         >
       </a>
-      <h1 text-2xl lg:text-3xl>
+      <h1 class="text-2xl lg:text-3xl">
         octohash is <span class="animate-pulse">Contributing...</span>
       </h1>
-      <p text-sm opacity-50 italic lg:text-lg>
+      <p class="text-sm text-muted-foreground/75 italic lg:text-lg">
         <a href="https://github.com/jinghaihan" target="_blank">
           @{{ username }}'s recent pull requests on GitHub.
         </a>
@@ -41,9 +41,9 @@ onMounted(async () => {
       <PullRequest v-for="pr of pullRequests" :key="pr.url" :data="pr" />
     </div>
     <Spinner v-if="statsLoading" />
-    <div class="prose">
-      <span font-mono op50>> </span>
-      <a href="/projects/contributions" class="font-mono op50 hover:op75">
+    <div>
+      <span class="text-muted-foreground/75 font-mono">> </span>
+      <a href="/projects/contributions" class="text-muted-foreground/75 font-mono hover:text-foreground/85">
         cd..
       </a>
     </div>

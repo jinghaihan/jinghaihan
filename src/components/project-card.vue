@@ -13,16 +13,16 @@ const githubLink = computed(() => `https://github.com/jinghaihan/${props.name}`)
 
 <template>
   <a
-    op75 flex gap-4 cursor-pointer transition-opacity duration-200 hover:op100
+    class="text-foreground/85 flex gap-4 cursor-pointer transition-colors duration-200 hover:text-foreground"
     :href="githubLink"
     target="_blank"
     rel="noopener"
   >
-    <div flex-auto>
-      <div text-normal op75>
+    <div class="flex-auto">
+      <div class="text-normal text-foreground/85">
         {{ title }}
       </div>
-      <div text-sm font-normal op50>
+      <div class="text-sm text-muted-foreground/75 font-normal">
         {{ description }}
       </div>
     </div>

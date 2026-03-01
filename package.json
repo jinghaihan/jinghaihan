@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@10.29.3",
-  "description": "",
+  "description": "Personal website of octohash.",
   "author": "jinghaihan",
   "license": "MIT",
   "homepage": "https://github.com/jinghaihan/jinghaihan#readme",

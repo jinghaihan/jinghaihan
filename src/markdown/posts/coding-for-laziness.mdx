@@ -27,11 +27,11 @@ lang: zh-CN
 
 于是我写了 [pncat](https://github.com/jinghaihan/pncat)，实现了几个核心命令：
 
-- <code important-text-lime>detect</code>: 扫描项目，找出可以迁移到 catalog 的依赖
-- <code important-text-purple>migrate</code>: 按规则自动分类并迁移
-- <code important-text-orange>add/remove</code>: 安装或删除依赖时，自动更新 catalog
-- <code important-text-cyan>clean</code>: 清理 catalog 里已不再使用的依赖
-- <code important-text-amber>revert</code>: 把 catalog 配置还原成普通版本号
+- <code class="important-text-lime">detect</code>: 扫描项目，找出可以迁移到 catalog 的依赖
+- <code class="important-text-purple">migrate</code>: 按规则自动分类并迁移
+- <code class="important-text-orange">add/remove</code>: 安装或删除依赖时，自动更新 catalog
+- <code class="important-text-cyan">clean</code>: 清理 catalog 里已不再使用的依赖
+- <code class="important-text-amber">revert</code>: 把 catalog 配置还原成普通版本号
 
 当然，分类没有标准答案。同一个依赖在不同类型的仓库中意图不同，往往适合不同的 `catalog:`，所以我实现了一套容易继承和扩展的规则系统。
 

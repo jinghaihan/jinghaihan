@@ -55,18 +55,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="prose" flex gap-6 lg:gap-12>
-    <section flex flex-col gap-1>
+  <div class="flex gap-6 lg:gap-12">
+    <section class="flex flex-col gap-1">
       <a
         v-for="stat in basicStats"
         :key="stat.name"
-        flex gap-2 cursor-pointer items-center
+        class="flex gap-2 cursor-pointer items-center"
         target="_blank"
         rel="noopener"
         :href="stat.href"
       >
-        <i :class="[stat.icon]" mb-0.5 />
-        <span op-75 w-28>
+        <i class="mb-0.5" :class="[stat.icon]" />
+        <span class="text-foreground/85 w-28">
           {{ stat.name }}:
         </span>
         <span>{{ stat.value }}</span>

@@ -22,24 +22,24 @@ const {
 } = Astro.props
 ---
 
-<div class="m-auto mb-8 prose">
+<div class="m-auto mb-8">
   <div id="prose-container">
     <div class="flex items-center justify-between">
-      <h1 mb-0>
+      <h1 class="mb-0 text-4xl font-bold leading-tight">
         {frontmatter.display || frontmatter.title}
       </h1>
     </div>
 
     {
       frontmatter.subtitle && (
-        <p class="op75 !mt-0.5">
+        <p class="text-lg text-foreground/85 !mt-0.5">
           {frontmatter.subtitle}
         </p>
       )
     }
     {
       frontmatter.date && (
-        <p class="op75 !mt-0.5">
+        <p class="text-foreground/85 !mt-0.5">
           {formatDate(frontmatter.date, false)} {frontmatter.duration && <span>· {frontmatter.duration}</span>}
         </p>
       )
@@ -54,9 +54,9 @@ const {
 
   {
     showBack && (
-      <div class="prose">
-        <span class="font-mono op50">{'>'} </span>
-        <a href={backPath} class="font-mono op50 hover:op75">
+      <div>
+        <span class="font-mono text-muted-foreground/75">{'>'} </span>
+        <a href={backPath} class="font-mono text-muted-foreground/75 hover:text-foreground/85">
           cd..
         </a>
       </div>

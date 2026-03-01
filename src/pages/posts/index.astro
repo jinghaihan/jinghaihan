@@ -64,7 +64,7 @@ const groupedPosts = (Object.entries(groupedMap) as [string, PostListItem[]][])
       <h1 class="mb-1 text-4xl">
         Blog
       </h1>
-      <p class="text-lg op50 italic">
+      <p class="text-lg text-muted-foreground/75 italic">
         Gotta write something, I guess.
       </p>
     </div>
@@ -84,24 +84,24 @@ const groupedPosts = (Object.entries(groupedMap) as [string, PostListItem[]][])
 
     {
       groupedPosts.map(group => (
-        <div class="prose mb-8">
-          <h2 class="mb-4 text-xl font-semibold op75">
+        <div class="mb-8">
+          <h2 class="mb-4 text-xl font-semibold text-foreground/85">
             {group.year}
           </h2>
           {
             group.posts.map(post => (
               <div class="mb-3 flex flex-col items-baseline gap-2 lg:flex-row lg:gap-4">
-                <div class="text-base text-left op60 lg:text-lg">
+                <div class="text-base text-left text-muted-foreground/80 lg:text-lg">
                   {formatDate(post.date)}
                 </div>
                 <div>
                   <a
                     href={post.path}
-                    class="group no-underline cursor-pointer text-lg font-semibold op75 transition-opacity duration-200 hover:op100"
+                    class="group no-underline cursor-pointer text-lg text-foreground/85 transition-colors duration-200 hover:text-foreground"
                   >
                     {post.title || 'Untitled'}
                     {post.duration && (
-                      <span class="text-sm op50 group-hover:op75">
+                      <span class="text-sm text-muted-foreground/75 group-hover:text-foreground/85">
                         {' · '}
                         {post.duration}
                       </span>
