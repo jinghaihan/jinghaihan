@@ -18,10 +18,10 @@
   @apply rounded-lg p-1 bg-muted text-foreground/80;
 }
 .prose code::before {
-  content: "";
+  content: '';
 }
 .prose code::after {
-  content: "";
+  content: '';
 }
 
 .astro-code code {
