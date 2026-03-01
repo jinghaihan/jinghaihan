@@ -3,6 +3,7 @@ import { getCollection, render, type CollectionEntry } from 'astro:content'
 import MagicLink from '@/components/magic-link.astro'
 import MermaidIsland from '@/components/mermaid-island.astro'
 import ProseLayout from '@/components/prose-layout.astro'
+import RubyAnnotation from '@/components/ruby-annotation.astro'
 import Toc from '@/components/toc.astro'
 import BaseLayout from '@/layouts/base-layout.astro'
 
@@ -28,6 +29,6 @@ const pageTitle = post.data.title || `${post.id} - octohash`
 <BaseLayout title={pageTitle}>
   <ProseLayout frontmatter={post.data} backPath="/posts">
     <Toc headings={headings} />
-    <Content components={{ Mermaid: MermaidIsland, MagicLink }} />
+    <Content components={{ Mermaid: MermaidIsland, MagicLink, RubyAnnotation }} />
   </ProseLayout>
 </BaseLayout>

@@ -36,7 +36,7 @@ const stateColors: Record<PullRequest['state'], string> = {
       :href="`https://github.com/${data.repo}`"
       target="_blank"
       rel="noopener"
-      border border-neutral-200 shrink-0 size-10 shadow-sm overflow-hidden dark:border-neutral-800 sm:size-12
+      border border-border shrink-0 size-10 shadow-sm overflow-hidden sm:size-12
       :class="[data.type === 'Organization' ? 'rounded-lg' : 'rounded-full']"
     >
       <img :src="`https://github.com/${data.repo.split('/')[0]}.png`" :alt="data.repo" size-full>

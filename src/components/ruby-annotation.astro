@@ -1,0 +1,22 @@
+---
+interface Props {
+  rt: string
+  lang?: string
+  class?: string
+  showParens?: boolean
+}
+
+const {
+  rt,
+  lang,
+  class: className,
+  showParens = true,
+} = Astro.props
+---
+
+<ruby lang={lang} class={className}>
+  <slot />
+  {showParens && <rp>(</rp>}
+  <rt>{rt}</rt>
+  {showParens && <rp>)</rp>}
+</ruby>

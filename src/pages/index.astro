@@ -3,17 +3,16 @@ import { getEntry, render } from 'astro:content'
 import GithubStatsIsland from '@/components/github-stats-island.astro'
 import MagicLink from '@/components/magic-link.astro'
 import ProseLayout from '@/components/prose-layout.astro'
+import RubyAnnotation from '@/components/ruby-annotation.astro'
 import BaseLayout from '@/layouts/base-layout.astro'
 
-const about = await getEntry('pages', 'about')
-if (!about)
-  throw new Error('Page content not found: about')
+const about = (await getEntry('pages', 'about'))!
 
 const { Content } = await render(about)
 ---
 
 <BaseLayout title={about.data.title || 'About - octohash'}>
   <ProseLayout frontmatter={about.data}>
-    <Content components={{ GithubStats: GithubStatsIsland, MagicLink }} />
+    <Content components={{ GithubStats: GithubStatsIsland, MagicLink, RubyAnnotation }} />
   </ProseLayout>
 </BaseLayout>

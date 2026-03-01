@@ -7,18 +7,16 @@ import { loadGithubData, sortProjectsByStargazers } from '@/utils'
 
 const snapshot = ref<Awaited<ReturnType<typeof loadGithubData>> | null>(null)
 const projectCategoriesLoading = ref(true)
-const projectCategories = computed(() => snapshot.value?.projectCategories ?? null)
+const projectCategories = computed(() => snapshot.value?.projectCategories ?? [])
 
 const pinnedProjects = computed(() => {
-  const data = projectCategories.value?.flatMap((category) => {
+  const data = projectCategories.value.flatMap((category) => {
     return category.projects
       .filter((project: Project) => project.pinned)
       .map((project: Project) => ({
         ...project,
       }))
   })
-  if (!data)
-    return null
   return sortProjectsByStargazers(data, snapshot.value?.stats ?? null)
 })
 
@@ -63,7 +61,7 @@ onMounted(async () => {
       </a>
     </div>
 
-    <div v-if="pinnedProjects && pinnedProjects.length > 0" mb-12>
+    <div v-if="pinnedProjects.length > 0" mb-12>
       <h2 text-2xl font-bold mb-6>
         Pinned
       </h2>
