@@ -33,6 +33,7 @@
     "@astrojs/vue": "catalog:frontend",
     "@unocss/astro": "catalog:frontend",
     "@unocss/reset": "catalog:frontend",
+    "@vue-flow/background": "catalog:frontend",
     "@vue-flow/core": "catalog:frontend",
     "@vueuse/core": "catalog:frontend",
     "vue": "catalog:frontend",
