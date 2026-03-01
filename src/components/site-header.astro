@@ -7,17 +7,24 @@ import Twitter from '@/components/twitter.astro'
 const navTextClass = 'no-underline text-muted-foreground hover:text-foreground transition-colors'
 ---
 
-<header class="sticky top-0 z-100 flex w-full items-center justify-between bg-background p-6">
+<header
+  transition:name="site-header"
+  transition:persist
+  data-site-header
+  class="p-6 bg-transparent flex w-full items-center justify-between z-100"
+>
   <a
     href="/"
-    class="font-mono text-xl font-semibold text-foreground"
+    data-nav-link
+    class="text-xl text-foreground font-mono font-semibold"
   >
     octohash
   </a>
 
-  <nav class="flex items-center gap-4">
+  <nav class="flex gap-4 items-center">
     <a
       href="/"
+      data-nav-link
       class:list={[navTextClass, 'relative hidden text-sm sm:inline']}
     >
       About
@@ -25,12 +32,14 @@ const navTextClass = 'no-underline text-muted-foreground hover:text-foreground t
 
     <a
       href="/posts"
+      data-nav-link
       class:list={[navTextClass, 'relative sm:hidden']}
     >
-      <div class="i-ri:article-line cursor-pointer transition-all hover:i-ri:article-fill" />
+      <div class="i-ri:article-line hover:i-ri:article-fill cursor-pointer transition-all" />
     </a>
     <a
       href="/posts"
+      data-nav-link
       class:list={[navTextClass, 'relative hidden text-sm sm:inline']}
     >
       Posts
@@ -38,12 +47,14 @@ const navTextClass = 'no-underline text-muted-foreground hover:text-foreground t
 
     <a
       href="/projects"
+      data-nav-link
       class:list={[navTextClass, 'relative sm:hidden']}
     >
-      <div class="i-ri:lightbulb-line cursor-pointer transition-all hover:i-ri:lightbulb-fill" />
+      <div class="i-ri:lightbulb-line hover:i-ri:lightbulb-fill cursor-pointer transition-all" />
     </a>
     <a
       href="/projects"
+      data-nav-link
       class:list={[navTextClass, 'relative hidden text-sm sm:inline']}
     >
       Projects
@@ -55,3 +66,40 @@ const navTextClass = 'no-underline text-muted-foreground hover:text-foreground t
     <DarkToggle class={navTextClass} />
   </nav>
 </header>
+
+<script>
+(() => {
+  const header = document.querySelector<HTMLElement>('[data-site-header]')
+  if (!header || header.dataset.navGuardBound)
+    return
+
+  header.dataset.navGuardBound = '1'
+
+  const normalizePath = (path: string) => {
+    const normalized = path.replace(/\/+$/, '')
+    return normalized || '/'
+  }
+
+  header.addEventListener('click', (event) => {
+    const mouse = event
+    if (mouse.button !== 0)
+      return
+    if (mouse.metaKey || mouse.ctrlKey || mouse.altKey || mouse.shiftKey)
+      return
+
+    const target = event.target as HTMLElement
+    if (!target)
+      return
+
+    const link = target.closest<HTMLAnchorElement>('a[data-nav-link]')
+    if (!link)
+      return
+
+    const path = normalizePath(window.location.pathname)
+    const nextPath = normalizePath(new URL(link.href, window.location.href).pathname)
+
+    if (path === nextPath)
+      event.preventDefault()
+  })
+})()
+</script>

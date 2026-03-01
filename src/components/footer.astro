@@ -2,7 +2,7 @@
 import { timeline } from '@/constants'
 ---
 
-<footer class="py-6 w-full text-sm">
+<footer transition:name="site-footer" transition:persist class="text-sm py-6 w-full">
   <div class="flex items-center justify-between">
     <button
       type="button"
@@ -17,14 +17,14 @@ import { timeline } from '@/constants'
   </div>
 
   <div
-    class="hidden mt-4 border-t border-border pt-4"
+    class="mt-4 pt-4 border-t border-border hidden"
     data-footer-panel
   >
     <div class="timeline-container">
       {
         timeline.map(event => (
           <div
-            class="mb-3 grid items-baseline gap-4 grid-cols-[100px_1fr]"
+            class="mb-3 gap-4 grid grid-cols-[100px_1fr] items-baseline"
           >
             <div class="text-right">{event.date}</div>
             <div>

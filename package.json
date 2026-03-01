@@ -60,6 +60,7 @@
     "@octohash/eslint-config": "catalog:lint",
     "@unocss/eslint-config": "catalog:lint",
     "eslint": "catalog:lint",
+    "eslint-plugin-astro": "catalog:lint",
     "eslint-plugin-format": "catalog:lint",
     "lint-staged": "catalog:lint",
     "vue-tsc": "catalog:lint",

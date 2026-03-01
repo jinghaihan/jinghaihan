@@ -1,5 +1,6 @@
 @import '@/styles/schema.css';
 @import '@/styles/markdown.css';
+@import 'medium-zoom/dist/style.css';
 
 html,
 body {
@@ -28,22 +29,10 @@ html {
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 0px;
 }
 ::-webkit-scrollbar:horizontal {
-  height: 6px;
-}
-::-webkit-scrollbar-track,
-::-webkit-scrollbar-corner {
-  background: var(--background);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--muted);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  height: 0px;
 }
 
 ::view-transition-old(root),

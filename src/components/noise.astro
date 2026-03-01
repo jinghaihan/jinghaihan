@@ -13,6 +13,8 @@ const {
 ---
 
 <canvas
+  transition:name="noise-layer"
+  transition:persist
   class="h-screen w-screen pointer-events-none left-0 top-0 fixed z-1000"
   style={`image-rendering: pixelated; mix-blend-mode: ${mixBlendMode}`}
   data-noise-refresh={patternRefreshInterval}
@@ -35,8 +37,8 @@ const {
 
     let animationId = 0
     let frame = 0
-    let noiseData = ctx.createImageData(canvasSize, canvasSize)
-    let noise32 = new Uint32Array(noiseData.data.buffer)
+    const noiseData = ctx.createImageData(canvasSize, canvasSize)
+    const noise32 = new Uint32Array(noiseData.data.buffer)
 
     function resize() {
       canvas.width = canvasSize

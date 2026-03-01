@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from 'astro:transitions'
 import Footer from '@/components/footer.astro'
 import Noise from '@/components/noise.astro'
 import SiteHeader from '@/components/site-header.astro'
@@ -26,10 +27,27 @@ const ogImage = new URL('/og.png', Astro.site || DOMAIN).toString()
     <script is:inline>
       (() => {
         const storageKey = 'vueuse-color-scheme'
-        const value = localStorage.getItem(storageKey)
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        const isDark = value === 'dark' || (value !== 'light' && value !== 'dark' && prefersDark)
-        document.documentElement.classList.toggle('dark', isDark)
+        const media = window.matchMedia('(prefers-color-scheme: dark)')
+
+        function getTheme() {
+          const value = localStorage.getItem(storageKey)
+          return value === 'dark' || (value !== 'light' && value !== 'dark' && media.matches)
+        }
+
+        function updateDark(doc = document, isDark = getTheme()) {
+          doc.documentElement.classList.toggle('dark', isDark)
+        }
+
+        document.addEventListener('astro:before-swap', (event) => {
+          const isDark = document.documentElement.classList.contains('dark')
+          // @ts-expect-error Astro transition event provides newDocument at runtime
+          event.newDocument?.documentElement?.classList.toggle('dark', isDark)
+        })
+
+        document.addEventListener('astro:page-load', () => {
+          updateDark()
+        })
+        updateDark()
       })()
     </script>
     <meta charset="UTF-8" />
@@ -48,19 +66,27 @@ const ogImage = new URL('/og.png', Astro.site || DOMAIN).toString()
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <ClientRouter />
     <title>{title}</title>
   </head>
   <body>
     <Noise />
 
-    <div class="mx-auto flex min-h-screen w-full max-w-160 flex-col">
+    <div class="mx-auto flex flex-col h-screen max-w-160 w-full overflow-hidden">
       <SiteHeader />
 
-      <main class="w-full flex-1 p-6 lg:p-8">
-        <slot />
+      <main
+        transition:name="page"
+        transition:animate="slide"
+        class="p-6 flex-1 min-h-0 w-full overflow-y-auto lg:p-8"
+      >
+        <div class="flex flex-col min-h-full">
+          <div class="flex-1">
+            <slot />
+          </div>
+          <Footer />
+        </div>
       </main>
-
-      <Footer />
     </div>
   </body>
 </html>

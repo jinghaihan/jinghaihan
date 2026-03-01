@@ -1,7 +1,8 @@
 ---
-import { getCollection, type CollectionEntry } from 'astro:content'
-import { formatDate } from '@/utils'
+import type { CollectionEntry } from 'astro:content'
+import { getCollection } from 'astro:content'
 import BaseLayout from '@/layouts/base-layout.astro'
+import { formatDate } from '@/utils'
 
 interface PostListItem {
   path: string
@@ -61,7 +62,7 @@ const groupedPosts = (Object.entries(groupedMap) as [string, PostListItem[]][])
 <BaseLayout title="Posts - octohash">
   <div>
     <div class="mb-8 flex flex-col items-center">
-      <h1 class="mb-1 text-4xl">
+      <h1 class="text-4xl mb-1">
         Blog
       </h1>
       <p class="text-lg text-muted-foreground/75 italic">
@@ -69,7 +70,7 @@ const groupedPosts = (Object.entries(groupedMap) as [string, PostListItem[]][])
       </p>
     </div>
 
-    <div class="my-8 flex items-center justify-center gap-3">
+    <div class="my-8 flex gap-3 items-center justify-center">
       <a
         href="/feed.xml"
         target="_blank"
@@ -85,19 +86,19 @@ const groupedPosts = (Object.entries(groupedMap) as [string, PostListItem[]][])
     {
       groupedPosts.map(group => (
         <div class="mb-8">
-          <h2 class="mb-4 text-xl font-semibold text-foreground/85">
+          <h2 class="text-xl text-foreground/85 font-semibold mb-4">
             {group.year}
           </h2>
           {
             group.posts.map(post => (
-              <div class="mb-3 flex flex-col items-baseline gap-2 lg:flex-row lg:gap-4">
-                <div class="text-base text-left text-muted-foreground/80 lg:text-lg">
+              <div class="mb-3 flex flex-col gap-2 items-baseline lg:flex-row lg:gap-4">
+                <div class="text-base text-muted-foreground/80 text-left lg:text-lg">
                   {formatDate(post.date)}
                 </div>
                 <div>
                   <a
                     href={post.path}
-                    class="group no-underline cursor-pointer text-lg text-foreground/85 transition-colors duration-200 hover:text-foreground"
+                    class="group text-lg text-foreground/85 no-underline cursor-pointer transition-colors duration-200 hover:text-foreground"
                   >
                     {post.title || 'Untitled'}
                     {post.duration && (
