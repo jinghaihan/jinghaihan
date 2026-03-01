@@ -5,6 +5,7 @@ import { nameToTitle } from '@/utils'
 const props = defineProps<{
   name: string
   description: string
+  url?: string
 }>()
 
 const title = computed(() => nameToTitle(props.name))
@@ -14,7 +15,7 @@ const githubLink = computed(() => `https://github.com/jinghaihan/${props.name}`)
 <template>
   <a
     class="text-foreground/85 flex gap-4 cursor-pointer transition-colors duration-200 hover:text-foreground"
-    :href="githubLink"
+    :href="url || githubLink"
     target="_blank"
     rel="noopener"
   >

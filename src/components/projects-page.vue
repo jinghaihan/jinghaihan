@@ -69,6 +69,7 @@ onMounted(async () => {
           :key="`pinned-${project.name}`"
           :name="project.name"
           :description="project.description"
+          :url="project.url"
         />
       </div>
     </div>
@@ -90,6 +91,7 @@ onMounted(async () => {
             :key="project.name"
             :name="project.name"
             :description="project.description"
+            :url="project.url"
           />
         </div>
       </div>
