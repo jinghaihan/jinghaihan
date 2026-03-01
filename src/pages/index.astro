@@ -1,8 +1,19 @@
 ---
+import { getEntry, render } from 'astro:content'
+import GithubStatsIsland from '@/components/github-stats-island.astro'
+import MagicLink from '@/components/magic-link.astro'
+import ProseLayout from '@/components/prose-layout.astro'
 import BaseLayout from '@/layouts/base-layout.astro'
-import AboutPage from '@/views/about-page.vue'
+
+const about = await getEntry('pages', 'about')
+if (!about)
+  throw new Error('Page content not found: about')
+
+const { Content } = await render(about)
 ---
 
-<BaseLayout title="About - octohash">
-  <AboutPage client:load />
+<BaseLayout title={about.data.title || 'About - octohash'}>
+  <ProseLayout frontmatter={about.data}>
+    <Content components={{ GithubStats: GithubStatsIsland, MagicLink }} />
+  </ProseLayout>
 </BaseLayout>

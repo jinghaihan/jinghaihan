@@ -1,8 +1,8 @@
-export function formatDate(dateStr?: string, onlyDate: boolean = true) {
-  if (!dateStr)
+export function formatDate(dateInput?: string | Date, onlyDate: boolean = true) {
+  if (!dateInput)
     return ''
 
-  const date = new Date(dateStr)
+  const date = dateInput instanceof Date ? dateInput : new Date(dateInput)
   if (Number.isNaN(date.getTime()))
     return ''
 

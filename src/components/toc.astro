@@ -1,0 +1,26 @@
+---
+import type { MarkdownHeading } from 'astro'
+
+interface Props {
+  headings?: MarkdownHeading[]
+}
+
+const { headings = [] } = Astro.props
+const tocHeadings = headings.filter(heading => heading.depth >= 1 && heading.depth <= 4)
+---
+
+{
+  tocHeadings.length > 0 && (
+    <nav class="table-of-contents">
+      <ul>
+        {
+          tocHeadings.map(heading => (
+            <li style={`padding-inline-start: ${Math.max(0, heading.depth - 1) * 0.75}rem`}>
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  )
+}

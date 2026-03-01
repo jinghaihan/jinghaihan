@@ -1,0 +1,65 @@
+---
+import Back from '@/components/back.vue'
+import { formatDate } from '@/utils'
+
+interface FrontmatterLike {
+  title?: string
+  subtitle?: string
+  display?: string
+  date?: string | Date
+  duration?: string
+  layout?: 'default' | 'compact'
+}
+
+interface Props {
+  frontmatter: FrontmatterLike
+  backPath?: string
+  showBack?: boolean
+}
+
+const {
+  frontmatter,
+  backPath = frontmatter.date ? '/posts' : '/',
+  showBack = (frontmatter.display || frontmatter.title) !== 'About',
+} = Astro.props
+---
+
+<div class:list={['m-auto mb-8 prose', { 'prose-compact': frontmatter.layout === 'compact' }]}>
+  <div id="prose-container">
+    <div class="flex items-center justify-between">
+      <h1 mb-0>
+        {frontmatter.display || frontmatter.title}
+      </h1>
+    </div>
+
+    {
+      frontmatter.subtitle && (
+        <p class="op75 !mt-0.5">
+          {frontmatter.subtitle}
+        </p>
+      )
+    }
+    {
+      frontmatter.date && (
+        <p class="op75 !mt-0.5">
+          {formatDate(frontmatter.date, false)} {frontmatter.duration && <span>· {frontmatter.duration}</span>}
+        </p>
+      )
+    }
+
+    <article>
+      <div class="prose">
+        <slot />
+      </div>
+    </article>
+  </div>
+
+  {showBack && <Back path={backPath} />}
+</div>
+
+<script>
+  import mediumZoom from 'medium-zoom'
+
+  const zoom = mediumZoom('[data-zoomable]', { background: 'oklab(0 0 0 / 0.5)' })
+  zoom.attach('[data-zoomable]')
+</script>

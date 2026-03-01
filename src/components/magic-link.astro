@@ -1,0 +1,57 @@
+---
+interface Props {
+  link?: string
+  text?: string
+  username?: string
+  type?: 'link' | 'github-at'
+  imageUrl?: string | false
+  newTab?: boolean
+}
+
+const {
+  link = '',
+  text = '',
+  username = '',
+  type = username ? 'github-at' : 'link',
+  imageUrl,
+  newTab = true,
+} = Astro.props
+
+const resolvedLink = link || (username ? `https://github.com/${username}` : '')
+const resolvedText = text
+  || (username ? username.toUpperCase() : resolvedLink.replace(/^https?:\/\//, ''))
+
+function resolveDefaultImageUrl() {
+  if (username)
+    return `https://github.com/${username}.png`
+
+  try {
+    const hostname = new URL(resolvedLink).hostname
+    return `https://favicon.yandex.net/favicon/${hostname}`
+  }
+  catch {
+    return ''
+  }
+}
+
+const resolvedImageUrl = imageUrl === false
+  ? false
+  : (imageUrl || resolveDefaultImageUrl())
+---
+
+<a
+  href={resolvedLink}
+  class:list={['markdown-magic-link', `markdown-magic-link-${type}`]}
+  target={newTab ? '_blank' : undefined}
+  rel={newTab ? 'noopener' : undefined}
+>
+  {
+    resolvedImageUrl && (
+      <span
+        class="markdown-magic-link-image"
+        style={`background-image:url("${resolvedImageUrl}")`}
+      />
+    )
+  }
+  {resolvedText}
+</a>

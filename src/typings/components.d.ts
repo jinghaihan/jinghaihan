@@ -22,7 +22,6 @@ declare module 'vue' {
     PostList: typeof import('./../components/post-list.vue')['default']
     PrintButton: typeof import('./../components/print-button.vue')['default']
     ProjectCard: typeof import('./../components/project-card.vue')['default']
-    Prose: typeof import('./../components/prose.vue')['default']
     PullRequest: typeof import('./../components/pull-request.vue')['default']
     RankChart: typeof import('./../components/rank-chart.vue')['default']
     Spinner: typeof import('./../components/spinner.vue')['default']

@@ -1,14 +1,16 @@
 ---
+import { getCollection, render, type CollectionEntry } from 'astro:content'
+import MagicLink from '@/components/magic-link.astro'
+import MermaidIsland from '@/components/mermaid-island.astro'
+import ProseLayout from '@/components/prose-layout.astro'
+import Toc from '@/components/toc.astro'
 import BaseLayout from '@/layouts/base-layout.astro'
-import { getPosts } from '@/utils/server'
-import PostContentPage from '@/views/posts-page.vue'
-import type { PostData } from '@/utils/server'
 
 export async function getStaticPaths() {
-  const posts = await getPosts()
-  return posts.map(post => ({
+  const posts = await getCollection('posts')
+  return posts.map((post: CollectionEntry<'posts'>) => ({
     params: {
-      slug: post.slug,
+      slug: post.id,
     },
     props: {
       post,
@@ -17,11 +19,15 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props as {
-  post: PostData
+  post: CollectionEntry<'posts'>
 }
-const pageTitle = post.frontmatter.title || `${post.slug} - octohash`
+const { Content, headings } = await render(post)
+const pageTitle = post.data.title || `${post.id} - octohash`
 ---
 
 <BaseLayout title={pageTitle}>
-  <PostContentPage slug={post.slug} client:load />
+  <ProseLayout frontmatter={post.data} backPath="/posts">
+    <Toc headings={headings} />
+    <Content components={{ Mermaid: MermaidIsland, MagicLink }} />
+  </ProseLayout>
 </BaseLayout>

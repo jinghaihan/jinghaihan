@@ -1,19 +1,61 @@
 ---
+import { getCollection, type CollectionEntry } from 'astro:content'
 import PostList from '@/components/post-list.vue'
 import BaseLayout from '@/layouts/base-layout.astro'
-import { getPosts, groupPostsByYear } from '@/utils/server'
 
-const posts = await getPosts()
-const groupedPosts = groupPostsByYear(posts).map(group => ({
-  year: group.year,
-  posts: group.posts.map(post => ({
-    path: post.routePath,
-    title: post.frontmatter.display || post.frontmatter.title,
-    date: post.frontmatter.date,
-    duration: post.frontmatter.duration,
-    lang: post.frontmatter.lang,
-  })),
-}))
+interface PostListItem {
+  path: string
+  title?: string
+  date?: string
+  duration?: string
+  lang?: string
+}
+
+function parseDateTime(date?: string | Date) {
+  if (!date)
+    return -1
+
+  const value = (date instanceof Date ? date : new Date(date)).getTime()
+  return Number.isNaN(value) ? -1 : value
+}
+
+const posts = await getCollection('posts')
+
+const sortedPosts = posts
+  .slice()
+  .sort((a: CollectionEntry<'posts'>, b: CollectionEntry<'posts'>) => parseDateTime(b.data.date) - parseDateTime(a.data.date))
+
+const groupedMap: Record<string, PostListItem[]> = {}
+for (const post of sortedPosts) {
+  const date = post.data.date ? new Date(post.data.date) : null
+  const year = date && !Number.isNaN(date.getTime()) ? date.getFullYear().toString() : 'Unknown'
+
+  if (!groupedMap[year])
+    groupedMap[year] = []
+
+  groupedMap[year].push({
+    path: `/posts/${post.id}`,
+    title: post.data.display || post.data.title || post.id,
+    date: typeof post.data.date === 'string'
+      ? post.data.date
+      : post.data.date?.toISOString(),
+    duration: post.data.duration,
+    lang: post.data.lang,
+  })
+}
+
+const groupedPosts = (Object.entries(groupedMap) as [string, PostListItem[]][])
+  .map(([year, yearPosts]) => ({
+    year,
+    posts: yearPosts,
+  }))
+  .sort((a, b) => {
+    if (a.year === 'Unknown')
+      return 1
+    if (b.year === 'Unknown')
+      return -1
+    return Number.parseInt(b.year) - Number.parseInt(a.year)
+  })
 ---
 
 <BaseLayout title="Posts - octohash">

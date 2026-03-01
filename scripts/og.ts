@@ -34,7 +34,7 @@ function toRoutePath(file: string) {
   return file
     .replace(/^src\/markdown/, '')
     .replace(/^\/?posts\//, '/posts/')
-    .replace(/\.mdv$/, '')
+    .replace(/\.mdx$/, '')
 }
 
 function toOgAssetPath(routePath: string) {
@@ -107,7 +107,7 @@ async function renderOgPng(frontmatter: Frontmatter, routePath: string, fontData
 }
 
 async function run() {
-  const files = await glob('src/markdown/posts/**/*.mdv')
+  const files = await glob('src/markdown/posts/**/*.mdx')
   const postFiles = files.filter((file) => {
     const routePath = toRoutePath(file)
     return routePath.startsWith('/posts/') && !routePath.endsWith('/index')

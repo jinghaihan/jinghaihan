@@ -1,6 +1,8 @@
 import type { TimelineEvent } from '@/types'
 
-export const GIST_BASE_URL = 'https://gist.githubusercontent.com/jinghaihan/5e634a23246ce16a31f01aed40c9f656/raw'
+const GIST_ID = '5e634a23246ce16a31f01aed40c9f656'
+
+export const GIST_BASE_URL = `https://gist.githubusercontent.com/jinghaihan/${GIST_ID}/raw`
 
 export const GIST_PROJECTS_URL = `${GIST_BASE_URL}/projects.json`
 
