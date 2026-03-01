@@ -8,7 +8,7 @@ import matter from 'gray-matter'
 import satori from 'satori'
 import { html } from 'satori-html'
 import { glob } from 'tinyglobby'
-import { formatDate } from '../src/utils'
+import { formatDate } from '../src/utils/index'
 import { DOMAIN } from './shared'
 
 const WIDTH = 1200
@@ -32,8 +32,9 @@ function getSiteLabel(url: string) {
 
 function toRoutePath(file: string) {
   return file
-    .replace(/^src\/pages/, '')
-    .replace(/\.md$/, '')
+    .replace(/^src\/markdown/, '')
+    .replace(/^\/?posts\//, '/posts/')
+    .replace(/\.mdv$/, '')
 }
 
 function toOgAssetPath(routePath: string) {
@@ -106,7 +107,7 @@ async function renderOgPng(frontmatter: Frontmatter, routePath: string, fontData
 }
 
 async function run() {
-  const files = await glob('src/pages/posts/**/*.md')
+  const files = await glob('src/markdown/posts/**/*.mdv')
   const postFiles = files.filter((file) => {
     const routePath = toRoutePath(file)
     return routePath.startsWith('/posts/') && !routePath.endsWith('/index')

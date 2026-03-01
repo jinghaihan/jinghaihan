@@ -1,0 +1,27 @@
+---
+import BaseLayout from '@/layouts/base-layout.astro'
+import { getPosts } from '@/utils/server'
+import PostContentPage from '@/views/posts-page.vue'
+import type { PostData } from '@/utils/server'
+
+export async function getStaticPaths() {
+  const posts = await getPosts()
+  return posts.map(post => ({
+    params: {
+      slug: post.slug,
+    },
+    props: {
+      post,
+    },
+  }))
+}
+
+const { post } = Astro.props as {
+  post: PostData
+}
+const pageTitle = post.frontmatter.title || `${post.slug} - octohash`
+---
+
+<BaseLayout title={pageTitle}>
+  <PostContentPage slug={post.slug} client:load />
+</BaseLayout>

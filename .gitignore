@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 es
 dist
+.astro
 dist-ssr
 dev-dist
 *.local

@@ -17,7 +17,6 @@ declare module 'vue' {
     Footer: typeof import('./../components/footer.vue')['default']
     Github: typeof import('./../components/github.vue')['default']
     GithubStats: typeof import('./../components/github-stats.vue')['default']
-    Layout: typeof import('./../components/layout.vue')['default']
     Mermaid: typeof import('./../components/mermaid.vue')['default']
     Noise: typeof import('./../components/noise.vue')['default']
     PostList: typeof import('./../components/post-list.vue')['default']
@@ -26,8 +25,6 @@ declare module 'vue' {
     Prose: typeof import('./../components/prose.vue')['default']
     PullRequest: typeof import('./../components/pull-request.vue')['default']
     RankChart: typeof import('./../components/rank-chart.vue')['default']
-    RouterLink: typeof import('vue-router')['RouterLink']
-    RouterView: typeof import('vue-router')['RouterView']
     Spinner: typeof import('./../components/spinner.vue')['default']
     Twitter: typeof import('./../components/twitter.vue')['default']
   }

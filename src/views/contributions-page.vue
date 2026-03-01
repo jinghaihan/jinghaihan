@@ -1,10 +1,4 @@
 <script setup lang="ts">
-import { useHead } from '@unhead/vue'
-
-useHead({
-  title: 'Contributions - octohash',
-})
-
 const store = useGitHubStatsStore()
 const user = computed(() => store.stats ? store.stats.user : null)
 const userUrl = computed(() => user.value ? `https://github.com/${user.value.username}` : '')
@@ -35,6 +29,6 @@ const pullRequests = computed(() => store.stats ? store.stats.pullRequest.data :
       <PullRequest v-for="pr of pullRequests" :key="pr.url" :data="pr" />
     </div>
     <Spinner v-if="store.statsLoading" />
-    <Back />
+    <Back path="/projects/contributions" />
   </div>
 </template>

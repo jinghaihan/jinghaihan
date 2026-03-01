@@ -1,51 +1,18 @@
 <script setup lang="ts">
-import type { RouteRecordNormalized } from 'vue-router'
 import { formatDate } from '@/utils'
 
-const props = withDefaults(defineProps<{
-  filter?: (route: RouteRecordNormalized) => boolean
-}>(), {
-  filter: () => true,
-})
-
-const router = useRouter()
-
-const BLACK_LIST = ['/posts', '/posts/concepts']
-
-const posts = computed(() => {
-  const flatten = router.getRoutes()
-    .filter(i => !BLACK_LIST.includes(i.path) && i.path.startsWith('/posts') && props.filter(i))
-    .map(i => ({
-      path: i.path,
-      title: i.meta.frontmatter?.display ?? i.meta.frontmatter?.title,
-      date: i.meta.frontmatter?.date,
-      duration: i.meta.frontmatter?.duration,
-      lang: i.meta.frontmatter?.lang,
-    }))
-    .sort((a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime())
-
-  const grouped = flatten.reduce((acc, post) => {
-    const year = post.date ? new Date(post.date).getFullYear().toString() : 'Unknown'
-    if (!acc[year]) {
-      acc[year] = []
-    }
-    acc[year].push(post)
-    return acc
-  }, {} as Record<string, typeof flatten>)
-
-  return Object.entries(grouped)
-    .map(([year, posts]) => ({
-      year,
-      posts: posts.sort((a, b) => new Date(b.date || '').getTime() - new Date(a.date || '').getTime()),
-    }))
-    .sort((a, b) => {
-      if (a.year === 'Unknown')
-        return 1
-      if (b.year === 'Unknown')
-        return -1
-      return Number.parseInt(b.year) - Number.parseInt(a.year)
-    })
-})
+defineProps<{
+  posts: {
+    year: string
+    posts: {
+      path: string
+      title?: string
+      date?: string
+      duration?: string
+      lang?: string
+    }[]
+  }[]
+}>()
 </script>
 
 <template>
@@ -62,8 +29,8 @@ const posts = computed(() => {
         {{ formatDate(post.date) }}
       </div>
       <div>
-        <router-link
-          :to="post.path"
+        <a
+          :href="post.path"
           text-lg font-semibold op75 cursor-pointer transition-opacity duration-200 hover:op100
           class="group no-underline"
         >
@@ -71,7 +38,7 @@ const posts = computed(() => {
           <span v-if="post.duration" text-sm op50 group-hover:op75>
             · {{ post.duration }}
           </span>
-        </router-link>
+        </a>
       </div>
     </div>
   </div>

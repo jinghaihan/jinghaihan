@@ -1,10 +1,5 @@
 <script setup lang="ts">
 import type { Project, ProjectCategory } from '@/types'
-import { useHead } from '@unhead/vue'
-
-useHead({
-  title: 'Projects - octohash',
-})
 
 const store = useGitHubStatsStore()
 
@@ -45,8 +40,8 @@ const pinnedProjects = computed(() => {
         />
         GitHub
       </a>
-      <RouterLink
-        to="/projects/contributions"
+      <a
+        href="/projects/contributions"
         class="group btn-amber inline-block"
       >
         <i
@@ -54,7 +49,7 @@ const pinnedProjects = computed(() => {
           group-hover:i-tabler:git-pull-request
         />
         Contributions
-      </RouterLink>
+      </a>
     </div>
 
     <div v-if="pinnedProjects && pinnedProjects.length > 0" mb-12>

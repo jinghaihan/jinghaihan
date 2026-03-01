@@ -1,0 +1,45 @@
+---
+import PostList from '@/components/post-list.vue'
+import BaseLayout from '@/layouts/base-layout.astro'
+import { getPosts, groupPostsByYear } from '@/utils/server'
+
+const posts = await getPosts()
+const groupedPosts = groupPostsByYear(posts).map(group => ({
+  year: group.year,
+  posts: group.posts.map(post => ({
+    path: post.routePath,
+    title: post.frontmatter.display || post.frontmatter.title,
+    date: post.frontmatter.date,
+    duration: post.frontmatter.duration,
+    lang: post.frontmatter.lang,
+  })),
+}))
+---
+
+<BaseLayout title="Posts - octohash">
+  <div>
+    <div class="mb-8 flex flex-col items-center">
+      <h1 class="mb-1 text-4xl">
+        Blog
+      </h1>
+      <p class="text-lg op50 italic">
+        Gotta write something, I guess.
+      </p>
+    </div>
+
+    <div class="my-8 flex items-center justify-center gap-3">
+      <a
+        href="/feed.xml"
+        target="_blank"
+        class="group btn-lime"
+      >
+        <i
+          class="i-tabler:file-rss group-hover:i-tabler:file-rss-filled"
+        />
+        RSS Feed
+      </a>
+    </div>
+
+    <PostList posts={groupedPosts} />
+  </div>
+</BaseLayout>

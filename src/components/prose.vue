@@ -10,8 +10,8 @@ const { frontmatter } = defineProps({
   },
 })
 
-const route = useRoute()
-const isAboutPage = computed(() => route.path === '/')
+const isAboutPage = computed(() => (frontmatter.display || frontmatter.title) === 'About')
+const backPath = computed(() => frontmatter.date ? '/posts' : '/')
 
 const zoom = shallowRef<Zoom>()
 onMounted(() => {
@@ -50,6 +50,6 @@ onBeforeUnmount(() => zoom.value?.close())
       </article>
     </div>
 
-    <Back v-if="!isAboutPage" />
+    <Back v-if="!isAboutPage" :path="backPath" />
   </div>
 </template>

@@ -1,0 +1,115 @@
+---
+import Bluesky from '@/components/bluesky.vue'
+import DarkToggle from '@/components/dark-toggle.vue'
+import Footer from '@/components/footer.vue'
+import Github from '@/components/github.vue'
+import Noise from '@/components/noise.vue'
+import Twitter from '@/components/twitter.vue'
+import { DOMAIN } from '../../scripts/shared'
+import '@unocss/reset/tailwind.css'
+import '@/styles/main.css'
+import '@/styles/prose.css'
+import '@/styles/markdown.css'
+import '@/styles/global.css'
+import '@/styles/print.css'
+import '@/styles/compact.css'
+import 'markdown-it-github-alerts/styles/github-colors-light.css'
+import 'markdown-it-github-alerts/styles/github-colors-dark-class.css'
+import 'markdown-it-github-alerts/styles/github-base.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const {
+  title = 'octohash',
+  description = 'octohash',
+} = Astro.props
+
+const navTextClass = 'no-underline text-muted-foreground hover:text-foreground transition-colors'
+const canonical = new URL(Astro.url.pathname, Astro.site || DOMAIN).toString()
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <script is:inline>
+      (() => {
+        const storageKey = 'vueuse-color-scheme'
+        const value = localStorage.getItem(storageKey)
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const isDark = value === 'dark' || (value !== 'light' && value !== 'dark' && prefersDark)
+        document.documentElement.classList.toggle('dark', isDark)
+      })()
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/feed.xml" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Noise client:load />
+
+    <div class="mx-auto flex min-h-screen w-full max-w-160 flex-col">
+      <header class="sticky top-0 z-100 flex w-full items-center justify-between bg-background p-6">
+        <a
+          href="/"
+          class="font-mono text-xl font-semibold text-foreground"
+        >
+          octohash
+        </a>
+
+        <nav class="flex items-center gap-4">
+          <a
+            href="/"
+            class:list={[navTextClass, 'relative hidden text-sm sm:inline']}
+          >
+            About
+          </a>
+
+          <a
+            href="/posts"
+            class:list={[navTextClass, 'relative sm:hidden']}
+          >
+            <div class="i-ri:article-line cursor-pointer transition-all hover:i-ri:article-fill" />
+          </a>
+          <a
+            href="/posts"
+            class:list={[navTextClass, 'relative hidden text-sm sm:inline']}
+          >
+            Posts
+          </a>
+
+          <a
+            href="/projects"
+            class:list={[navTextClass, 'relative sm:hidden']}
+          >
+            <div class="i-ri:lightbulb-line cursor-pointer transition-all hover:i-ri:lightbulb-fill" />
+          </a>
+          <a
+            href="/projects"
+            class:list={[navTextClass, 'relative hidden text-sm sm:inline']}
+          >
+            Projects
+          </a>
+
+          <Github class={navTextClass} />
+          <Twitter class={navTextClass} />
+          <Bluesky class={navTextClass} />
+          <DarkToggle class={navTextClass} client:load />
+        </nav>
+      </header>
+
+      <main class="w-full flex-1 p-6 lg:p-8">
+        <slot />
+      </main>
+
+      <Footer client:load />
+    </div>
+  </body>
+</html>

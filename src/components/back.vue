@@ -1,15 +1,29 @@
 <script setup lang="ts">
-const route = useRoute()
+const props = withDefaults(defineProps<{
+  path?: string
+}>(), {
+  path: '',
+})
+
+const currentPath = computed(() => {
+  if (props.path)
+    return props.path
+  if (typeof window !== 'undefined')
+    return window.location.pathname
+  return '/'
+})
+
+const parentPath = computed(() => currentPath.value.split('/').slice(0, -1).join('/') || '/')
 </script>
 
 <template>
   <div class="prose">
     <span font-mono op50>> </span>
-    <RouterLink
-      :to="route.path.split('/').slice(0, -1).join('/') || '/'"
+    <a
+      :href="parentPath"
       class="font-mono op50 hover:op75"
     >
       cd..
-    </RouterLink>
+    </a>
   </div>
 </template>
