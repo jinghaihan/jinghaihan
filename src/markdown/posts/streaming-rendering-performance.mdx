@@ -1,0 +1,169 @@
+---
+title: 流式渲染性能排查记录 - octohash
+display: 流式渲染性能排查记录
+date: 2026-03-03
+duration: 15min
+lang: zh-CN
+---
+
+我一直在维护 [vue-stream-markdown](https://github.com/jinghaihan/vue-stream-markdown)。这次排查针对的现象很明确：长文本流式输出到后半段时，页面持续掉帧。
+
+## 问题现象
+
+- 文本越长，后半段越容易出现连续卡顿。
+- 运行时从 `streaming` 切到 `static` 时，部分本应稳定的节点会重新进入更新链路。
+- `loading` 状态更新会带来额外主线程压力。
+
+本文提到的 `mode` 含义如下：
+
+- `streaming`：内容仍在持续追加，组件按流式状态渲染。
+- `static`：内容已完整，组件按静态状态渲染。
+
+这里的 `mode` 切换指同一段内容在输出完成时，从流式模式切换到静态模式。
+
+## 性能面板观察
+
+DevTools Performance 录制里，`Main` 轨道在后半段持续出现长任务，调用链反复经过 `TimerFire -> RunMicrotasks`。FPS 下滑区间与这些任务带重合。
+
+这一步给出的判断是：卡顿属于高频更新下的累计拥塞。是否由 parser 主导，需要离线统计再确认。
+
+## trace 离线统计
+
+### 数据来源与口径
+
+统计基于 2026-02-26 的四份 trace：
+
+- `Trace-20260226T203214.json.gz`
+- `Trace-20260226T212537.json.gz`
+- `Trace-20260226T214549.json.gz`
+- `Trace-20260226T223549.json.gz`
+
+统一口径：
+
+- `RunTask p90 / p99 / max`
+- `>16ms` 长任务数量
+- `DroppedFrame`
+- `Busy Ratio`（全量口径）
+
+稳态窗口定义为主线程起点 `+2s`。这个口径用于排除录制启动时的采样噪声。
+
+### 核心指标解释
+
+- `RunTask p90`：90% 的 `RunTask` 时长低于该值，用于观察常态任务负载。
+- `RunTask p99`：99% 的 `RunTask` 时长低于该值，对尾部慢任务更敏感。
+- `RunTask max`：单次最慢任务时长，容易被录制启动或偶发事件放大，单独看会失真。
+- `>16ms`：超过 16ms 的任务计数。60Hz 帧预算约 16.67ms，这个指标能直接反映掉帧压力。
+- `DroppedFrame`：渲染管线未按时产出帧的计数，和体感卡顿关联最直接。
+- `Busy Ratio`：主线程忙碌时间占比。比例越高，可用于渲染和输入响应的空闲时间越少。
+- 稳态窗口（`+2s`）：剔除录制起始噪声后再统计，更接近业务运行阶段的真实负载。
+
+### 全量口径
+
+| Trace | Busy Ratio | RunTask p90 | RunTask p99 | RunTask max | `>16ms` | DroppedFrame |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 203214 | 96.25% | 27.603ms | 35.679ms | 194.944ms | 1609 | 577 |
+| 212537 | 96.19% | 23.154ms | 28.114ms | 131.211ms | 1501 | 94 |
+| 214549 | 96.87% | 18.570ms | 22.518ms | 31.098ms | 1433 | 72 |
+| 223549 | 21.07% | 1.890ms | 3.053ms | 336.669ms | 1 | 11 |
+
+### 稳态口径（主线程起点 +2s）
+
+| Trace | RunTask p90 | RunTask p99 | RunTask max | `>16ms` |
+| --- | ---: | ---: | ---: | ---: |
+| 203214 | 27.975ms | 35.710ms | 194.944ms | 1563 |
+| 212537 | 23.343ms | 28.114ms | 131.211ms | 1437 |
+| 214549 | 18.727ms | 22.548ms | 31.098ms | 1357 |
+| 223549 | 1.926ms | 2.991ms | 11.575ms | 0 |
+
+阶段变化：
+
+- `203214 -> 212537`：掉帧先明显下降（577 -> 94），分位数仍在高位。
+- `212537 -> 214549`：`p90/p99` 继续下降，长任务数量仍偏多。
+- `214549 -> 223549`：稳态指标出现拐点，`>16ms` 归零。
+
+总体对比（`203214 -> 223549`）：
+
+- 稳态 `RunTask p90`：27.975ms -> 1.926ms（-93.11%）
+- 稳态 `RunTask p99`：35.710ms -> 2.991ms（-91.62%）
+- 稳态 `>16ms`：1563 -> 0（-100%）
+- `DroppedFrame`：577 -> 11（-98.09%）
+- `Busy Ratio`：96.25% -> 21.07%（-75.18 个百分点）
+
+补录 trace 的函数采样与这组指标一致，热点集中在更新链：
+
+| 函数 | 采样占比 |
+| --- | ---: |
+| `updateProps` | 8.84% |
+| `mergeProps` | 8.15% |
+| `setFullProps` | 6.90% |
+| `flushPreFlushCbs` | 2.11% |
+
+parser 相关函数占比很低：
+
+- `parseMarkdown`：0.02%
+- `fromMarkdown`：0.02%
+- `markdownToAst`：约 0%
+
+数据结论：主线程压力主要来自高频更新链路。
+
+## 执行链路
+
+<Mermaid
+  code='flowchart TB
+  A["content 追加"] --> B["parseMarkdown(content)"]
+  B --> C["normalize"]
+  C --> D["parseMarkdownIntoBlocks"]
+  D --> E["尾块 preprocess 语法补全"]
+  E --> F{"astCache 命中?"}
+  F -- 是 --> G["复用 AST"]
+  F -- 否 --> H["fromMarkdown"]
+  H --> I["postNormalize"]
+  I --> J["postprocess"]
+  G --> K["applyLoadingState"]
+  J --> K
+  K --> L["updateNodeLoading"]
+  L --> M["blocks"]
+  M --> N["NodeList"]
+  N --> O["按 node.type 分发 renderer"]
+  O --> P{"children?"}
+  P -- 是 --> Q["递归 NodeList"]
+  Q --> O
+  P -- 否 --> R["叶子节点"]
+  R --> S["DOM"]
+  '
+/>
+
+链路里的关键点：
+
+- `parseMarkdownIntoBlocks` 负责粗分块，`fromMarkdown` 负责细粒度 AST。
+- streaming 场景只处理尾块 `preprocess`，稳定块优先走缓存复用。
+- `updateNodeLoading` 只克隆根到目标叶子的路径，未变化分支保持引用复用。
+
+## 改动点
+
+### 配置下沉到 context
+
+把稳定配置移到 `provide/inject`，递归链路的 `props` 只保留动态节点输入：`node`、`prevNode`、`nextNode`、`deep`。
+
+### 收敛 NodeList 输入
+
+根层不再透传整包 props 到 `NodeList`，只传 `nodes`、`blockIndex`、`nodeKey`、`deep`。递归 renderer 同样只保留必要输入。
+
+### loading 局部更新
+
+loading 变化时只更新目标路径，避免 AST 全量拷贝和整树重建。
+
+## 改动与指标映射
+
+| 改动方向 | 目标 | 数据表现 |
+| --- | --- | --- |
+| 修正 `streaming -> static` 切换边界 | 减少无效刷新传播 | `DroppedFrame` 从 577 快速降到 94 |
+| 收紧递归 props 透传 | 降低更新链路计算密度 | `p90/p99` 持续下降 |
+| 收敛 `NodeList` 动态输入 | 缩小热路径补丁范围 | 稳态 `>16ms` 最终归零 |
+| 保留稳态口径 | 排除录制启动噪声 | 223549 稳态 `max` 11.575ms |
+
+## 结论
+
+- 本次瓶颈在更新传播成本，parser 不是主导项。
+- 流式场景的关键优化方向是收紧更新参与范围。
+- 同口径连续复录是判断改动有效性的前提。

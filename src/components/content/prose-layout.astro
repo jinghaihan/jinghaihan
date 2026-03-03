@@ -21,7 +21,7 @@ const {
   showBack = (frontmatter.display || frontmatter.title) !== 'About',
 } = Astro.props
 const hasTocSlot = Astro.slots.has('toc')
-const proseGridClass = 'xl:grid xl:grid-cols-[12rem_minmax(0,50rem)_12rem] 2xl:grid-cols-[14rem_minmax(0,52rem)_14rem]'
+const proseGridClass = 'lg:grid lg:grid-cols-[minmax(0,50rem)_clamp(14rem,22vw,18rem)] xl:grid-cols-[12rem_minmax(0,50rem)_clamp(14rem,22vw,18rem)] 2xl:grid-cols-[14rem_minmax(0,52rem)_clamp(15rem,20vw,19rem)]'
 ---
 
 <div class="m-auto mb-8">
@@ -29,7 +29,7 @@ const proseGridClass = 'xl:grid xl:grid-cols-[12rem_minmax(0,50rem)_12rem] 2xl:g
     id="prose-container"
     class={hasTocSlot ? proseGridClass : undefined}
   >
-    <div class={hasTocSlot ? 'min-w-0 xl:col-start-2 xl:self-start' : undefined}>
+    <div class={hasTocSlot ? 'min-w-0 lg:col-start-1 xl:col-start-2 xl:self-start' : undefined}>
       <div class="flex items-center justify-between">
         <h1 class="text-4xl leading-tight font-bold mb-0">
           {frontmatter.display || frontmatter.title}
@@ -60,7 +60,7 @@ const proseGridClass = 'xl:grid xl:grid-cols-[12rem_minmax(0,50rem)_12rem] 2xl:g
 
     {
       hasTocSlot && (
-        <aside class="hidden xl:col-start-3 xl:w-full xl:block xl:self-stretch">
+        <aside class="hidden lg:col-start-2 xl:col-start-3 lg:w-full lg:block lg:self-stretch">
           <slot name="toc" />
         </aside>
       )
