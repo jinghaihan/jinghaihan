@@ -9,9 +9,11 @@ import DifficultyFilter from './difficulty-filter.vue'
 import InputSearch from './input-search.vue'
 import ProblemSeq from './problem-seq.vue'
 import RandomProblemButton from './random-problem-button.vue'
+import RecommendTopicPopover from './recommend-topic-popover.vue'
 
 interface Props {
   groups: TopicGroup[]
+  topics: Topic[]
   problems: Record<string, Problem>
   progress: AlgorithmProgress
   searchKeyword: string
@@ -35,6 +37,7 @@ const ALL_DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 const collapsedGroupIds = ref<Set<string>>(new Set())
 const collapsedTopicIds = ref<Set<string>>(new Set())
 const selectedDifficulties = ref<Difficulty[]>([...ALL_DIFFICULTIES])
+const selectedTopicIds = ref<string[]>([])
 
 const searchKeywordModel = computed({
   get: () => props.searchKeyword,
@@ -43,6 +46,13 @@ const searchKeywordModel = computed({
 
 const normalizedSearchKeyword = computed(() => searchKeywordModel.value.trim().toLowerCase())
 const selectedDifficultySet = computed(() => new Set(selectedDifficulties.value))
+const selectedTopicIdSet = computed(() => new Set(selectedTopicIds.value))
+const topicById = computed(() => new Map(props.topics.map(topic => [topic.id, topic])))
+const selectedTopics = computed(() =>
+  selectedTopicIds.value
+    .map(topicId => topicById.value.get(topicId))
+    .filter((topic): topic is Topic => Boolean(topic)),
+)
 
 function matchProblem(problemId: string, keyword: string): boolean {
   const problem = getProblem(problemId)
@@ -72,6 +82,9 @@ const filteredGroups = computed<TopicGroup[]>(() => {
 
     const matchedTopics: Topic[] = []
     for (const topic of group.topics) {
+      if (selectedTopicIdSet.value.size > 0 && !selectedTopicIdSet.value.has(topic.id))
+        continue
+
       const topicMatched = hasKeyword && topic.title.toLowerCase().includes(keyword)
       const matchedProblemIds = topic.problemIds.filter((problemId) => {
         if (!matchProblemDifficulty(problemId))
@@ -92,7 +105,7 @@ const filteredGroups = computed<TopicGroup[]>(() => {
 })
 
 function isGroupOpen(groupId: string): boolean {
-  if (normalizedSearchKeyword.value)
+  if (normalizedSearchKeyword.value || selectedTopicIdSet.value.size > 0)
     return true
   return !collapsedGroupIds.value.has(groupId)
 }
@@ -107,7 +120,7 @@ function setGroupOpen(groupId: string, open: boolean): void {
 }
 
 function isTopicOpen(topicId: string): boolean {
-  if (normalizedSearchKeyword.value)
+  if (normalizedSearchKeyword.value || selectedTopicIdSet.value.size > 0)
     return true
   return !collapsedTopicIds.value.has(topicId)
 }
@@ -155,6 +168,36 @@ function onClearAll(): void {
 
 function onSelectAll(): void {
   emit('selectAll')
+}
+
+function openTopicInPanel(topicId: string): void {
+  setTopicOpen(topicId, true)
+  const ownerGroup = props.groups.find(group => group.topics.some(topic => topic.id === topicId))
+  if (ownerGroup)
+    setGroupOpen(ownerGroup.id, true)
+}
+
+function addTopicFilter(topicId: string): void {
+  if (selectedTopicIdSet.value.has(topicId))
+    return
+  selectedTopicIds.value = [...selectedTopicIds.value, topicId]
+  openTopicInPanel(topicId)
+}
+
+function removeTopicFilter(topicId: string): void {
+  selectedTopicIds.value = selectedTopicIds.value.filter(id => id !== topicId)
+}
+
+function toggleTopicFilter(topicId: string): void {
+  if (selectedTopicIdSet.value.has(topicId)) {
+    removeTopicFilter(topicId)
+    return
+  }
+  addTopicFilter(topicId)
+}
+
+function clearTopicFilters(): void {
+  selectedTopicIds.value = []
 }
 
 const unresolvedProblemIds = computed(() => {
@@ -239,6 +282,13 @@ function problemDifficultyColor(problemId: string): string {
           class="flex-1 min-w-0"
         />
         <DifficultyFilter v-model="selectedDifficulties" />
+        <RecommendTopicPopover
+          :topics="props.topics"
+          :progress="props.progress"
+          :selected-topic-ids="selectedTopicIds"
+          @toggle-topic="toggleTopicFilter"
+          @clear="clearTopicFilters"
+        />
         <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
         <RandomProblemButton :disabled="!canRandomOpen" @click="openRandomProblem" />
         <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
@@ -252,6 +302,25 @@ function problemDifficultyColor(problemId: string): string {
           @select="onSelectAll"
           @clear="onClearAll"
         />
+      </div>
+      <div v-if="selectedTopics.length > 0" class="mt-2 flex flex-wrap gap-1.5 items-center">
+        <button
+          v-for="topic in selectedTopics"
+          :key="topic.id"
+          type="button"
+          class="text-xs text-foreground/70 px-2 py-1 border border-border/45 rounded-md inline-flex gap-1 transition-colors duration-150 items-center hover:text-foreground hover:bg-muted/35"
+          @click="removeTopicFilter(topic.id)"
+        >
+          <span>{{ topic.title }}</span>
+          <i class="i-ri:close-line text-[11px]" />
+        </button>
+        <button
+          type="button"
+          class="text-xs text-foreground/55 transition-colors duration-150 hover:text-foreground"
+          @click="clearTopicFilters"
+        >
+          清空专题过滤
+        </button>
       </div>
     </div>
 

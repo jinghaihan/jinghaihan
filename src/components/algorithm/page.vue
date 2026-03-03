@@ -149,6 +149,7 @@ watch(progress, (value) => {
       <section class="min-h-0">
         <ChecklistPanel
           :groups="topicGroups"
+          :topics="ALGORITHM_KNOWLEDGE.topics"
           :problems="ALGORITHM_KNOWLEDGE.problems"
           :progress="progress"
           :search-keyword="searchKeyword"
