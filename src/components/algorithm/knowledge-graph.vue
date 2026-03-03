@@ -3,6 +3,7 @@ import type { SimulationLinkDatum, SimulationNodeDatum } from 'd3'
 import type { Difficulty, Relation, Topic, TopicGroup } from '@/types'
 import * as d3 from 'd3'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { getAlgorithmDifficultyColor } from '@/constants/algorithm'
 
 interface Props {
   groups: TopicGroup[]
@@ -30,6 +31,9 @@ interface LabelBox {
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  nodeSelect: [label: string]
+}>()
 
 const UNGROUPED_ID = '__ungrouped__'
 
@@ -59,16 +63,6 @@ const graphNodes = computed<GraphNode[]>(() => {
 
   return [...groups, ...topics]
 })
-
-function difficultyColor(difficulty?: Difficulty): string {
-  if (difficulty === 'easy')
-    return '#86efac'
-  if (difficulty === 'medium')
-    return '#fcd34d'
-  if (difficulty === 'hard')
-    return '#fca5a5'
-  return 'var(--muted)'
-}
 
 function topicLabelWidth(text: string): number {
   return Math.max(18, text.length * 6.2)
@@ -193,9 +187,9 @@ function mountGraph(): void {
     .selectAll<SVGCircleElement, GraphNode>('circle')
     .data(nodes)
     .join('circle')
-    .style('cursor', d => d.nodeType === 'topic' ? 'pointer' : 'grab')
+    .style('cursor', 'pointer')
     .attr('r', d => d.radius)
-    .attr('fill', d => d.nodeType === 'group' ? 'var(--muted-foreground)' : difficultyColor(d.difficulty))
+    .attr('fill', d => d.nodeType === 'group' ? 'var(--muted-foreground)' : getAlgorithmDifficultyColor(d.difficulty))
     .attr('fill-opacity', 0.7)
 
   node.append('title')
@@ -294,6 +288,11 @@ function mountGraph(): void {
     })
 
   node
+    .on('click', (event, d) => {
+      if (event.defaultPrevented)
+        return
+      emit('nodeSelect', d.label)
+    })
     .on('mouseenter', function (_event, d) {
       const hoverScale = d.nodeType === 'group' ? 1.5 : 1.4
       d3.select(this)

@@ -1,28 +1,50 @@
 <script setup lang="ts">
 import type { AlgorithmProgress, Problem, Topic, TopicGroup } from '@/types'
 import { computed, ref } from 'vue'
+import { getAlgorithmDifficultyColor } from '@/constants/algorithm'
 import Checkbox from './checkbox.vue'
 import Collapse from './collapse.vue'
 import CompletionStat from './completion-stat.vue'
+import InputSearch from './input-search.vue'
 import ProblemSeq from './problem-seq.vue'
 
 interface Props {
   groups: TopicGroup[]
   problems: Record<string, Problem>
   progress: AlgorithmProgress
+  searchKeyword: string
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  toggleProblem: [problemId: string, checked: boolean]
+  'toggleProblem': [problemId: string, checked: boolean]
+  'clearGroup': [groupId: string]
+  'clearTopic': [topicId: string]
+  'clearAll': []
+  'update:searchKeyword': [value: string]
 }>()
 
-const searchKeyword = ref('')
 const collapsedGroupIds = ref<Set<string>>(new Set())
 const collapsedTopicIds = ref<Set<string>>(new Set())
 
-const normalizedSearchKeyword = computed(() => searchKeyword.value.trim().toLowerCase())
+const searchKeywordModel = computed({
+  get: () => props.searchKeyword,
+  set: (value: string) => emit('update:searchKeyword', value),
+})
+
+const normalizedSearchKeyword = computed(() => searchKeywordModel.value.trim().toLowerCase())
+
+function matchProblem(problemId: string, keyword: string): boolean {
+  const problem = getProblem(problemId)
+  if (!problem)
+    return problemId.toLowerCase().includes(keyword)
+
+  const problemNumber = (problem.number || problem.id).toLowerCase()
+  return problem.title.toLowerCase().includes(keyword)
+    || problemNumber.includes(keyword)
+    || problem.id.toLowerCase().includes(keyword)
+}
 
 const filteredGroups = computed<TopicGroup[]>(() => {
   const keyword = normalizedSearchKeyword.value
@@ -37,7 +59,18 @@ const filteredGroups = computed<TopicGroup[]>(() => {
       continue
     }
 
-    const matchedTopics = group.topics.filter(topic => topic.title.toLowerCase().includes(keyword))
+    const matchedTopics: Topic[] = []
+    for (const topic of group.topics) {
+      if (topic.title.toLowerCase().includes(keyword)) {
+        matchedTopics.push(topic)
+        continue
+      }
+
+      const matchedProblemIds = topic.problemIds.filter(problemId => matchProblem(problemId, keyword))
+      if (matchedProblemIds.length > 0)
+        matchedTopics.push({ ...topic, problemIds: matchedProblemIds })
+    }
+
     if (matchedTopics.length > 0)
       groups.push({ ...group, topics: matchedTopics })
   }
@@ -46,6 +79,8 @@ const filteredGroups = computed<TopicGroup[]>(() => {
 })
 
 function isGroupOpen(groupId: string): boolean {
+  if (normalizedSearchKeyword.value)
+    return true
   return !collapsedGroupIds.value.has(groupId)
 }
 
@@ -59,6 +94,8 @@ function setGroupOpen(groupId: string, open: boolean): void {
 }
 
 function isTopicOpen(topicId: string): boolean {
+  if (normalizedSearchKeyword.value)
+    return true
   return !collapsedTopicIds.value.has(topicId)
 }
 
@@ -81,6 +118,18 @@ function isProblemDone(problemId: string): boolean {
 
 function onProblemChange(problemId: string, checked: boolean): void {
   emit('toggleProblem', problemId, checked)
+}
+
+function onClearGroup(groupId: string): void {
+  emit('clearGroup', groupId)
+}
+
+function onClearTopic(topicId: string): void {
+  emit('clearTopic', topicId)
+}
+
+function onClearAll(): void {
+  emit('clearAll')
 }
 
 function topicDoneCount(topic: Topic): number {
@@ -118,25 +167,27 @@ function problemUrl(problemId: string): string {
     return `https://leetcode.cn/problemset/all/?search=${encodeURIComponent(problemId)}`
   return `https://leetcode.cn/problems/${problem.slug}/description/`
 }
+
+function problemDifficultyColor(problemId: string): string {
+  return getAlgorithmDifficultyColor(getProblem(problemId)?.difficulty)
+}
 </script>
 
 <template>
   <section class="text-foreground/80 flex flex-col h-full min-h-0">
     <div class="px-3 py-2.5">
       <div class="flex flex-wrap gap-2.5 items-center">
-        <div class="flex-1 max-w-72 min-w-48 relative">
-          <i class="i-ri:search-line text-muted-foreground left-2 top-1/2 absolute -translate-y-1/2" />
-          <input
-            v-model="searchKeyword"
-            type="text"
-            placeholder="搜索分组或专题"
-            class="text-sm py-1.5 pl-8 pr-2 outline-none border border-border/30 rounded-md bg-transparent w-full transition-colors duration-200 placeholder:text-foreground/40 focus:border-border/55"
-          >
-        </div>
+        <InputSearch
+          v-model="searchKeywordModel"
+          placeholder="搜索分组 / 专题 / 题号 / 题名"
+          class="flex-1 min-w-0"
+        />
         <CompletionStat
           :done="overallDoneCount"
           :total="overallTotalCount"
+          clear-label="清空所有已完成"
           class="text-sm text-foreground/65 ml-auto"
+          @clear="onClearAll"
         />
       </div>
     </div>
@@ -158,6 +209,10 @@ function problemUrl(problemId: string): string {
             <CompletionStat
               :done="groupDoneCount(group)"
               :total="groupTotalCount(group)"
+              compact
+              clear-label="清空该分组已完成"
+              clear-title="清空该分组已完成"
+              @clear="onClearGroup(group.id)"
             />
           </template>
 
@@ -176,6 +231,10 @@ function problemUrl(problemId: string): string {
                 <CompletionStat
                   :done="topicDoneCount(topic)"
                   :total="topic.problemIds.length"
+                  compact
+                  clear-label="清空该专题已完成"
+                  clear-title="清空该专题已完成"
+                  @clear="onClearTopic(topic.id)"
                 />
               </template>
 
@@ -191,6 +250,10 @@ function problemUrl(problemId: string): string {
                     @update:model-value="(checked) => onProblemChange(problemId, checked)"
                   />
                   <ProblemSeq :value="problemNumber(problemId)" />
+                  <span
+                    class="rounded-full shrink-0 h-1.5 w-1.5"
+                    :style="{ backgroundColor: problemDifficultyColor(problemId) }"
+                  />
                   <a
                     :href="problemUrl(problemId)"
                     target="_blank"

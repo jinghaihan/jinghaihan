@@ -10,6 +10,7 @@ const UNGROUPED_ID = '__ungrouped__'
 const UNGROUPED_TITLE = '独立专题'
 
 const progress = ref<AlgorithmProgress>({})
+const searchKeyword = ref('')
 
 const topicGroups = computed<TopicGroup[]>(() => {
   const grouped = ALGORITHM_ROADMAP.groups
@@ -39,6 +40,42 @@ function toggleProblem(problemId: string, checked: boolean): void {
   else
     delete next[problemId]
   progress.value = next
+}
+
+function clearGroupProgress(groupId: string): void {
+  const group = topicGroups.value.find(item => item.id === groupId)
+  if (!group)
+    return
+
+  const next: AlgorithmProgress = { ...progress.value }
+  for (const topic of group.topics) {
+    for (const problemId of topic.problemIds)
+      delete next[problemId]
+  }
+  progress.value = next
+}
+
+function clearTopicProgress(topicId: string): void {
+  const topic = ALGORITHM_ROADMAP.topics.find(item => item.id === topicId)
+  if (!topic)
+    return
+
+  const next: AlgorithmProgress = { ...progress.value }
+  for (const problemId of topic.problemIds)
+    delete next[problemId]
+  progress.value = next
+}
+
+function clearAllProgress(): void {
+  progress.value = {}
+}
+
+function updateSearchKeyword(value: string): void {
+  searchKeyword.value = value
+}
+
+function selectGraphNode(label: string): void {
+  searchKeyword.value = label.trim()
 }
 
 function restoreProgress(): void {
@@ -79,6 +116,11 @@ watch(progress, (value) => {
           :groups="topicGroups"
           :problems="ALGORITHM_ROADMAP.problems"
           :progress="progress"
+          :search-keyword="searchKeyword"
+          @update:search-keyword="updateSearchKeyword"
+          @clear-group="clearGroupProgress"
+          @clear-topic="clearTopicProgress"
+          @clear-all="clearAllProgress"
           @toggle-problem="toggleProblem"
         />
       </section>
@@ -88,6 +130,7 @@ watch(progress, (value) => {
           :groups="topicGroups"
           :topics="ALGORITHM_ROADMAP.topics"
           :relations="ALGORITHM_RELATIONS"
+          @node-select="selectGraphNode"
         />
       </section>
     </div>

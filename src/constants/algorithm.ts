@@ -1,4 +1,16 @@
-import type { AlgorithmRoadmapData, Relation } from '@/types'
+import type { AlgorithmRoadmapData, Difficulty, Relation } from '@/types'
+
+export const ALGORITHM_DIFFICULTY_COLORS: Record<Difficulty, string> = {
+  easy: '#86efac',
+  medium: '#fcd34d',
+  hard: '#fca5a5',
+}
+
+export function getAlgorithmDifficultyColor(difficulty?: Difficulty): string {
+  if (!difficulty)
+    return 'var(--muted)'
+  return ALGORITHM_DIFFICULTY_COLORS[difficulty] ?? 'var(--muted)'
+}
 
 const CHECKIN_TOPIC_SEQUENCE: Array<{ id: string, title: string }> = [
   {
