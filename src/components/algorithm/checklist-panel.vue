@@ -141,6 +141,37 @@ function onClearAll(): void {
   emit('clearAll')
 }
 
+const unresolvedProblemIds = computed(() => {
+  const ids: string[] = []
+  const seen = new Set<string>()
+
+  for (const group of props.groups) {
+    for (const topic of group.topics) {
+      for (const problemId of topic.problemIds) {
+        if (seen.has(problemId))
+          continue
+        seen.add(problemId)
+
+        if (!isProblemDone(problemId))
+          ids.push(problemId)
+      }
+    }
+  }
+
+  return ids
+})
+
+const canRandomOpen = computed(() => unresolvedProblemIds.value.length > 0)
+
+function openRandomProblem(): void {
+  const candidates = unresolvedProblemIds.value
+  if (candidates.length === 0)
+    return
+
+  const randomIndex = Math.floor(Math.random() * candidates.length)
+  window.open(problemUrl(candidates[randomIndex]), '_blank', 'noopener,noreferrer')
+}
+
 function topicDoneCount(topic: Topic): number {
   return topic.problemIds.reduce((count, problemId) => count + Number(isProblemDone(problemId)), 0)
 }
@@ -192,6 +223,16 @@ function problemDifficultyColor(problemId: string): string {
           class="flex-1 min-w-0"
         />
         <DifficultyFilter v-model="selectedDifficulties" />
+        <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
+        <button
+          type="button"
+          class="text-sm text-foreground/65 px-2 rounded-md inline-flex gap-1.5 h-8 min-w-8 transition-colors duration-150 items-center hover:text-foreground disabled:op45 disabled:cursor-not-allowed"
+          :disabled="!canRandomOpen"
+          @click="openRandomProblem"
+        >
+          <i class="i-ri:shuffle-line" />
+          <span class="leading-none font-medium">随机一题</span>
+        </button>
         <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
         <CompletionStat
           :done="overallDoneCount"

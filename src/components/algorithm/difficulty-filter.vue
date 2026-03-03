@@ -64,12 +64,12 @@ function toggleDifficulty(difficulty: Difficulty): void {
       type="button"
       aria-label="按难度过滤"
       :aria-expanded="open ? 'true' : 'false'"
-      class="text-foreground/65 px-2 rounded-md inline-flex gap-1.5 h-8 min-w-8 transition-colors duration-150 items-center hover:text-foreground"
+      class="text-sm text-foreground/65 px-2 rounded-md inline-flex gap-1.5 h-8 min-w-8 transition-colors duration-150 items-center hover:text-foreground"
       :class="isActive ? 'text-foreground' : ''"
       @click="toggleOpen"
     >
-      <i class="i-ri:filter-2-line text-sm" />
-      <span class="text-[11px] leading-none font-mono tabular-nums">{{ selectedCount }}</span>
+      <i class="i-ri:filter-2-line" />
+      <span class="leading-none font-mono tabular-nums">{{ selectedCount }}</span>
     </button>
 
     <div
