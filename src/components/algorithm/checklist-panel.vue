@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { AlgorithmProgress, Problem, Topic, TopicGroup } from '@/types'
+import type { AlgorithmProgress, Difficulty, Problem, Topic, TopicGroup } from '@/types'
 import { computed, ref } from 'vue'
 import { getAlgorithmDifficultyColor } from '@/constants/algorithm'
 import Checkbox from './checkbox.vue'
 import Collapse from './collapse.vue'
 import CompletionStat from './completion-stat.vue'
+import DifficultyFilter from './difficulty-filter.vue'
 import InputSearch from './input-search.vue'
 import ProblemSeq from './problem-seq.vue'
 
@@ -25,8 +26,11 @@ const emit = defineEmits<{
   'update:searchKeyword': [value: string]
 }>()
 
+const ALL_DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
+
 const collapsedGroupIds = ref<Set<string>>(new Set())
 const collapsedTopicIds = ref<Set<string>>(new Set())
+const selectedDifficulties = ref<Difficulty[]>([...ALL_DIFFICULTIES])
 
 const searchKeywordModel = computed({
   get: () => props.searchKeyword,
@@ -34,6 +38,7 @@ const searchKeywordModel = computed({
 })
 
 const normalizedSearchKeyword = computed(() => searchKeywordModel.value.trim().toLowerCase())
+const selectedDifficultySet = computed(() => new Set(selectedDifficulties.value))
 
 function matchProblem(problemId: string, keyword: string): boolean {
   const problem = getProblem(problemId)
@@ -46,27 +51,31 @@ function matchProblem(problemId: string, keyword: string): boolean {
     || problem.id.toLowerCase().includes(keyword)
 }
 
+function matchProblemDifficulty(problemId: string): boolean {
+  const difficulty = getProblem(problemId)?.difficulty
+  if (!difficulty)
+    return true
+  return selectedDifficultySet.value.has(difficulty)
+}
+
 const filteredGroups = computed<TopicGroup[]>(() => {
   const keyword = normalizedSearchKeyword.value
-  if (!keyword)
-    return props.groups
+  const hasKeyword = Boolean(keyword)
 
   const groups: TopicGroup[] = []
   for (const group of props.groups) {
-    const groupMatched = group.title.toLowerCase().includes(keyword)
-    if (groupMatched) {
-      groups.push(group)
-      continue
-    }
+    const groupMatched = hasKeyword && group.title.toLowerCase().includes(keyword)
 
     const matchedTopics: Topic[] = []
     for (const topic of group.topics) {
-      if (topic.title.toLowerCase().includes(keyword)) {
-        matchedTopics.push(topic)
-        continue
-      }
-
-      const matchedProblemIds = topic.problemIds.filter(problemId => matchProblem(problemId, keyword))
+      const topicMatched = hasKeyword && topic.title.toLowerCase().includes(keyword)
+      const matchedProblemIds = topic.problemIds.filter((problemId) => {
+        if (!matchProblemDifficulty(problemId))
+          return false
+        if (!hasKeyword || groupMatched || topicMatched)
+          return true
+        return matchProblem(problemId, keyword)
+      })
       if (matchedProblemIds.length > 0)
         matchedTopics.push({ ...topic, problemIds: matchedProblemIds })
     }
@@ -144,8 +153,8 @@ function groupTotalCount(group: TopicGroup): number {
   return group.topics.reduce((count, topic) => count + topic.problemIds.length, 0)
 }
 
-const overallDoneCount = computed(() => props.groups.reduce((count, group) => count + groupDoneCount(group), 0))
-const overallTotalCount = computed(() => props.groups.reduce((count, group) => count + groupTotalCount(group), 0))
+const overallDoneCount = computed(() => filteredGroups.value.reduce((count, group) => count + groupDoneCount(group), 0))
+const overallTotalCount = computed(() => filteredGroups.value.reduce((count, group) => count + groupTotalCount(group), 0))
 
 function problemLabel(problemId: string): string {
   const problem = getProblem(problemId)
@@ -182,6 +191,8 @@ function problemDifficultyColor(problemId: string): string {
           placeholder="搜索分组 / 专题 / 题号 / 题名"
           class="flex-1 min-w-0"
         />
+        <DifficultyFilter v-model="selectedDifficulties" />
+        <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
         <CompletionStat
           :done="overallDoneCount"
           :total="overallTotalCount"

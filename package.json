@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@astrojs/vue": "catalog:frontend",
+    "@floating-ui/vue": "catalog:frontend",
     "@unocss/astro": "catalog:frontend",
     "@unocss/reset": "catalog:frontend",
     "@vueuse/core": "catalog:frontend",

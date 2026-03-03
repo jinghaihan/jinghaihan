@@ -11,6 +11,7 @@ catalogs:
     typescript: ^5.9.3
   frontend:
     '@astrojs/vue': ^5.1.4
+    '@floating-ui/vue': ^1.1.11
     '@unocss/astro': ^66.6.2
     '@unocss/preset-web-fonts': ^66.6.2
     '@unocss/reset': ^66.6.2
