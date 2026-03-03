@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { renderMermaid, THEMES } from 'beautiful-mermaid'
+import { renderMermaidSVGAsync, THEMES } from 'beautiful-mermaid'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const props = withDefaults(defineProps<{
@@ -15,7 +15,7 @@ let classObserver: MutationObserver | null = null
 const theme = computed(() => isDark.value ? THEMES['github-dark'] : THEMES['github-light'])
 
 async function render() {
-  svg.value = await renderMermaid(props.code, {
+  svg.value = await renderMermaidSVGAsync(props.code, {
     ...theme.value,
     bg: 'var(--background)',
   })
