@@ -32,6 +32,14 @@ export interface Problem {
   difficulty: Difficulty
 }
 
+export interface AlgorithmDifficultyStat {
+  difficulty: Difficulty
+  label: string
+  done: number
+  total: number
+  color: string
+}
+
 export interface AlgorithmKnowledgeData {
   version: number
   groups: Group[]
