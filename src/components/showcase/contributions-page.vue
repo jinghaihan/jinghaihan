@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import PullRequest from '@/components/pull-request.vue'
-import Spinner from '@/components/spinner.vue'
+import PullRequest from '@/components/showcase/pull-request.vue'
+import Spinner from '@/components/ui/spinner.vue'
 import { loadGithubData } from '@/utils'
 
 const snapshot = ref<Awaited<ReturnType<typeof loadGithubData>> | null>(null)

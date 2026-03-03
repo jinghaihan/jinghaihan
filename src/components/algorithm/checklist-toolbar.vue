@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AlgorithmDifficultyStat, AlgorithmProgress, Difficulty, Topic } from '@/types'
 import { computed } from 'vue'
-import InputSearch from '@/components/input-search.vue'
+import InputSearch from '@/components/ui/input-search.vue'
 import CompletionStat from './completion-stat.vue'
 import DifficultyFilter from './difficulty-filter.vue'
 import DifficultyProgressRing from './difficulty-progress-ring.vue'
@@ -78,6 +78,7 @@ function onClearAll(): void {
         class="flex-1 min-w-0"
       />
       <DifficultyFilter v-model="selectedDifficultiesModel" />
+      <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
       <RecommendTopicPopover
         :topics="props.topics"
         :progress="props.progress"

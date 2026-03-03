@@ -1,9 +1,9 @@
 ---
 import { getEntry, render } from 'astro:content'
-import GithubStatsIsland from '@/components/github-stats-island.astro'
-import MagicLink from '@/components/magic-link.astro'
-import ProseLayout from '@/components/prose-layout.astro'
-import RubyAnnotation from '@/components/ruby-annotation.astro'
+import MagicLink from '@/components/content/magic-link.astro'
+import ProseLayout from '@/components/content/prose-layout.astro'
+import RubyAnnotation from '@/components/content/ruby-annotation.astro'
+import GithubStatsIsland from '@/components/showcase/github-stats-island.astro'
 import BaseLayout from '@/layouts/base-layout.astro'
 
 const about = (await getEntry('pages', 'about'))!

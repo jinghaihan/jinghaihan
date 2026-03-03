@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Project } from '@/types'
 import { computed, onMounted, ref } from 'vue'
-import ProjectCard from '@/components/project-card.vue'
-import Spinner from '@/components/spinner.vue'
+import ProjectCard from '@/components/showcase/project-card.vue'
+import Spinner from '@/components/ui/spinner.vue'
 import { loadGithubData, sortProjectsByStargazers } from '@/utils'
 
 const snapshot = ref<Awaited<ReturnType<typeof loadGithubData>> | null>(null)

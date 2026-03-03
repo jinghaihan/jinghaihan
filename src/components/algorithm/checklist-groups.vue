@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { AlgorithmProgress, Problem, Topic, TopicGroup } from '@/types'
 import { ref } from 'vue'
-import Checkbox from '@/components/checkbox.vue'
-import Collapse from '@/components/collapse.vue'
+import Checkbox from '@/components/ui/checkbox.vue'
+import Collapse from '@/components/ui/collapse.vue'
 import { getAlgorithmDifficultyColor } from '@/constants/algorithm'
 import CompletionStat from './completion-stat.vue'
 import ProblemSeq from './problem-seq.vue'

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { AlgorithmProgress, Difficulty, Problem, Topic, TopicGroup } from '@/types'
 import { computed, ref, toRef } from 'vue'
-import { useChecklistFiltering } from '@/composables/use-algorithm-filter'
-import { useChecklistProgressStats } from '@/composables/use-algorithm-progress-stats'
+import { useChecklistFiltering } from '@/composables/algorithm/use-checklist-filtering'
+import { useChecklistPogressStats } from '@/composables/algorithm/use-checklist-pogress-stats'
 import ChecklistGroups from './checklist-groups.vue'
 import ChecklistToolbar from './checklist-toolbar.vue'
 
@@ -63,7 +63,7 @@ const {
   difficultyStats,
   canRandomOpen,
   openRandomProblem,
-} = useChecklistProgressStats({
+} = useChecklistPogressStats({
   filteredGroups,
   progress: toRef(props, 'progress'),
   problems: toRef(props, 'problems'),

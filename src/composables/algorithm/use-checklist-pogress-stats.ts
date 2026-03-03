@@ -3,13 +3,13 @@ import type { AlgorithmDifficultyStat, AlgorithmProgress, Difficulty, Problem, T
 import { computed } from 'vue'
 import { getAlgorithmDifficultyColor } from '@/constants/algorithm'
 
-interface UseChecklistProgressStatsOptions {
+interface UseChecklistPogressStatsOptions {
   filteredGroups: ComputedRef<TopicGroup[]>
   progress: Ref<AlgorithmProgress>
   problems: Ref<Record<string, Problem>>
 }
 
-interface UseChecklistProgressStatsReturn {
+interface UseChecklistPogressStatsReturn {
   isProblemDone: (problemId: string) => boolean
   topicDoneCount: (topic: Topic) => number
   groupDoneCount: (group: TopicGroup) => number
@@ -31,7 +31,7 @@ const DIFFICULTY_LABEL: Record<Difficulty, string> = {
   hard: '困难',
 }
 
-export function useChecklistProgressStats(options: UseChecklistProgressStatsOptions): UseChecklistProgressStatsReturn {
+export function useChecklistPogressStats(options: UseChecklistPogressStatsOptions): UseChecklistPogressStatsReturn {
   function getProblem(problemId: string): Problem | undefined {
     return options.problems.value[problemId]
   }

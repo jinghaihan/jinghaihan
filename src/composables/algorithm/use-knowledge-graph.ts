@@ -28,7 +28,7 @@ interface LabelBox {
   bottom: number
 }
 
-interface UseAlgorithmGraphOptions {
+interface UseKnowledgeGraphOptions {
   groups: Ref<TopicGroup[]>
   topics: Ref<Topic[]>
   problems: Ref<Record<string, Problem>>
@@ -38,7 +38,7 @@ interface UseAlgorithmGraphOptions {
 
 const UNGROUPED_ID = '__ungrouped__'
 
-export function useAlgorithmGraph(options: UseAlgorithmGraphOptions) {
+export function useKnowledgeGraph(options: UseKnowledgeGraphOptions) {
   const graphContainerRef = ref<HTMLElement | null>(null)
   const graphSvgRef = ref<SVGSVGElement | null>(null)
   const collapsedTopicIds = ref<Set<string>>(new Set())

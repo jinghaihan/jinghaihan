@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import Spinner from '@/components/ui/spinner.vue'
 import { formatNumber, loadGithubData } from '@/utils'
 import RankChart from './rank-chart.vue'
-import Spinner from './spinner.vue'
 
 const snapshot = ref<Awaited<ReturnType<typeof loadGithubData>> | null>(null)
 const loading = ref(true)
