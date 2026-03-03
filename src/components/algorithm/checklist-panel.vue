@@ -206,7 +206,7 @@ function clearTopicFilters(): void {
   selectedTopicIds.value = []
 }
 
-const unresolvedProblemIds = computed(() => {
+const visibleProblemIds = computed(() => {
   const ids: string[] = []
   const seen = new Set<string>()
 
@@ -216,9 +216,7 @@ const unresolvedProblemIds = computed(() => {
         if (seen.has(problemId))
           continue
         seen.add(problemId)
-
-        if (!isProblemDone(problemId))
-          ids.push(problemId)
+        ids.push(problemId)
       }
     }
   }
@@ -226,30 +224,29 @@ const unresolvedProblemIds = computed(() => {
   return ids
 })
 
+const unresolvedProblemIds = computed(() =>
+  visibleProblemIds.value.filter(problemId => !isProblemDone(problemId)),
+)
+
+const randomCandidateProblemIds = computed(() =>
+  unresolvedProblemIds.value.length > 0 ? unresolvedProblemIds.value : visibleProblemIds.value,
+)
+
 const difficultyStats = computed(() => {
   const counts: Record<Difficulty, { done: number, total: number }> = {
     easy: { done: 0, total: 0 },
     medium: { done: 0, total: 0 },
     hard: { done: 0, total: 0 },
   }
-  const seen = new Set<string>()
 
-  for (const group of filteredGroups.value) {
-    for (const topic of group.topics) {
-      for (const problemId of topic.problemIds) {
-        if (seen.has(problemId))
-          continue
-        seen.add(problemId)
+  for (const problemId of visibleProblemIds.value) {
+    const difficulty = getProblem(problemId)?.difficulty
+    if (!difficulty)
+      continue
 
-        const difficulty = getProblem(problemId)?.difficulty
-        if (!difficulty)
-          continue
-
-        counts[difficulty].total += 1
-        if (isProblemDone(problemId))
-          counts[difficulty].done += 1
-      }
-    }
+    counts[difficulty].total += 1
+    if (isProblemDone(problemId))
+      counts[difficulty].done += 1
   }
 
   return ALL_DIFFICULTIES.map(difficulty => ({
@@ -261,10 +258,10 @@ const difficultyStats = computed(() => {
   }))
 })
 
-const canRandomOpen = computed(() => unresolvedProblemIds.value.length > 0)
+const canRandomOpen = computed(() => randomCandidateProblemIds.value.length > 0)
 
 function openRandomProblem(): void {
-  const candidates = unresolvedProblemIds.value
+  const candidates = randomCandidateProblemIds.value
   if (candidates.length === 0)
     return
 
