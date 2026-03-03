@@ -110,7 +110,7 @@ watch(progress, (value) => {
 
 <template>
   <div class="px-3 pb-3 size-full min-h-0 lg:px-5 sm:px-4 lg:pb-3 sm:pb-4">
-    <div class="gap-3 grid h-full min-h-0 lg:gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
+    <div class="gap-3 grid grid-rows-[minmax(0,1.35fr)_minmax(0,0.65fr)] h-full min-h-0 lg:gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:grid-rows-1">
       <section class="min-h-0">
         <ChecklistPanel
           :groups="topicGroups"
