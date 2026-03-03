@@ -55,6 +55,19 @@ function clearGroupProgress(groupId: string): void {
   progress.value = next
 }
 
+function selectGroupProgress(groupId: string): void {
+  const group = topicGroups.value.find(item => item.id === groupId)
+  if (!group)
+    return
+
+  const next: AlgorithmProgress = { ...progress.value }
+  for (const topic of group.topics) {
+    for (const problemId of topic.problemIds)
+      next[problemId] = true
+  }
+  progress.value = next
+}
+
 function clearTopicProgress(topicId: string): void {
   const topic = ALGORITHM_KNOWLEDGE.topics.find(item => item.id === topicId)
   if (!topic)
@@ -66,8 +79,30 @@ function clearTopicProgress(topicId: string): void {
   progress.value = next
 }
 
+function selectTopicProgress(topicId: string): void {
+  const topic = ALGORITHM_KNOWLEDGE.topics.find(item => item.id === topicId)
+  if (!topic)
+    return
+
+  const next: AlgorithmProgress = { ...progress.value }
+  for (const problemId of topic.problemIds)
+    next[problemId] = true
+  progress.value = next
+}
+
 function clearAllProgress(): void {
   progress.value = {}
+}
+
+function selectAllProgress(): void {
+  const next: AlgorithmProgress = { ...progress.value }
+  for (const group of topicGroups.value) {
+    for (const topic of group.topics) {
+      for (const problemId of topic.problemIds)
+        next[problemId] = true
+    }
+  }
+  progress.value = next
 }
 
 function updateSearchKeyword(value: string): void {
@@ -118,6 +153,9 @@ watch(progress, (value) => {
           :progress="progress"
           :search-keyword="searchKeyword"
           @update:search-keyword="updateSearchKeyword"
+          @select-group="selectGroupProgress"
+          @select-topic="selectTopicProgress"
+          @select-all="selectAllProgress"
           @clear-group="clearGroupProgress"
           @clear-topic="clearTopicProgress"
           @clear-all="clearAllProgress"

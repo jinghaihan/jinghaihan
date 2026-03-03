@@ -21,6 +21,9 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'toggleProblem': [problemId: string, checked: boolean]
+  'selectGroup': [groupId: string]
+  'selectTopic': [topicId: string]
+  'selectAll': []
   'clearGroup': [groupId: string]
   'clearTopic': [topicId: string]
   'clearAll': []
@@ -134,12 +137,24 @@ function onClearGroup(groupId: string): void {
   emit('clearGroup', groupId)
 }
 
+function onSelectGroup(groupId: string): void {
+  emit('selectGroup', groupId)
+}
+
 function onClearTopic(topicId: string): void {
   emit('clearTopic', topicId)
 }
 
+function onSelectTopic(topicId: string): void {
+  emit('selectTopic', topicId)
+}
+
 function onClearAll(): void {
   emit('clearAll')
+}
+
+function onSelectAll(): void {
+  emit('selectAll')
 }
 
 const unresolvedProblemIds = computed(() => {
@@ -230,8 +245,11 @@ function problemDifficultyColor(problemId: string): string {
         <CompletionStat
           :done="overallDoneCount"
           :total="overallTotalCount"
+          select-label="全部标记为已完成"
+          select-title="全部标记为已完成"
           clear-label="清空所有已完成"
           class="text-sm text-foreground/65 ml-auto"
+          @select="onSelectAll"
           @clear="onClearAll"
         />
       </div>
@@ -255,8 +273,11 @@ function problemDifficultyColor(problemId: string): string {
               :done="groupDoneCount(group)"
               :total="groupTotalCount(group)"
               compact
+              select-label="标记该分组全部完成"
+              select-title="标记该分组全部完成"
               clear-label="清空该分组已完成"
               clear-title="清空该分组已完成"
+              @select="onSelectGroup(group.id)"
               @clear="onClearGroup(group.id)"
             />
           </template>
@@ -277,8 +298,11 @@ function problemDifficultyColor(problemId: string): string {
                   :done="topicDoneCount(topic)"
                   :total="topic.problemIds.length"
                   compact
+                  select-label="标记该专题全部完成"
+                  select-title="标记该专题全部完成"
                   clear-label="清空该专题已完成"
                   clear-title="清空该专题已完成"
+                  @select="onSelectTopic(topic.id)"
                   @clear="onClearTopic(topic.id)"
                 />
               </template>
