@@ -20,7 +20,7 @@ import { timeline } from '@/constants/profile'
     class="mt-4 pt-4 border-t border-border hidden"
     data-footer-panel
   >
-    <div class="timeline-container">
+    <div class="timeline-container prose">
       {
         timeline.map(event => (
           <div
@@ -29,7 +29,7 @@ import { timeline } from '@/constants/profile'
             <div class="text-right">{event.date}</div>
             <div>
               <div class="font-semibold">{event.title}</div>
-              <div class="mt-1" set:html={event.description} />
+              <div class="text-sm text-foreground/65 mt-1" set:html={event.description} />
             </div>
           </div>
         ))

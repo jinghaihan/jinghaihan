@@ -1,26 +1,31 @@
 <script setup lang="ts">
 import type { SimulationLinkDatum, SimulationNodeDatum } from 'd3'
-import type { Difficulty, Relation, Topic, TopicGroup } from '@/types'
+import type { Difficulty, Problem, Relation, Topic, TopicGroup } from '@/types'
+import { useResizeObserver } from '@vueuse/core'
 import * as d3 from 'd3'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { getAlgorithmDifficultyColor } from '@/constants/algorithm'
+import { ALGORITHM_GROUP_NODE_COLOR, ALGORITHM_TOPIC_NODE_COLOR, getAlgorithmDifficultyColor } from '@/constants/algorithm'
 
 interface Props {
   groups: TopicGroup[]
   topics: Topic[]
+  problems: Record<string, Problem>
   relations: Relation[]
 }
 
 interface GraphNode extends SimulationNodeDatum {
   id: string
+  entityId: string
+  groupId: string
   label: string
-  nodeType: 'group' | 'topic'
+  nodeType: 'group' | 'topic' | 'problem'
   difficulty?: Difficulty
+  topicId?: string
   radius: number
 }
 
 interface GraphLink extends SimulationLinkDatum<GraphNode> {
-  kind: 'belongs' | 'related'
+  kind: 'belongs' | 'related' | 'contains'
 }
 
 interface LabelBox {
@@ -39,62 +44,89 @@ const UNGROUPED_ID = '__ungrouped__'
 
 const graphContainerRef = ref<HTMLElement | null>(null)
 const graphSvgRef = ref<SVGSVGElement | null>(null)
+const collapsedTopicIds = ref<Set<string>>(new Set())
 
 let simulation: d3.Simulation<GraphNode, GraphLink> | null = null
-let resizeObserver: ResizeObserver | null = null
 
 const groupNodeIdSet = computed(() => new Set(props.groups.map(group => group.id)))
+
+function toggleTopicCollapsed(topicId: string): void {
+  const next = new Set(collapsedTopicIds.value)
+  if (next.has(topicId))
+    next.delete(topicId)
+  else
+    next.add(topicId)
+  collapsedTopicIds.value = next
+}
 
 const graphNodes = computed<GraphNode[]>(() => {
   const groups = props.groups.map(group => ({
     id: `group:${group.id}`,
+    entityId: group.id,
+    groupId: group.id,
     label: group.title,
     nodeType: 'group' as const,
-    radius: 8,
+    radius: 7.2,
   }))
 
   const topics = props.topics.map(topic => ({
     id: `topic:${topic.id}`,
+    entityId: topic.id,
+    groupId: topic.groupId || UNGROUPED_ID,
     label: topic.title,
     nodeType: 'topic' as const,
     difficulty: topic.difficulty,
-    radius: 6.5,
+    radius: 5.8,
   }))
 
-  return [...groups, ...topics]
-})
+  const problemNodeMap = new Map<string, GraphNode>()
+  for (const topic of props.topics) {
+    if (collapsedTopicIds.value.has(topic.id))
+      continue
 
-function topicLabelWidth(text: string): number {
-  return Math.max(18, text.length * 6.2)
-}
+    for (const problemId of topic.problemIds) {
+      if (problemNodeMap.has(problemId))
+        continue
 
-function makeLabelBox(x: number, y: number, width: number, anchor: 'start' | 'middle' | 'end'): LabelBox {
-  const height = 11
-  const left = anchor === 'middle' ? x - width / 2 : anchor === 'start' ? x : x - width
-  const right = left + width
-
-  return {
-    left,
-    right,
-    top: y - height + 2,
-    bottom: y + 2,
+      const problem = props.problems[problemId]
+      problemNodeMap.set(problemId, {
+        id: `problem:${problemId}`,
+        entityId: problemId,
+        groupId: topic.groupId || UNGROUPED_ID,
+        label: problem ? `${problem.number || problem.id} ${problem.title}` : problemId,
+        nodeType: 'problem',
+        topicId: topic.id,
+        difficulty: problem?.difficulty ?? topic.difficulty,
+        radius: 4.4,
+      })
+    }
   }
-}
 
-function overlaps(a: LabelBox, b: LabelBox): boolean {
-  return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom)
-}
+  return [...groups, ...topics, ...Array.from(problemNodeMap.values())]
+})
 
 const graphLinks = computed<GraphLink[]>(() => {
   const links: GraphLink[] = []
 
   for (const topic of props.topics) {
     const groupId = topic.groupId || UNGROUPED_ID
+
     links.push({
       source: `group:${groupId}`,
       target: `topic:${topic.id}`,
       kind: 'belongs',
     })
+
+    if (collapsedTopicIds.value.has(topic.id))
+      continue
+
+    for (const problemId of topic.problemIds) {
+      links.push({
+        source: `topic:${topic.id}`,
+        target: `problem:${problemId}`,
+        kind: 'contains',
+      })
+    }
   }
 
   const groupIdSet = groupNodeIdSet.value
@@ -117,6 +149,90 @@ const graphLinks = computed<GraphLink[]>(() => {
   return links
 })
 
+function topicLabelWidth(text: string): number {
+  return Math.max(18, text.length * 6.1)
+}
+
+function makeLabelBox(x: number, y: number, width: number, anchor: 'start' | 'middle' | 'end'): LabelBox {
+  const height = 11
+  const left = anchor === 'middle' ? x - width / 2 : anchor === 'start' ? x : x - width
+  const right = left + width
+
+  return {
+    left,
+    right,
+    top: y - height + 2,
+    bottom: y + 2,
+  }
+}
+
+function overlaps(a: LabelBox, b: LabelBox): boolean {
+  return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom)
+}
+
+function baseFillOpacity(node: GraphNode): number {
+  if (node.nodeType === 'group')
+    return 0.82
+  if (node.nodeType === 'topic')
+    return 0.75
+  return 0.56
+}
+
+function createClusterForce(
+  clusterCenters: Map<string, { x: number, y: number }>,
+): d3.Force<GraphNode, GraphLink> {
+  let nodesRef: GraphNode[] = []
+
+  const force = (alpha: number) => {
+    for (const node of nodesRef) {
+      const center = clusterCenters.get(node.groupId)
+      if (!center)
+        continue
+
+      const strength = node.nodeType === 'group' ? 0.22 : node.nodeType === 'topic' ? 0.13 : 0.08
+      node.vx = (node.vx || 0) + (center.x - (node.x || center.x)) * strength * alpha
+      node.vy = (node.vy || 0) + (center.y - (node.y || center.y)) * strength * alpha
+    }
+  }
+
+  force.initialize = (nextNodes: GraphNode[]) => {
+    nodesRef = nextNodes
+  }
+
+  return force as d3.Force<GraphNode, GraphLink>
+}
+
+function createCircularBoundaryForce(
+  centerX: number,
+  centerY: number,
+  radius: number,
+): d3.Force<GraphNode, GraphLink> {
+  let nodesRef: GraphNode[] = []
+
+  const force = (alpha: number) => {
+    for (const node of nodesRef) {
+      const x = node.x || centerX
+      const y = node.y || centerY
+      const dx = x - centerX
+      const dy = y - centerY
+      const distance = Math.hypot(dx, dy)
+      if (distance <= radius)
+        continue
+
+      const overflow = distance - radius
+      const pull = overflow * 0.055 * alpha
+      node.vx = (node.vx || 0) - (dx / distance) * pull
+      node.vy = (node.vy || 0) - (dy / distance) * pull
+    }
+  }
+
+  force.initialize = (nextNodes: GraphNode[]) => {
+    nodesRef = nextNodes
+  }
+
+  return force as d3.Force<GraphNode, GraphLink>
+}
+
 function mountGraph(): void {
   const container = graphContainerRef.value
   const svgElement = graphSvgRef.value
@@ -127,27 +243,33 @@ function mountGraph(): void {
 
   const width = Math.max(420, container.clientWidth)
   const height = Math.max(520, container.clientHeight)
-  const nodes = graphNodes.value.map(node => ({ ...node }))
-  const links = graphLinks.value.map(link => ({ ...link }))
   const centerX = width / 2
   const centerY = height / 2
-  const topicRingRadius = Math.max(148, Math.min(width, height) * 0.35)
-  const groupRingRadius = topicRingRadius * 0.42
+  const outerRadius = Math.max(180, Math.min(width, height) * 0.45)
 
-  // Seed node positions on concentric circles to keep the graph compact and round.
-  const groupNodes = nodes.filter(node => node.nodeType === 'group')
-  const topicNodes = nodes.filter(node => node.nodeType === 'topic')
+  const nodes = graphNodes.value.map(node => ({ ...node }))
+  const links = graphLinks.value.map(link => ({ ...link }))
 
-  groupNodes.forEach((node, index) => {
-    const angle = (Math.PI * 2 * index) / Math.max(groupNodes.length, 1)
-    node.x = centerX + Math.cos(angle) * groupRingRadius
-    node.y = centerY + Math.sin(angle) * groupRingRadius
+  const clusterCenters = new Map<string, { x: number, y: number }>()
+  const groupCount = Math.max(props.groups.length, 1)
+  const clusterRadius = outerRadius * 0.42
+
+  props.groups.forEach((group, index) => {
+    const angle = -Math.PI / 2 + (Math.PI * 2 * index) / groupCount
+    clusterCenters.set(group.id, {
+      x: centerX + Math.cos(angle) * clusterRadius,
+      y: centerY + Math.sin(angle) * clusterRadius,
+    })
   })
-  topicNodes.forEach((node, index) => {
-    const angle = (Math.PI * 2 * index) / Math.max(topicNodes.length, 1)
-    node.x = centerX + Math.cos(angle) * topicRingRadius
-    node.y = centerY + Math.sin(angle) * topicRingRadius
-  })
+
+  if (!clusterCenters.has(UNGROUPED_ID))
+    clusterCenters.set(UNGROUPED_ID, { x: centerX, y: centerY })
+
+  for (const node of nodes) {
+    const center = clusterCenters.get(node.groupId) || { x: centerX, y: centerY }
+    node.x = center.x + (Math.random() - 0.5) * 52
+    node.y = center.y + (Math.random() - 0.5) * 52
+  }
 
   const svg = d3.select(svgElement)
   svg.selectAll('*').remove()
@@ -159,13 +281,13 @@ function mountGraph(): void {
   const root = svg.append('g')
 
   const zoom = d3.zoom<SVGSVGElement, unknown>()
-    .scaleExtent([0.45, 1.8])
+    .scaleExtent([0.45, 2.0])
     .on('zoom', (event) => {
       root.attr('transform', event.transform.toString())
     })
   svg.call(zoom)
 
-  const initialScale = 1.225
+  const initialScale = 1.23
   const initialTransform = d3.zoomIdentity
     .translate(centerX, centerY)
     .scale(initialScale)
@@ -178,26 +300,49 @@ function mountGraph(): void {
     .data(links)
     .join('line')
     .attr('stroke', 'var(--border)')
-    .attr('stroke-opacity', d => d.kind === 'belongs' ? 0.7 : 0.45)
-    .attr('stroke-width', 1.2)
+    .attr('stroke-opacity', (d) => {
+      if (d.kind === 'contains')
+        return 0.21
+      if (d.kind === 'belongs')
+        return 0.32
+      return 0.11
+    })
+    .attr('stroke-width', (d) => {
+      if (d.kind === 'contains')
+        return 0.9
+      if (d.kind === 'belongs')
+        return 1
+      return 0.95
+    })
 
   const node = root.append('g')
     .attr('stroke', 'var(--background)')
-    .attr('stroke-width', 1.4)
     .selectAll<SVGCircleElement, GraphNode>('circle')
     .data(nodes)
     .join('circle')
-    .style('cursor', 'pointer')
+    .attr('stroke-width', d => d.nodeType === 'problem' ? 0.85 : 1.35)
+    .style('cursor', d => d.nodeType === 'problem' ? 'default' : 'pointer')
     .attr('r', d => d.radius)
-    .attr('fill', d => d.nodeType === 'group' ? 'var(--muted-foreground)' : getAlgorithmDifficultyColor(d.difficulty))
-    .attr('fill-opacity', 0.7)
+    .attr('fill', (d) => {
+      if (d.nodeType === 'group')
+        return ALGORITHM_GROUP_NODE_COLOR
+      if (d.nodeType === 'topic')
+        return ALGORITHM_TOPIC_NODE_COLOR
+      return getAlgorithmDifficultyColor(d.difficulty)
+    })
+    .attr('fill-opacity', d => baseFillOpacity(d))
 
   node.append('title')
     .text((d) => {
+      if (d.nodeType === 'problem')
+        return d.label
       if (d.nodeType === 'group')
         return d.label
       return d.difficulty ? `${d.label} (${d.difficulty})` : d.label
     })
+
+  const groupNodes = nodes.filter(node => node.nodeType === 'group')
+  const topicNodes = nodes.filter(node => node.nodeType === 'topic')
 
   const groupLabel = root.append('g')
     .selectAll<SVGTextElement, GraphNode>('text')
@@ -208,7 +353,7 @@ function mountGraph(): void {
     .attr('font-weight', 600)
     .attr('fill', 'var(--foreground)')
     .attr('text-anchor', 'middle')
-    .attr('dy', -24)
+    .attr('dy', -23)
     .style('paint-order', 'stroke')
     .style('stroke', 'var(--background)')
     .style('stroke-width', 3.2)
@@ -223,14 +368,63 @@ function mountGraph(): void {
     .attr('font-size', 12)
     .attr('font-weight', 500)
     .attr('fill', 'var(--foreground)')
-    .attr('dy', 0)
     .style('paint-order', 'stroke')
     .style('stroke', 'var(--background)')
     .style('stroke-width', 2.6)
     .style('stroke-linejoin', 'round')
     .style('opacity', 0.82)
-    .style('transition', 'opacity 140ms ease')
     .style('pointer-events', 'none')
+
+  const problemHoverLabel = root.append('g')
+    .style('display', 'none')
+    .style('pointer-events', 'none')
+
+  const problemHoverLabelBg = problemHoverLabel.append('rect')
+    .attr('rx', 6)
+    .attr('ry', 6)
+    .attr('fill', 'var(--background)')
+    .attr('fill-opacity', 0.93)
+    .attr('stroke', 'var(--border)')
+    .attr('stroke-opacity', 0.55)
+    .attr('stroke-width', 0.8)
+
+  const problemHoverLabelText = problemHoverLabel.append('text')
+    .attr('font-size', 11)
+    .attr('font-weight', 500)
+    .attr('fill', 'var(--foreground)')
+    .style('paint-order', 'stroke')
+    .style('stroke', 'var(--background)')
+    .style('stroke-width', 2)
+    .style('stroke-linejoin', 'round')
+
+  let hoveredProblemNode: GraphNode | null = null
+
+  function updateProblemHoverLabel(): void {
+    if (!hoveredProblemNode) {
+      problemHoverLabel.style('display', 'none')
+      return
+    }
+
+    const x = (hoveredProblemNode.x ?? centerX) + 10
+    const y = (hoveredProblemNode.y ?? centerY) - 8
+
+    problemHoverLabelText
+      .text(hoveredProblemNode.label)
+      .attr('x', x)
+      .attr('y', y)
+
+    const bbox = problemHoverLabelText.node()?.getBBox()
+    if (!bbox)
+      return
+
+    problemHoverLabelBg
+      .attr('x', bbox.x - 6)
+      .attr('y', bbox.y - 4)
+      .attr('width', bbox.width + 12)
+      .attr('height', bbox.height + 8)
+
+    problemHoverLabel.style('display', null)
+  }
 
   function layoutTopicLabels(): void {
     const placed: LabelBox[] = []
@@ -245,17 +439,17 @@ function mountGraph(): void {
       const ux = vx / length
       const uy = vy / length
 
-      let x = nodeX + ux * 16
-      let y = nodeY + uy * 16
+      let x = nodeX + ux * 14
+      let y = nodeY + uy * 14
 
       const anchor: 'start' | 'middle' | 'end' = Math.abs(ux) < 0.26 ? 'middle' : ux > 0 ? 'start' : 'end'
       const width = topicLabelWidth(d.label)
 
       let box = makeLabelBox(x, y, width, anchor)
       let attempt = 0
-      while (placed.some(existing => overlaps(existing, box)) && attempt < 8) {
+      while (placed.some(existing => overlaps(existing, box)) && attempt < 6) {
         x += ux * 4
-        y += uy * 6
+        y += uy * 5
         box = makeLabelBox(x, y, width, anchor)
         attempt += 1
       }
@@ -272,7 +466,7 @@ function mountGraph(): void {
   const drag = d3.drag<SVGCircleElement, GraphNode>()
     .on('start', (event, d) => {
       if (!event.active)
-        simulation?.alphaTarget(0.2).restart()
+        simulation?.alphaTarget(0.22).restart()
       d.fx = d.x
       d.fy = d.y
     })
@@ -287,47 +481,90 @@ function mountGraph(): void {
       d.fy = null
     })
 
-  node
+  const interactiveNode = node.filter(d => d.nodeType !== 'problem')
+
+  interactiveNode
     .on('click', (event, d) => {
       if (event.defaultPrevented)
         return
+
+      if (d.nodeType === 'topic')
+        toggleTopicCollapsed(d.entityId)
+
       emit('nodeSelect', d.label)
     })
+
+  node
     .on('mouseenter', function (_event, d) {
-      const hoverScale = d.nodeType === 'group' ? 1.5 : 1.4
+      const hoverScale = d.nodeType === 'group' ? 1.2 : d.nodeType === 'topic' ? 1.16 : 1.2
       d3.select(this)
         .interrupt()
         .transition()
-        .duration(150)
+        .duration(130)
         .attr('r', d.radius * hoverScale)
-        .attr('fill-opacity', d.nodeType === 'group' ? 0.9 : 0.94)
+        .attr('fill-opacity', d.nodeType === 'problem' ? 0.9 : 0.9)
+
+      if (d.nodeType === 'problem') {
+        hoveredProblemNode = d
+        updateProblemHoverLabel()
+      }
     })
     .on('mouseleave', function (_event, d) {
       d3.select(this)
         .interrupt()
         .transition()
-        .duration(150)
+        .duration(130)
         .attr('r', d.radius)
-        .attr('fill-opacity', 0.7)
+        .attr('fill-opacity', baseFillOpacity(d))
+
+      if (d.nodeType === 'problem') {
+        hoveredProblemNode = null
+        updateProblemHoverLabel()
+      }
     })
 
-  node.call(drag)
+  interactiveNode.call(drag)
 
   simulation = d3.forceSimulation(nodes)
+    .alpha(0.92)
+    .alphaMin(0.02)
+    .alphaDecay(0.022)
+    .velocityDecay(0.38)
     .force('link', d3.forceLink<GraphNode, GraphLink>(links)
       .id(d => d.id)
-      .distance(d => d.kind === 'belongs' ? 86 : 128)
-      .strength(d => d.kind === 'belongs' ? 0.68 : 0.22))
-    .force('charge', d3.forceManyBody().strength(-215))
+      .distance((d) => {
+        if (d.kind === 'contains')
+          return 12
+        if (d.kind === 'belongs')
+          return 26
+        return 58
+      })
+      .strength((d) => {
+        if (d.kind === 'contains')
+          return 0.44
+        if (d.kind === 'belongs')
+          return 0.34
+        return 0.085
+      }))
+    .force('charge', d3.forceManyBody<GraphNode>().strength((d) => {
+      if (d.nodeType === 'problem')
+        return -18
+      if (d.nodeType === 'topic')
+        return -64
+      return -96
+    }))
     .force('center', d3.forceCenter(centerX, centerY))
-    .force('x', d3.forceX(centerX).strength(0.04))
-    .force('y', d3.forceY(centerY).strength(0.04))
-    .force('collision', d3.forceCollide<GraphNode>().radius(d => d.radius + (d.nodeType === 'group' ? 8 : 7)).strength(0.98))
-    .force('ring', d3.forceRadial<GraphNode>(
-      d => d.nodeType === 'group' ? groupRingRadius : topicRingRadius,
-      centerX,
-      centerY,
-    ).strength(0.34))
+    .force('x', d3.forceX(centerX).strength(0.03))
+    .force('y', d3.forceY(centerY).strength(0.03))
+    .force('cluster', createClusterForce(clusterCenters))
+    .force('boundary', createCircularBoundaryForce(centerX, centerY, outerRadius))
+    .force('collide', d3.forceCollide<GraphNode>().radius((d) => {
+      if (d.nodeType === 'group')
+        return d.radius + 4.4
+      if (d.nodeType === 'topic')
+        return d.radius + 2.9
+      return d.radius + 0.85
+    }).iterations(2))
     .on('tick', () => {
       link
         .attr('x1', d => (d.source as GraphNode).x || 0)
@@ -344,23 +581,20 @@ function mountGraph(): void {
         .attr('y', d => d.y || 0)
 
       layoutTopicLabels()
+      updateProblemHoverLabel()
     })
 }
 
 onMounted(() => {
   mountGraph()
+})
 
-  if (graphContainerRef.value) {
-    resizeObserver = new ResizeObserver(() => {
-      mountGraph()
-    })
-    resizeObserver.observe(graphContainerRef.value)
-  }
+useResizeObserver(graphContainerRef, () => {
+  mountGraph()
 })
 
 onBeforeUnmount(() => {
   simulation?.stop()
-  resizeObserver?.disconnect()
 })
 
 watch([graphNodes, graphLinks], () => {

@@ -32,7 +32,7 @@ export interface Problem {
   difficulty: Difficulty
 }
 
-export interface AlgorithmRoadmapData {
+export interface AlgorithmKnowledgeData {
   version: number
   groups: Group[]
   topics: Topic[]

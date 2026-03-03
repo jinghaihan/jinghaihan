@@ -11,6 +11,11 @@ export const GIST_STATS_URL = `${GIST_BASE_URL}/github-stats.json`
 export const timeline: TimelineEvent[] = [
   {
     date: 'Mar. 2026',
+    title: 'Added algorithm page.',
+    description: 'Published <a href="/algorithm">Algorithm</a> page with a problem list based on <a href="https://labuladong.online/" target="_blank" rel="noopener noreferrer">labuladong.online</a>.',
+  },
+  {
+    date: 'Mar. 2026',
     title: 'Rebuilt with Astro.',
     description: 'Rebuilt the whole website using Astro.',
   },

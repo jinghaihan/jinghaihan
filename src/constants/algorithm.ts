@@ -1,10 +1,13 @@
-import type { AlgorithmRoadmapData, Difficulty, Relation } from '@/types'
+import type { AlgorithmKnowledgeData, Difficulty, Relation } from '@/types'
 
 export const ALGORITHM_DIFFICULTY_COLORS: Record<Difficulty, string> = {
-  easy: '#86efac',
-  medium: '#fcd34d',
-  hard: '#fca5a5',
+  easy: 'rgba(94, 234, 212, 0.78)',
+  medium: 'rgba(251, 146, 120, 0.78)',
+  hard: 'rgba(251, 113, 133, 0.78)',
 }
+
+export const ALGORITHM_GROUP_NODE_COLOR = 'rgba(96, 165, 250, 0.82)'
+export const ALGORITHM_TOPIC_NODE_COLOR = 'rgba(228, 228, 231, 0.82)'
 
 export function getAlgorithmDifficultyColor(difficulty?: Difficulty): string {
   if (!difficulty)
@@ -139,7 +142,7 @@ const CHECKIN_TOPIC_TITLE = CHECKIN_TOPIC_SEQUENCE.reduce<Record<string, string>
   {},
 )
 
-const ROADMAP_GROUPS: AlgorithmRoadmapData['groups'] = [
+const KNOWLEDGE_GROUPS: AlgorithmKnowledgeData['groups'] = [
   {
     id: 'array-operation-group',
     title: '数组操作',
@@ -184,7 +187,7 @@ export const ALGORITHM_RELATIONS: Relation[] = [
   { source: 'bfs', target: 'shortest-path' },
 ]
 
-const ROADMAP_TOPICS_RAW: AlgorithmRoadmapData['topics'] = [
+const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
   {
     id: 'diff-array',
     title: '差分数组',
@@ -775,7 +778,7 @@ const ROADMAP_TOPICS_RAW: AlgorithmRoadmapData['topics'] = [
   },
 ]
 
-const ROADMAP_TOPICS: AlgorithmRoadmapData['topics'] = ROADMAP_TOPICS_RAW
+const KNOWLEDGE_TOPICS: AlgorithmKnowledgeData['topics'] = KNOWLEDGE_TOPICS_RAW
   .map(topic => ({
     ...topic,
     title: CHECKIN_TOPIC_TITLE[topic.id] ?? topic.title,
@@ -787,7 +790,7 @@ const ROADMAP_TOPICS: AlgorithmRoadmapData['topics'] = ROADMAP_TOPICS_RAW
   )
 
 /// keep-sorted
-const ROADMAP_PROBLEMS: AlgorithmRoadmapData['problems'] = {
+const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
   'lc:1': {
     id: 'lc:1',
     number: '1',
@@ -3002,9 +3005,9 @@ const ROADMAP_PROBLEMS: AlgorithmRoadmapData['problems'] = {
   },
 }
 
-export const ALGORITHM_ROADMAP: AlgorithmRoadmapData = {
+export const ALGORITHM_KNOWLEDGE: AlgorithmKnowledgeData = {
   version: 1,
-  groups: ROADMAP_GROUPS,
-  topics: ROADMAP_TOPICS,
-  problems: ROADMAP_PROBLEMS,
+  groups: KNOWLEDGE_GROUPS,
+  topics: KNOWLEDGE_TOPICS,
+  problems: KNOWLEDGE_PROBLEMS,
 }

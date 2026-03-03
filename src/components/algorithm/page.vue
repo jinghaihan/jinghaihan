@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import type { AlgorithmProgress, TopicGroup } from '@/types'
 import { computed, onMounted, ref, watch } from 'vue'
-import { ALGORITHM_RELATIONS, ALGORITHM_ROADMAP } from '@/constants/algorithm'
+import { ALGORITHM_KNOWLEDGE, ALGORITHM_RELATIONS } from '@/constants/algorithm'
 import ChecklistPanel from './checklist-panel.vue'
 import KnowledgeGraph from './knowledge-graph.vue'
 
 const PROGRESS_STORAGE_KEY = 'algorithm-checklist-progress-v1'
 const UNGROUPED_ID = '__ungrouped__'
-const UNGROUPED_TITLE = '独立专题'
+const UNGROUPED_TITLE = '其他专题'
 
 const progress = ref<AlgorithmProgress>({})
 const searchKeyword = ref('')
 
 const topicGroups = computed<TopicGroup[]>(() => {
-  const grouped = ALGORITHM_ROADMAP.groups
+  const grouped = ALGORITHM_KNOWLEDGE.groups
     .map(group => ({
       id: group.id,
       title: group.title,
-      topics: ALGORITHM_ROADMAP.topics.filter(topic => topic.groupId === group.id),
+      topics: ALGORITHM_KNOWLEDGE.topics.filter(topic => topic.groupId === group.id),
     }))
     .filter(group => group.topics.length > 0)
 
-  const ungroupedTopics = ALGORITHM_ROADMAP.topics.filter(topic => !topic.groupId)
+  const ungroupedTopics = ALGORITHM_KNOWLEDGE.topics.filter(topic => !topic.groupId)
   if (ungroupedTopics.length > 0) {
     grouped.push({
       id: UNGROUPED_ID,
@@ -56,7 +56,7 @@ function clearGroupProgress(groupId: string): void {
 }
 
 function clearTopicProgress(topicId: string): void {
-  const topic = ALGORITHM_ROADMAP.topics.find(item => item.id === topicId)
+  const topic = ALGORITHM_KNOWLEDGE.topics.find(item => item.id === topicId)
   if (!topic)
     return
 
@@ -114,7 +114,7 @@ watch(progress, (value) => {
       <section class="min-h-0">
         <ChecklistPanel
           :groups="topicGroups"
-          :problems="ALGORITHM_ROADMAP.problems"
+          :problems="ALGORITHM_KNOWLEDGE.problems"
           :progress="progress"
           :search-keyword="searchKeyword"
           @update:search-keyword="updateSearchKeyword"
@@ -128,7 +128,8 @@ watch(progress, (value) => {
       <section class="min-h-0">
         <KnowledgeGraph
           :groups="topicGroups"
-          :topics="ALGORITHM_ROADMAP.topics"
+          :topics="ALGORITHM_KNOWLEDGE.topics"
+          :problems="ALGORITHM_KNOWLEDGE.problems"
           :relations="ALGORITHM_RELATIONS"
           @node-select="selectGraphNode"
         />
