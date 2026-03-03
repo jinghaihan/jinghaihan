@@ -72,38 +72,42 @@ function onClear(): void {
       v-if="open"
       :ref="panel.floatingRef"
       :style="floatingStyles"
-      class="p-2 border border-border/55 rounded-md bg-background max-h-84 w-76 shadow-sm z-50 overflow-y-auto"
+      class="border border-border/55 rounded-md bg-background w-76 shadow-sm z-50 overflow-hidden"
     >
-      <div class="mb-1.5 px-1 pb-1.5 border-b border-border/35 flex items-center">
-        <span class="text-xs text-foreground/60">推荐顺序</span>
-        <button
-          v-if="selectedCount > 0"
-          type="button"
-          class="text-xs text-foreground/55 ml-auto transition-colors duration-150 hover:text-foreground"
-          @click="onClear"
-        >
-          清空过滤
-        </button>
-      </div>
+      <div class="max-h-84 overflow-y-auto">
+        <div class="px-3 py-2 border-b border-border/35 bg-background flex items-center top-0 sticky z-10">
+          <span class="text-xs text-foreground/60">推荐顺序</span>
+          <button
+            v-if="selectedCount > 0"
+            type="button"
+            class="text-xs text-foreground/55 ml-auto transition-colors duration-150 hover:text-foreground"
+            @click="onClear"
+          >
+            清空过滤
+          </button>
+        </div>
 
-      <button
-        v-for="topic in rankedTopics"
-        :key="topic.id"
-        type="button"
-        class="text-sm px-2 py-1.5 rounded-md flex gap-2 w-full transition-colors duration-150 items-center hover:bg-muted/45"
-        :class="topic.selected ? 'bg-muted/45' : ''"
-        @click="onToggleTopic(topic.id)"
-      >
-        <span class="text-xs text-foreground/45 leading-none font-mono text-left shrink-0 w-6 tabular-nums">{{ topic.rank }}</span>
-        <span class="truncate">{{ topic.title }}</span>
-        <span class="ml-auto inline-flex gap-1.5 items-center">
-          <span class="text-xs text-foreground/60 leading-none font-mono tabular-nums">{{ topic.done }}/{{ topic.total }}</span>
-          <i
-            class="i-ri:check-line text-xs"
-            :class="topic.selected ? 'op100 text-green-500/85 dark:text-green-400/85' : 'op0'"
-          />
-        </span>
-      </button>
+        <div class="p-2">
+          <button
+            v-for="topic in rankedTopics"
+            :key="topic.id"
+            type="button"
+            class="text-sm px-2 py-1.5 rounded-md flex gap-2 w-full transition-colors duration-150 items-center hover:bg-muted/45"
+            :class="topic.selected ? 'bg-muted/45' : ''"
+            @click="onToggleTopic(topic.id)"
+          >
+            <span class="text-xs text-foreground/45 leading-none font-mono text-left shrink-0 w-6 tabular-nums">{{ topic.rank }}</span>
+            <span class="truncate">{{ topic.title }}</span>
+            <span class="ml-auto inline-flex gap-1.5 items-center">
+              <span class="text-xs text-foreground/60 leading-none font-mono tabular-nums">{{ topic.done }}/{{ topic.total }}</span>
+              <i
+                class="i-ri:check-line text-xs"
+                :class="topic.selected ? 'op100 text-green-500/85 dark:text-green-400/85' : 'op0'"
+              />
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>

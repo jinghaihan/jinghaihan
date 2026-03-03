@@ -6,6 +6,7 @@ import Checkbox from './checkbox.vue'
 import Collapse from './collapse.vue'
 import CompletionStat from './completion-stat.vue'
 import DifficultyFilter from './difficulty-filter.vue'
+import DifficultyProgressRing from './difficulty-progress-ring.vue'
 import InputSearch from './input-search.vue'
 import ProblemSeq from './problem-seq.vue'
 import RandomProblemButton from './random-problem-button.vue'
@@ -33,6 +34,11 @@ const emit = defineEmits<{
 }>()
 
 const ALL_DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
+const DIFFICULTY_LABEL: Record<Difficulty, string> = {
+  easy: '简单',
+  medium: '中等',
+  hard: '困难',
+}
 
 const collapsedGroupIds = ref<Set<string>>(new Set())
 const collapsedTopicIds = ref<Set<string>>(new Set())
@@ -220,6 +226,41 @@ const unresolvedProblemIds = computed(() => {
   return ids
 })
 
+const difficultyStats = computed(() => {
+  const counts: Record<Difficulty, { done: number, total: number }> = {
+    easy: { done: 0, total: 0 },
+    medium: { done: 0, total: 0 },
+    hard: { done: 0, total: 0 },
+  }
+  const seen = new Set<string>()
+
+  for (const group of filteredGroups.value) {
+    for (const topic of group.topics) {
+      for (const problemId of topic.problemIds) {
+        if (seen.has(problemId))
+          continue
+        seen.add(problemId)
+
+        const difficulty = getProblem(problemId)?.difficulty
+        if (!difficulty)
+          continue
+
+        counts[difficulty].total += 1
+        if (isProblemDone(problemId))
+          counts[difficulty].done += 1
+      }
+    }
+  }
+
+  return ALL_DIFFICULTIES.map(difficulty => ({
+    difficulty,
+    label: DIFFICULTY_LABEL[difficulty],
+    done: counts[difficulty].done,
+    total: counts[difficulty].total,
+    color: getAlgorithmDifficultyColor(difficulty),
+  }))
+})
+
 const canRandomOpen = computed(() => unresolvedProblemIds.value.length > 0)
 
 function openRandomProblem(): void {
@@ -291,14 +332,25 @@ function problemDifficultyColor(problemId: string): string {
         />
         <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
         <RandomProblemButton :disabled="!canRandomOpen" @click="openRandomProblem" />
-        <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
+      </div>
+      <div class="mt-2 flex gap-2.5 items-center">
+        <div class="flex flex-wrap gap-1.5 min-w-0 items-center">
+          <DifficultyProgressRing
+            v-for="stat in difficultyStats"
+            :key="stat.difficulty"
+            :label="stat.label"
+            :done="stat.done"
+            :total="stat.total"
+            :color="stat.color"
+          />
+        </div>
         <CompletionStat
           :done="overallDoneCount"
           :total="overallTotalCount"
           select-label="全部标记为已完成"
           select-title="全部标记为已完成"
           clear-label="清空所有已完成"
-          class="text-sm text-foreground/65 ml-auto"
+          class="text-sm text-foreground/65 ml-auto shrink-0"
           @select="onSelectAll"
           @clear="onClearAll"
         />
