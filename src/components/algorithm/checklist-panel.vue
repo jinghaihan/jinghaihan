@@ -8,6 +8,7 @@ import CompletionStat from './completion-stat.vue'
 import DifficultyFilter from './difficulty-filter.vue'
 import InputSearch from './input-search.vue'
 import ProblemSeq from './problem-seq.vue'
+import RandomProblemButton from './random-problem-button.vue'
 
 interface Props {
   groups: TopicGroup[]
@@ -145,7 +146,7 @@ const unresolvedProblemIds = computed(() => {
   const ids: string[] = []
   const seen = new Set<string>()
 
-  for (const group of props.groups) {
+  for (const group of filteredGroups.value) {
     for (const topic of group.topics) {
       for (const problemId of topic.problemIds) {
         if (seen.has(problemId))
@@ -224,15 +225,7 @@ function problemDifficultyColor(problemId: string): string {
         />
         <DifficultyFilter v-model="selectedDifficulties" />
         <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
-        <button
-          type="button"
-          class="text-sm text-foreground/65 px-2 rounded-md inline-flex gap-1.5 h-8 min-w-8 transition-colors duration-150 items-center hover:text-foreground disabled:op45 disabled:cursor-not-allowed"
-          :disabled="!canRandomOpen"
-          @click="openRandomProblem"
-        >
-          <i class="i-ri:shuffle-line" />
-          <span class="leading-none font-medium">随机一题</span>
-        </button>
+        <RandomProblemButton :disabled="!canRandomOpen" @click="openRandomProblem" />
         <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
         <CompletionStat
           :done="overallDoneCount"
