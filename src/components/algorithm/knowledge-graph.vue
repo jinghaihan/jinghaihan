@@ -302,25 +302,26 @@ function mountGraph(): void {
     .attr('stroke', 'var(--border)')
     .attr('stroke-opacity', (d) => {
       if (d.kind === 'contains')
-        return 0.21
+        return 0.3
       if (d.kind === 'belongs')
-        return 0.32
-      return 0.11
+        return 0.4
+      return 0.2
     })
     .attr('stroke-width', (d) => {
       if (d.kind === 'contains')
-        return 0.9
-      if (d.kind === 'belongs')
         return 1
-      return 0.95
+      if (d.kind === 'belongs')
+        return 1.1
+      return 1
     })
 
   const node = root.append('g')
-    .attr('stroke', 'var(--background)')
+    .attr('stroke', 'var(--border)')
     .selectAll<SVGCircleElement, GraphNode>('circle')
     .data(nodes)
     .join('circle')
-    .attr('stroke-width', d => d.nodeType === 'problem' ? 0.85 : 1.35)
+    .attr('stroke-opacity', d => d.nodeType === 'problem' ? 0.52 : 0.62)
+    .attr('stroke-width', d => d.nodeType === 'problem' ? 1 : 1.5)
     .style('cursor', d => d.nodeType === 'problem' ? 'default' : 'pointer')
     .attr('r', d => d.radius)
     .attr('fill', (d) => {
@@ -385,8 +386,8 @@ function mountGraph(): void {
     .attr('fill', 'var(--background)')
     .attr('fill-opacity', 0.93)
     .attr('stroke', 'var(--border)')
-    .attr('stroke-opacity', 0.55)
-    .attr('stroke-width', 0.8)
+    .attr('stroke-opacity', 0.72)
+    .attr('stroke-width', 0.95)
 
   const problemHoverLabelText = problemHoverLabel.append('text')
     .attr('font-size', 11)
