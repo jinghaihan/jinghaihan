@@ -8,6 +8,7 @@ import {
   WEB_PIPELINE_FALLBACK_NODE_WIDTH,
   WEB_PIPELINE_FALLBACK_WIDTH,
 } from '@/constants/web-pipeline'
+import NodeSearchPanel from './node-search-panel.vue'
 
 const props = withDefaults(defineProps<{
   selectedNodeId?: string
@@ -32,10 +33,18 @@ watch(() => props.selectedNodeId, (nodeId) => {
     return
   pipeline.selectedNodeId.value = nodeId
 })
+
+function onSearchNodeSelect(nodeId: string): void {
+  pipeline.selectedNodeId.value = nodeId
+}
 </script>
 
 <template>
   <div class="size-full min-h-0 relative">
+    <NodeSearchPanel
+      @select-node="onSearchNodeSelect"
+    />
+
     <ZoomContainer
       :ref="pipeline.zoomContainerRef"
       @drag-end="pipeline.onViewportDragEnd"

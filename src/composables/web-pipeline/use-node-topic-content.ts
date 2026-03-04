@@ -1,8 +1,8 @@
 import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
 
-const EMPTY_HTML = '<article class="prose prose-sm max-w-none p-4"><p>该节点暂无专题内容。</p></article>'
-const ERROR_HTML = '<article class="prose prose-sm max-w-none p-4"><p>节点内容加载失败。</p></article>'
+const EMPTY_HTML = '<article class="prose prose-sm max-w-none"><p>该节点暂无专题内容。</p></article>'
+const ERROR_HTML = '<article class="prose prose-sm max-w-none"><p>节点内容加载失败。</p></article>'
 
 export function useNodeTopicContent(nodeId: Ref<string>) {
   const html = ref(EMPTY_HTML)

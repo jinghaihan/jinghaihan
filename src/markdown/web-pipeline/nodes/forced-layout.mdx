@@ -1,0 +1,72 @@
+---
+id: forced-layout
+title: 强制布局与回流治理
+nodeId: forced-layout
+---
+
+## 概念定位
+
+强制布局与回流治理聚焦 `cssom-js -> layout -> paint` 这段高频卡顿链路。核心目标是避免“读写交错导致的强制同步布局（Forced Synchronous Layout）”和回流扩散。
+
+## 工作机制
+
+1. 代码先写样式，再立刻读取几何属性（如 `offsetHeight`），浏览器会被迫立即刷新布局结果。
+2. 这种“写 -> 读 -> 写 -> 读”反复交错，会形成布局抖动（Layout Thrashing）。
+3. 布局重算后常伴随重绘，主线程时间片被持续占用。
+4. 通过批量读写、隔离影响范围、动画属性约束，可显著降低卡顿。
+
+## 关键知识点
+
+- **强制同步布局（Forced Synchronous Layout）**：本应延后批处理的布局被立即触发。
+- **布局抖动（Layout Thrashing）**：频繁读写交替导致重复布局计算。
+- **回流（Reflow）**：几何结构变化触发的布局重算。
+- **重绘（Repaint）**：视觉变化触发的像素重绘，不一定回流。
+- **布局隔离（Layout Containment）**：用 `contain` 限定布局影响范围。
+
+## 对页面性能的影响
+
+- 主线程会出现连续 `Layout` 和 `Paint` 峰值，拖慢交互响应。
+- 滚动和动画场景容易掉帧，输入反馈延迟明显。
+- 大列表和复杂组件树中，回流扩散成本更高。
+
+## 观测与排障
+
+### 浏览器侧
+
+- Performance 里关注 `Layout` 事件是否成簇出现。
+- 查看调用栈，定位触发 `offset*`/`getBoundingClientRect` 的热点代码。
+- 开启 Paint Flashing 观察是否存在大面积重绘。
+
+### 排障步骤
+
+1. 把 DOM 读操作和写操作分批，避免交替执行。
+2. 高频更新改为 `requestAnimationFrame` 统一调度。
+3. 动画优先使用 `transform` / `opacity`，减少布局参与。
+4. 对局部大模块使用 `contain: layout paint` 或 `content-visibility`。
+5. 回归验证 INP（Interaction to Next Paint）和掉帧情况。
+
+## 常见误区
+
+- “只改一个元素，不会影响整体布局”：不准确，可能影响祖先和兄弟节点。
+- “用了虚拟列表就没有回流问题”：不准确，错误读写节奏仍会触发强制布局。
+- “所有卡顿都来自 JavaScript 计算”：不准确，布局与绘制同样可能是主因。
+
+## 面试补充
+
+### 30 秒说明
+
+强制布局问题本质是错误的读写节奏。写样式后立刻读几何信息会触发同步布局，反复发生就形成 Layout Thrashing。治理策略是读写分离、批量更新、动画走合成层、隔离布局影响范围。
+
+### 高频追问
+
+1. 哪些操作最容易触发强制布局？
+
+在样式写入后立刻读取布局信息最常见，比如读取 `offsetWidth`、`offsetHeight`、`scrollTop`、`getBoundingClientRect()`。
+
+2. 为什么 `transform` 动画通常更流畅？
+
+`transform` 和 `opacity` 更容易在合成阶段处理，减少 Layout / Paint 的参与，主线程压力更小。
+
+3. 如何快速判断是不是布局抖动？
+
+看 Performance：若同一交互中出现大量交替 `Layout` 事件，并伴随高频样式读写调用栈，基本可以判定为布局抖动。
