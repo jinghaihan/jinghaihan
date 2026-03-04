@@ -1,7 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions'
 import Footer from '@/components/layout/footer.astro'
-import Noise from '@/components/layout/noise.astro'
 import SiteHeader from '@/components/layout/site-header.astro'
 import { DOMAIN } from '@/constants/site'
 import '@unocss/reset/tailwind.css'
@@ -76,8 +75,6 @@ const isFullscreen = layout === 'fullscreen'
     <title>{title}</title>
   </head>
   <body>
-    <Noise />
-
     <div class:list={[
       'mx-auto flex flex-col h-screen w-full overflow-hidden',
       isFullscreen ? 'max-w-none' : isWide ? 'max-w-[80rem]' : 'max-w-160',

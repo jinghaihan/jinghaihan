@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { WorkflowCanvasDefinition, WorkflowEdge, WorkflowNode, WorkflowNodeLinkItem } from '@/types/workflow'
+import type { WorkflowCanvasDefinition, WorkflowEdge, WorkflowNode, WorkflowNodeCheckProgress, WorkflowNodeLinkItem } from '@/types/workflow'
+import { useLocalStorage } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import WorkflowCanvas from './canvas.vue'
 import WorkflowSidebar from './sidebar.vue'
@@ -12,6 +13,7 @@ const props = withDefaults(defineProps<{
   nodes: WorkflowNode<string>[]
   edges: WorkflowEdge<string>[]
   canvas: WorkflowCanvasDefinition<string, string>
+  checkStorageKey: string
   kindLabels?: Record<string, string>
   searchPlaceholder?: string
   isDark?: boolean
@@ -38,12 +40,20 @@ const props = withDefaults(defineProps<{
 })
 
 const selectedNodeId = ref('')
+const checkedNodeProgress = useLocalStorage<WorkflowNodeCheckProgress>(props.checkStorageKey, {}, {
+  mergeDefaults: true,
+})
 const nodeTopicHtml = ref(props.emptyNodeContentHtml)
 const nodeTopicLoading = ref(false)
 let requestToken = 0
 
 const nodeMap = computed(() => new Map(props.nodes.map(node => [node.id, node])))
+const nodeIdSet = computed(() => new Set(props.nodes.map(node => node.id)))
 const selectedNode = computed(() => nodeMap.value.get(selectedNodeId.value) ?? null)
+const selectedNodeChecked = computed(() => {
+  const node = selectedNode.value
+  return node ? Boolean(checkedNodeProgress.value[node.id]) : false
+})
 const showSidebar = computed(() => Boolean(selectedNode.value))
 const linkedNodes = computed(() => {
   const node = selectedNode.value
@@ -76,12 +86,11 @@ const linkedNodes = computed(() => {
 })
 
 watch(() => props.nodes, (nodes) => {
-  if (!selectedNodeId.value)
-    return
-
-  if (!nodes.some(node => node.id === selectedNodeId.value))
+  if (selectedNodeId.value && !nodes.some(node => node.id === selectedNodeId.value))
     selectedNodeId.value = ''
-})
+
+  checkedNodeProgress.value = normalizeCheckProgress(checkedNodeProgress.value, nodeIdSet.value)
+}, { immediate: true })
 
 watch(() => [selectedNodeId.value, props.loadNodeContent] as const, async ([nodeId, loadNodeContent]) => {
   requestToken += 1
@@ -129,6 +138,36 @@ function onSelectionChange(nodeId: string): void {
 function onSidebarNodeSelect(nodeId: string): void {
   onSelectionChange(nodeId)
 }
+
+function onSidebarToggleCheck(nodeId: string, checked: boolean): void {
+  setNodeChecked(nodeId, checked)
+}
+
+function setNodeChecked(nodeId: string, checked: boolean): void {
+  if (!nodeIdSet.value.has(nodeId))
+    return
+
+  const next: WorkflowNodeCheckProgress = { ...checkedNodeProgress.value }
+  if (checked)
+    next[nodeId] = true
+  else
+    delete next[nodeId]
+
+  checkedNodeProgress.value = next
+}
+
+function normalizeCheckProgress(value: unknown, validNodeIdSet: Set<string>): WorkflowNodeCheckProgress {
+  if (!value || typeof value !== 'object')
+    return {}
+
+  const normalized: WorkflowNodeCheckProgress = {}
+  for (const [nodeId, checked] of Object.entries(value as Record<string, unknown>)) {
+    if (checked === true && validNodeIdSet.has(nodeId))
+      normalized[nodeId] = true
+  }
+
+  return normalized
+}
 </script>
 
 <template>
@@ -141,6 +180,7 @@ function onSidebarNodeSelect(nodeId: string): void {
         :nodes="nodes"
         :canvas="canvas"
         :selected-node-id="selectedNodeId"
+        :checked-node-progress="checkedNodeProgress"
         :kind-labels="kindLabels"
         :search-placeholder="searchPlaceholder"
         :is-dark="isDark"
@@ -158,6 +198,7 @@ function onSidebarNodeSelect(nodeId: string): void {
         :node="selectedNode"
         :previous-nodes="linkedNodes.previous"
         :next-nodes="linkedNodes.next"
+        :checked="selectedNodeChecked"
         :content-html="nodeTopicHtml"
         :content-loading="nodeTopicLoading"
         :min-width="sidebarMinWidth"
@@ -165,6 +206,7 @@ function onSidebarNodeSelect(nodeId: string): void {
         :collapsed-width="sidebarCollapsedWidth"
         :default-width="sidebarDefaultWidth"
         @select-node="onSidebarNodeSelect"
+        @toggle-check="onSidebarToggleCheck"
       />
     </div>
   </div>

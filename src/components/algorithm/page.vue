@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AlgorithmProgress, TopicGroup } from '@/types'
-import { computed, onMounted, ref, watch } from 'vue'
+import { useLocalStorage } from '@vueuse/core'
+import { computed, ref } from 'vue'
 import { ALGORITHM_KNOWLEDGE, ALGORITHM_RELATIONS } from '@/constants/algorithm'
 import ChecklistPanel from './checklist-panel.vue'
 import KnowledgeGraph from './knowledge-graph.vue'
@@ -9,8 +10,12 @@ const PROGRESS_STORAGE_KEY = 'algorithm-checklist-progress-v1'
 const UNGROUPED_ID = '__ungrouped__'
 const UNGROUPED_TITLE = '其他专题'
 
-const progress = ref<AlgorithmProgress>({})
+const progress = useLocalStorage<AlgorithmProgress>(PROGRESS_STORAGE_KEY, {}, {
+  mergeDefaults: true,
+})
 const searchKeyword = ref('')
+
+progress.value = normalizeProgress(progress.value)
 
 const topicGroups = computed<TopicGroup[]>(() => {
   const grouped = ALGORITHM_KNOWLEDGE.groups
@@ -113,34 +118,17 @@ function selectGraphNode(label: string): void {
   searchKeyword.value = label.trim()
 }
 
-function restoreProgress(): void {
-  const value = localStorage.getItem(PROGRESS_STORAGE_KEY)
-  if (!value)
-    return
+function normalizeProgress(value: unknown): AlgorithmProgress {
+  if (!value || typeof value !== 'object')
+    return {}
 
-  try {
-    const parsed = JSON.parse(value)
-    if (parsed && typeof parsed === 'object') {
-      const normalized: AlgorithmProgress = {}
-      for (const [problemId, done] of Object.entries(parsed as Record<string, unknown>)) {
-        if (done)
-          normalized[problemId] = true
-      }
-      progress.value = normalized
-    }
+  const normalized: AlgorithmProgress = {}
+  for (const [problemId, done] of Object.entries(value as Record<string, unknown>)) {
+    if (done === true)
+      normalized[problemId] = true
   }
-  catch {
-    progress.value = {}
-  }
+  return normalized
 }
-
-onMounted(() => {
-  restoreProgress()
-})
-
-watch(progress, (value) => {
-  localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(value))
-}, { deep: true })
 </script>
 
 <template>

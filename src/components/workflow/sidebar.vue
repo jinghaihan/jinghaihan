@@ -19,12 +19,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (event: 'selectNode', nodeId: string): void
+  (event: 'toggleCheck', nodeId: string, checked: boolean): void
 }>()
 
 interface Props {
   node: WorkflowNode<string>
   previousNodes: WorkflowNodeLinkItem[]
   nextNodes: WorkflowNodeLinkItem[]
+  checked?: boolean
   contentHtml: string
   contentLoading?: boolean
   minWidth?: number
@@ -71,6 +73,10 @@ function onResizeHandleEnter(): void {
 function onResizeHandleLeave(): void {
   resizeHovering.value = false
 }
+
+function onToggleCheck(): void {
+  emit('toggleCheck', props.node.id, !props.checked)
+}
 </script>
 
 <template>
@@ -114,14 +120,29 @@ function onResizeHandleLeave(): void {
             {{ node.title }}
           </p>
         </div>
-        <button
-          type="button"
-          aria-label="收起侧边栏"
-          class="text-muted-foreground rounded-md flex h-7 w-7 transition-colors items-center justify-center hover:text-foreground hover:bg-muted/65"
-          @click="toggleCollapsed"
-        >
-          <span class="i-ri:arrow-right-s-line text-base text-current" />
-        </button>
+        <div class="flex gap-1 items-center">
+          <button
+            type="button"
+            :aria-label="checked ? '标记为未完成' : '标记为已完成'"
+            class="text-xs px-2 rounded-md flex gap-1.5 h-7 transition-colors items-center hover:bg-muted/65"
+            :class="checked
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-muted-foreground hover:text-foreground'"
+            @click="onToggleCheck"
+          >
+            <span :class="checked ? 'i-ri:checkbox-circle-fill' : 'i-ri:checkbox-blank-circle-line'" />
+            <span class="leading-none">{{ checked ? '已完成' : '未完成' }}</span>
+          </button>
+
+          <button
+            type="button"
+            aria-label="收起侧边栏"
+            class="text-muted-foreground rounded-md flex h-7 w-7 transition-colors items-center justify-center hover:text-foreground hover:bg-muted/65"
+            @click="toggleCollapsed"
+          >
+            <span class="i-ri:arrow-right-s-line text-base text-current" />
+          </button>
+        </div>
       </div>
 
       <div class="px-5 pb-4 flex-1 min-h-0 overflow-y-auto">

@@ -32,6 +32,8 @@ export interface WorkflowNodeLinkItem {
   title: string
 }
 
+export type WorkflowNodeCheckProgress = Partial<Record<string, true>>
+
 export interface WorkflowPositionedNode<TNodeKind extends string = string> extends WorkflowNode<TNodeKind> {
   x: number
   y: number

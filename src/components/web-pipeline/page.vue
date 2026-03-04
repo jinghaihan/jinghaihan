@@ -84,6 +84,7 @@ async function loadNodeContent(nodeId: string): Promise<string> {
     :nodes="WEB_PIPELINE_NODES"
     :edges="WEB_PIPELINE_EDGES"
     :canvas="workflowCanvas"
+    check-storage-key="web-pipeline-node-check-progress"
     :kind-labels="WEB_PIPELINE_KIND_LABELS"
     :is-dark="isDark"
     :get-node-color="getNodeColor"

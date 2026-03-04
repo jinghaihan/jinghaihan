@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkflowCanvasDefinition, WorkflowNode } from '@/types/workflow'
+import type { WorkflowCanvasDefinition, WorkflowNode, WorkflowNodeCheckProgress } from '@/types/workflow'
 import { computed, toRef, watch } from 'vue'
 import ZoomContainer from '@/components/ui/zoom-container.vue'
 import { useWorkflowGraph } from '@/composables/use-workflow-graph'
@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{
   canvas: WorkflowCanvasDefinition<string, string>
   nodes: WorkflowNode<string>[]
   selectedNodeId?: string
+  checkedNodeProgress?: WorkflowNodeCheckProgress
   kindLabels?: Record<string, string>
   searchPlaceholder?: string
   isDark?: boolean
@@ -21,6 +22,7 @@ const props = withDefaults(defineProps<{
   getEdgeBaseWidth?: (kind: string) => number
 }>(), {
   selectedNodeId: '',
+  checkedNodeProgress: () => ({}),
   kindLabels: () => ({}),
   searchPlaceholder: '输入节点名、ID、stage...',
   isDark: false,
@@ -63,6 +65,7 @@ function onSearchNodeSelect(nodeId: string): void {
   <div class="size-full min-h-0 relative">
     <WorkflowSearchPanel
       :nodes="nodes"
+      :checked-node-progress="checkedNodeProgress"
       :kind-labels="kindLabels"
       :placeholder="searchPlaceholder"
       @select-node="onSearchNodeSelect"

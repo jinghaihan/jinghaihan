@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkflowNode } from '@/types/workflow'
+import type { WorkflowNode, WorkflowNodeCheckProgress } from '@/types/workflow'
 import { onClickOutside, useMagicKeys, whenever } from '@vueuse/core'
 import { computed, nextTick, ref, watch } from 'vue'
 
@@ -8,13 +8,16 @@ interface SearchResultItem {
   title: string
   kindLabel: string
   stage: number
+  checked: boolean
 }
 
 const props = withDefaults(defineProps<{
   nodes: WorkflowNode<string>[]
+  checkedNodeProgress?: WorkflowNodeCheckProgress
   kindLabels?: Record<string, string>
   placeholder?: string
 }>(), {
+  checkedNodeProgress: () => ({}),
   kindLabels: () => ({}),
   placeholder: '输入节点名、ID、stage...',
 })
@@ -107,6 +110,7 @@ function toResultItem(node: WorkflowNode<string>): SearchResultItem {
     title: node.title,
     kindLabel: props.kindLabels[node.kind] ?? node.kind,
     stage: node.stage,
+    checked: Boolean(props.checkedNodeProgress[node.id]),
   }
 }
 
@@ -208,8 +212,8 @@ function onInputKeydown(event: KeyboardEvent): void {
     >
       <span class="i-ri:search-line text-sm" />
       <span class="font-medium">搜索节点</span>
-      <span class="text-[10px] font-mono px-1.5 py-0.5 border border-border/60 rounded tabular-nums">
-        Ctrl/⌘K
+      <span class="text-xs font-mono px-1.5 py-0.5 border border-border/60 rounded tabular-nums">
+        ⌘ K
       </span>
     </button>
 
@@ -258,6 +262,14 @@ function onInputKeydown(event: KeyboardEvent): void {
               </p>
             </div>
             <div class="flex shrink-0 gap-1 items-center">
+              <span
+                class="text-[10px] px-1.5 py-0.5 border rounded"
+                :class="item.checked
+                  ? 'border-emerald-500/45 text-emerald-600 dark:text-emerald-400'
+                  : 'border-border/60 text-muted-foreground'"
+              >
+                {{ item.checked ? '已完成' : '未完成' }}
+              </span>
               <span class="text-[10px] px-1.5 py-0.5 border border-border/60 rounded">
                 {{ item.kindLabel }}
               </span>

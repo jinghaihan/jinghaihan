@@ -2,9 +2,9 @@ import type { FallbackEdge, FallbackNode, NodeKind, WorkflowEdge, WorkflowNode }
 
 export const WEB_PIPELINE_NODE_WIDTH = 214
 export const WEB_PIPELINE_NODE_HEIGHT = 58
-export const WEB_PIPELINE_FALLBACK_WIDTH = 7400
+export const WEB_PIPELINE_FALLBACK_WIDTH = 8400
 export const WEB_PIPELINE_FALLBACK_HEIGHT = 980
-export const WEB_PIPELINE_FALLBACK_NODE_WIDTH = 176
+export const WEB_PIPELINE_FALLBACK_NODE_WIDTH = 190
 export const WEB_PIPELINE_FALLBACK_NODE_HEIGHT = 44
 
 export const WEB_PIPELINE_KIND_LABELS: Record<NodeKind, string> = {
@@ -248,12 +248,72 @@ export const WEB_PIPELINE_NODES: WorkflowNode[] = [
     stage: 23,
     lane: 4,
   },
+  {
+    id: 'refresh-modes',
+    title: '刷新模式与缓存判定',
+    kind: 'perf',
+    stage: 1,
+    lane: 5,
+  },
+  {
+    id: 'http-evolution',
+    title: 'HTTP 协议演进与连接复用',
+    kind: 'network',
+    stage: 14,
+    lane: 0,
+  },
+  {
+    id: 'status-code-path',
+    title: '状态码决策链（200/206/304）',
+    kind: 'server',
+    stage: 15,
+    lane: 4,
+  },
+  {
+    id: 'realtime-channel',
+    title: '实时通道分支（WebSocket/SSE）',
+    kind: 'network',
+    stage: 16,
+    lane: 5,
+  },
+  {
+    id: 'security-cors',
+    title: '同源与跨域安全策略',
+    kind: 'network',
+    stage: 14,
+    lane: 5,
+  },
+  {
+    id: 'runtime-storage',
+    title: '运行时与存储关联',
+    kind: 'perf',
+    stage: 18,
+    lane: 5,
+  },
+  {
+    id: 'metrics-playbook',
+    title: '指标异常排障动作库',
+    kind: 'perf',
+    stage: 22,
+    lane: 5,
+  },
+  {
+    id: 'release-gate',
+    title: '发布回归与性能门禁',
+    kind: 'perf',
+    stage: 24,
+    lane: 0,
+  },
 ]
 
 export const WEB_PIPELINE_EDGES: WorkflowEdge[] = [
   { source: 'nav-start', target: 'sw-check', label: '发起导航请求', kind: 'normal' },
+  { source: 'nav-start', target: 'refresh-modes', label: '触发普通/强制刷新', kind: 'normal' },
   { source: 'sw-check', target: 'response-stream', label: '命中 SW 缓存', kind: 'hit' },
   { source: 'sw-check', target: 'memory-cache', label: 'SW 未命中', kind: 'miss' },
+  { source: 'refresh-modes', target: 'memory-cache', label: '普通刷新优先复用缓存', kind: 'optimize' },
+  { source: 'refresh-modes', target: 'disk-cache', label: '强制刷新绕过部分缓存', kind: 'optimize' },
+  { source: 'refresh-modes', target: 'cache-policy', label: '刷新行为影响命中', kind: 'optimize' },
   { source: 'memory-cache', target: 'response-stream', label: '命中内存缓存', kind: 'hit' },
   { source: 'memory-cache', target: 'disk-cache', label: '内存缓存未命中', kind: 'miss' },
   { source: 'disk-cache', target: 'response-stream', label: '命中磁盘缓存 / 304 复用', kind: 'hit' },
@@ -271,11 +331,27 @@ export const WEB_PIPELINE_EDGES: WorkflowEdge[] = [
   { source: 'dns-tld', target: 'dns-authoritative', label: '返回权威 DNS', kind: 'normal' },
   { source: 'dns-authoritative', target: 'dns-result', label: '返回最终记录', kind: 'validate' },
   { source: 'dns-result', target: 'tcp-tls', label: '拿到目标 IP', kind: 'normal' },
+  { source: 'http-evolution', target: 'tcp-tls', label: '连接复用策略', kind: 'optimize' },
+  { source: 'http-evolution', target: 'http-request', label: '协议版本影响传输', kind: 'optimize' },
+  { source: 'http-evolution', target: 'perf-metrics', label: '协议指标对比', kind: 'optimize' },
   { source: 'tcp-tls', target: 'http-request', label: '连接建立完成', kind: 'normal' },
+  { source: 'http-request', target: 'security-cors', label: '同源策略与预检', kind: 'optimize' },
+  { source: 'security-cors', target: 'origin-response', label: 'CORS 校验与响应头', kind: 'optimize' },
+  { source: 'security-cors', target: 'perf-metrics', label: '安全策略异常监控', kind: 'optimize' },
+  { source: 'http-request', target: 'realtime-channel', label: '升级到实时通道', kind: 'optimize' },
+  { source: 'realtime-channel', target: 'js-runtime', label: '事件流进入运行时', kind: 'optimize' },
+  { source: 'realtime-channel', target: 'perf-metrics', label: '连接稳定性指标', kind: 'optimize' },
   { source: 'http-request', target: 'origin-response', label: '请求已发送', kind: 'normal' },
+  { source: 'origin-response', target: 'status-code-path', label: '响应状态码分流', kind: 'optimize' },
+  { source: 'status-code-path', target: 'response-stream', label: '200 内容流返回', kind: 'validate' },
+  { source: 'status-code-path', target: 'response-stream', label: '206 分段传输', kind: 'validate' },
+  { source: 'status-code-path', target: 'disk-cache', label: '304 复用本地副本', kind: 'validate' },
   { source: 'origin-response', target: 'response-stream', label: '200 / 304 / 206', kind: 'validate' },
   { source: 'response-stream', target: 'html-parser', label: '流式解析 HTML', kind: 'normal' },
   { source: 'response-stream', target: 'cssom-js', label: '预加载扫描', kind: 'normal' },
+  { source: 'html-parser', target: 'runtime-storage', label: 'Cookie/Storage 读取影响', kind: 'optimize' },
+  { source: 'js-runtime', target: 'runtime-storage', label: '存储访问与主线程', kind: 'optimize' },
+  { source: 'runtime-storage', target: 'perf-metrics', label: '存储与运行时观测', kind: 'optimize' },
   { source: 'html-parser', target: 'render-tree', label: 'DOM 就绪', kind: 'normal' },
   { source: 'cssom-js', target: 'render-tree', label: 'CSSOM 与脚本就绪', kind: 'normal' },
   { source: 'render-tree', target: 'layout', label: '计算布局几何', kind: 'normal' },
@@ -299,9 +375,17 @@ export const WEB_PIPELINE_EDGES: WorkflowEdge[] = [
   { source: 'perf-metrics', target: 'origin-response', label: '服务端与 TTFB', kind: 'optimize' },
   { source: 'perf-metrics', target: 'layout', label: 'CWV 与渲染指标', kind: 'optimize' },
   { source: 'perf-metrics', target: 'composite', label: '帧率与长任务', kind: 'optimize' },
+  { source: 'perf-metrics', target: 'metrics-playbook', label: '指标触发排障动作', kind: 'optimize' },
+  { source: 'metrics-playbook', target: 'cache-policy', label: '缓存类异常修复', kind: 'optimize' },
+  { source: 'metrics-playbook', target: 'forced-layout', label: '渲染类异常修复', kind: 'optimize' },
+  { source: 'metrics-playbook', target: 'engineering-pipeline', label: '构建发布类异常修复', kind: 'optimize' },
   { source: 'engineering-pipeline', target: 'cache-policy', label: '构建产物可缓存性', kind: 'optimize' },
   { source: 'engineering-pipeline', target: 'resource-hints', label: '资源拆分与预加载', kind: 'optimize' },
   { source: 'engineering-pipeline', target: 'perf-metrics', label: 'CI 性能门禁与监控', kind: 'optimize' },
+  { source: 'engineering-pipeline', target: 'release-gate', label: '发布前性能门禁', kind: 'optimize' },
+  { source: 'perf-metrics', target: 'release-gate', label: '回归指标比对', kind: 'optimize' },
+  { source: 'release-gate', target: 'cache-policy', label: '异常回滚与策略修复', kind: 'optimize' },
+  { source: 'release-gate', target: 'resource-hints', label: '回归后资源策略校准', kind: 'optimize' },
   { source: 'html-strategy', target: 'nav-start', label: '语义结构与可访问性', kind: 'optimize' },
   { source: 'html-strategy', target: 'html-parser', label: '减少解析阻塞点', kind: 'optimize' },
   { source: 'html-strategy', target: 'parse-blocking', label: '首屏关键 HTML 组织', kind: 'optimize' },
