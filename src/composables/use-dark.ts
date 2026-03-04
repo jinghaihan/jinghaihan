@@ -1,11 +1,11 @@
-const STORAGE_KEY = 'vueuse-color-scheme'
+export const DARK_STORAGE_KEY = 'vueuse-color-scheme'
 
 function applyDark(isDark: boolean) {
   document.documentElement.classList.toggle('dark', isDark)
-  localStorage.setItem(STORAGE_KEY, isDark ? 'dark' : 'light')
+  localStorage.setItem(DARK_STORAGE_KEY, isDark ? 'dark' : 'light')
 }
 
-export function useDark(button: HTMLButtonElement | null) {
+export function useDarkToggle(button: HTMLButtonElement | null) {
   if (!button || button.dataset.darkBound === '1')
     return
 

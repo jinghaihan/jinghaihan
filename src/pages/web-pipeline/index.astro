@@ -1,0 +1,11 @@
+---
+import WebPipelinePage from '@/components/web-pipeline/page.vue'
+import BaseLayout from '@/layouts/base-layout.astro'
+---
+
+<BaseLayout
+  title="Web Pipeline - octohash"
+  layout="fullscreen"
+>
+  <WebPipelinePage client:only="vue" />
+</BaseLayout>
