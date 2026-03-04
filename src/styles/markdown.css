@@ -1,8 +1,13 @@
-.expressive-code,
-.expressive-code pre,
-.expressive-code span {
+.astro-code,
+.astro-code span {
   background-color: var(--muted) !important;
   border-color: var(--border) !important;
+}
+
+.dark .astro-code,
+.dark .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
 }
 
 .prose {

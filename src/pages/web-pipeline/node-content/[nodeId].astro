@@ -1,0 +1,39 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { getCollection, render } from 'astro:content'
+
+export const partial = true
+
+interface Props {
+  entry: CollectionEntry<'webPipelineNodes'>
+}
+
+interface StaticPathItem {
+  params: {
+    nodeId: string
+  }
+  props: Props
+}
+
+export async function getStaticPaths() {
+  const entries = await getCollection('webPipelineNodes')
+  return entries.flatMap((entry: CollectionEntry<'webPipelineNodes'>): StaticPathItem[] => {
+      const fileName = entry.id.split('/').pop() ?? ''
+      const nodeId = fileName.replace(/\.mdx$/, '')
+      if (!nodeId)
+        return []
+
+      return [{
+        params: { nodeId },
+        props: { entry },
+      }]
+    })
+}
+
+const { entry } = Astro.props as Props
+const { Content } = await render(entry)
+---
+
+<article class="max-w-none prose prose-sm">
+  <Content />
+</article>

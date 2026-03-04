@@ -16,6 +16,11 @@ export interface WorkflowEdge {
   kind: EdgeKind
 }
 
+export interface NodeLinkItem {
+  id: string
+  title: string
+}
+
 export interface PositionedNode extends WorkflowNode {
   x: number
   y: number

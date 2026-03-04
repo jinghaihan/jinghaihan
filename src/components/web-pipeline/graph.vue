@@ -9,6 +9,12 @@ import {
   WEB_PIPELINE_FALLBACK_WIDTH,
 } from '@/constants/web-pipeline'
 
+const props = withDefaults(defineProps<{
+  selectedNodeId?: string
+}>(), {
+  selectedNodeId: '',
+})
+
 const emit = defineEmits<{
   (event: 'selectionChange', nodeId: string): void
 }>()
@@ -20,6 +26,12 @@ const fallbackNodes = computed(() => pipeline.fallbackNodes.value)
 watch(() => pipeline.selectedNodeId.value, (nodeId) => {
   emit('selectionChange', nodeId)
 }, { immediate: true })
+
+watch(() => props.selectedNodeId, (nodeId) => {
+  if (nodeId === pipeline.selectedNodeId.value)
+    return
+  pipeline.selectedNodeId.value = nodeId
+})
 </script>
 
 <template>

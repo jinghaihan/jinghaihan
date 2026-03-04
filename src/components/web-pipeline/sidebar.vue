@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import type { WorkflowNode } from '@/types/web-pipeline'
-import { ref, watch } from 'vue'
+import type { NodeLinkItem, WorkflowNode } from '@/types/web-pipeline'
+import { computed, ref, watch } from 'vue'
 import { useResizableSidebar } from '@/composables/use-resizable-sidebar'
+import { useNodeTopicContent } from '@/composables/web-pipeline/use-node-topic-content'
+import NodeNeighborLinks from './node-neighbor-links.vue'
 
 interface Props {
   node: WorkflowNode
+  previousNodes: NodeLinkItem[]
+  nextNodes: NodeLinkItem[]
   minWidth?: number
   maxWidth?: number
   collapsedWidth?: number
@@ -17,6 +21,10 @@ const props = withDefaults(defineProps<Props>(), {
   collapsedWidth: 0,
   defaultWidth: 400,
 })
+
+const emit = defineEmits<{
+  (event: 'selectNode', nodeId: string): void
+}>()
 
 const {
   collapsed,
@@ -31,6 +39,11 @@ const {
   defaultWidth: props.defaultWidth,
 })
 
+const nodeId = computed(() => props.node.id)
+const {
+  html: nodeTopicHtml,
+  loading: nodeTopicLoading,
+} = useNodeTopicContent(nodeId)
 const resizeHovering = ref(false)
 
 watch(() => props.node.id, () => {
@@ -109,7 +122,25 @@ function onResizeHandleLeave(): void {
         </button>
       </div>
 
-      <div class="px-5 py-4 min-h-0 overflow-y-auto" />
+      <div class="px-5 pb-4 flex-1 min-h-0 overflow-y-auto">
+        <div
+          v-if="nodeTopicLoading"
+          class="text-sm text-muted-foreground"
+        >
+          正在加载节点内容...
+        </div>
+        <div
+          v-else
+          class="[&_h2]:text-base [&_h3]:text-sm [&_h2]:font-semibold [&_h3]:font-medium [&_ol]:my-2 [&_pre]:my-2 [&_ul]:my-2 [&_h2]:mb-2 [&_h2]:mt-5 [&_h3]:mb-1 [&_h3]:mt-4 [&_li]:mb-1 [&_pre]:p-3 [&_ol]:pl-5 [&_ul]:pl-5 [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:overflow-x-auto"
+          v-html="nodeTopicHtml"
+        />
+      </div>
+
+      <NodeNeighborLinks
+        :previous-nodes="previousNodes"
+        :next-nodes="nextNodes"
+        @select-node="emit('selectNode', $event)"
+      />
     </div>
   </aside>
 </template>

@@ -3,7 +3,6 @@ import process from 'node:process'
 import Mdx from '@astrojs/mdx'
 import Vue from '@astrojs/vue'
 import Unocss from '@unocss/astro'
-import ExpressiveCode from 'astro-expressive-code'
 import { defineConfig } from 'astro/config'
 import ExternalLinks from 'rehype-external-links'
 import Slug from 'rehype-slug'
@@ -12,7 +11,6 @@ import { DOMAIN } from './src/constants/site'
 export default defineConfig({
   site: DOMAIN,
   integrations: [
-    ExpressiveCode(),
     Mdx({
       extendMarkdownConfig: true,
     }),
@@ -20,6 +18,12 @@ export default defineConfig({
     Unocss(),
   ],
   markdown: {
+    shikiConfig: {
+      themes: {
+        light: 'vitesse-light',
+        dark: 'vitesse-dark',
+      },
+    },
     rehypePlugins: [
       Slug,
       [

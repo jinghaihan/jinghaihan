@@ -40,7 +40,6 @@
     "@astrojs/rss": "catalog:prod",
     "@resvg/resvg-js": "catalog:prod",
     "astro": "catalog:prod",
-    "astro-expressive-code": "catalog:prod",
     "beautiful-mermaid": "catalog:prod",
     "d3": "catalog:prod",
     "gh-statskit": "catalog:prod",
