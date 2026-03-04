@@ -438,6 +438,7 @@ export function useWebPipeline() {
 
   return {
     zoomContainerRef,
+    selectedNodeId,
     fallbackEdges,
     fallbackNodes,
     nodeColor,

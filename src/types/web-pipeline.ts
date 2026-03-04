@@ -7,10 +7,6 @@ export interface WorkflowNode {
   kind: NodeKind
   stage: number
   lane: number
-  summary: string
-  details: string[]
-  metrics: string[]
-  tips: string[]
 }
 
 export interface WorkflowEdge {
