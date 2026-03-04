@@ -12,10 +12,9 @@ const UNGROUPED_TITLE = '其他专题'
 
 const progress = useLocalStorage<AlgorithmProgress>(PROGRESS_STORAGE_KEY, {}, {
   mergeDefaults: true,
+  initOnMounted: true,
 })
 const searchKeyword = ref('')
-
-progress.value = normalizeProgress(progress.value)
 
 const topicGroups = computed<TopicGroup[]>(() => {
   const grouped = ALGORITHM_KNOWLEDGE.groups
@@ -116,18 +115,6 @@ function updateSearchKeyword(value: string): void {
 
 function selectGraphNode(label: string): void {
   searchKeyword.value = label.trim()
-}
-
-function normalizeProgress(value: unknown): AlgorithmProgress {
-  if (!value || typeof value !== 'object')
-    return {}
-
-  const normalized: AlgorithmProgress = {}
-  for (const [problemId, done] of Object.entries(value as Record<string, unknown>)) {
-    if (done === true)
-      normalized[problemId] = true
-  }
-  return normalized
 }
 </script>
 

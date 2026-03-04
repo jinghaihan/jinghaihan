@@ -42,6 +42,7 @@ const props = withDefaults(defineProps<{
 const selectedNodeId = ref('')
 const checkedNodeProgress = useLocalStorage<WorkflowNodeCheckProgress>(props.checkStorageKey, {}, {
   mergeDefaults: true,
+  initOnMounted: true,
 })
 const nodeTopicHtml = ref(props.emptyNodeContentHtml)
 const nodeTopicLoading = ref(false)
