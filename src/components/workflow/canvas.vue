@@ -1,68 +1,91 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import type { WorkflowCanvasDefinition, WorkflowNode } from '@/types/workflow'
+import { computed, toRef, watch } from 'vue'
 import ZoomContainer from '@/components/ui/zoom-container.vue'
-import { useWebPipeline } from '@/composables/web-pipeline/use-web-pipeline'
-import {
-  WEB_PIPELINE_FALLBACK_HEIGHT,
-  WEB_PIPELINE_FALLBACK_NODE_HEIGHT,
-  WEB_PIPELINE_FALLBACK_NODE_WIDTH,
-  WEB_PIPELINE_FALLBACK_WIDTH,
-} from '@/constants/web-pipeline'
-import NodeSearchPanel from './node-search-panel.vue'
+import { useWorkflowGraph } from '@/composables/use-workflow-graph'
+import WorkflowSearchPanel from './search-panel.vue'
+
+defineOptions({
+  name: 'WorkflowCanvas',
+})
 
 const props = withDefaults(defineProps<{
+  canvas: WorkflowCanvasDefinition<string, string>
+  nodes: WorkflowNode<string>[]
   selectedNodeId?: string
+  kindLabels?: Record<string, string>
+  searchPlaceholder?: string
+  isDark?: boolean
+  getNodeColor: (kind: string, isDark: boolean) => string
+  getNodeStrokeColor?: (isDark: boolean) => string
+  getEdgeBaseWidth?: (kind: string) => number
 }>(), {
   selectedNodeId: '',
+  kindLabels: () => ({}),
+  searchPlaceholder: '输入节点名、ID、stage...',
+  isDark: false,
 })
 
 const emit = defineEmits<{
   (event: 'selectionChange', nodeId: string): void
 }>()
 
-const pipeline = useWebPipeline()
-const fallbackEdges = computed(() => pipeline.fallbackEdges.value)
-const fallbackNodes = computed(() => pipeline.fallbackNodes.value)
+const graph = useWorkflowGraph({
+  nodes: props.canvas.nodes,
+  edges: props.canvas.edges,
+  nodeWidth: props.canvas.nodeWidth,
+  nodeHeight: props.canvas.nodeHeight,
+  isDark: toRef(props, 'isDark'),
+  getNodeColor: props.getNodeColor,
+  getNodeStrokeColor: props.getNodeStrokeColor,
+  getEdgeBaseWidth: props.getEdgeBaseWidth,
+})
 
-watch(() => pipeline.selectedNodeId.value, (nodeId) => {
+const fallbackEdges = computed(() => graph.fallbackEdges.value)
+const fallbackNodes = computed(() => graph.fallbackNodes.value)
+
+watch(() => graph.selectedNodeId.value, (nodeId) => {
   emit('selectionChange', nodeId)
 }, { immediate: true })
 
 watch(() => props.selectedNodeId, (nodeId) => {
-  if (nodeId === pipeline.selectedNodeId.value)
+  if (nodeId === graph.selectedNodeId.value)
     return
-  pipeline.selectedNodeId.value = nodeId
+  graph.selectedNodeId.value = nodeId
 })
 
 function onSearchNodeSelect(nodeId: string): void {
-  pipeline.selectedNodeId.value = nodeId
+  graph.selectedNodeId.value = nodeId
 }
 </script>
 
 <template>
   <div class="size-full min-h-0 relative">
-    <NodeSearchPanel
+    <WorkflowSearchPanel
+      :nodes="nodes"
+      :kind-labels="kindLabels"
+      :placeholder="searchPlaceholder"
       @select-node="onSearchNodeSelect"
     />
 
     <ZoomContainer
-      :ref="pipeline.zoomContainerRef"
-      @drag-end="pipeline.onViewportDragEnd"
+      :ref="graph.zoomContainerRef"
+      @drag-end="graph.onViewportDragEnd"
     >
       <svg
-        :width="WEB_PIPELINE_FALLBACK_WIDTH"
-        :height="WEB_PIPELINE_FALLBACK_HEIGHT"
+        :width="canvas.width"
+        :height="canvas.height"
         class="block select-none touch-none"
-        :viewBox="`0 0 ${WEB_PIPELINE_FALLBACK_WIDTH} ${WEB_PIPELINE_FALLBACK_HEIGHT}`"
+        :viewBox="`0 0 ${canvas.width} ${canvas.height}`"
         shape-rendering="geometricPrecision"
         text-rendering="geometricPrecision"
-        @click="pipeline.onFallbackBackgroundClick"
+        @click="graph.onFallbackBackgroundClick"
       >
         <defs>
-          <marker id="fallback-arrow" viewBox="0 0 12 12" refX="10.6" refY="6" markerWidth="6.2" markerHeight="6.2" orient="auto-start-reverse">
+          <marker id="workflow-arrow" viewBox="0 0 12 12" refX="10.6" refY="6" markerWidth="6.2" markerHeight="6.2" orient="auto-start-reverse">
             <path d="M 1 1 L 11 6 L 1 11 z" fill="var(--muted-foreground)" />
           </marker>
-          <marker id="fallback-arrow-focus" viewBox="0 0 12 12" refX="10.6" refY="6" markerWidth="6.2" markerHeight="6.2" orient="auto-start-reverse">
+          <marker id="workflow-arrow-focus" viewBox="0 0 12 12" refX="10.6" refY="6" markerWidth="6.2" markerHeight="6.2" orient="auto-start-reverse">
             <path d="M 1 1 L 11 6 L 1 11 z" fill="var(--foreground)" />
           </marker>
         </defs>
@@ -118,28 +141,28 @@ function onSearchNodeSelect(nodeId: string): void {
             :opacity="node.visual.opacity"
             class="cursor-pointer transition-transform duration-150"
             data-no-pan
-            @mouseenter="pipeline.onFallbackNodeEnter(node.id)"
-            @mouseleave="pipeline.onFallbackNodeLeave"
-            @click="pipeline.onFallbackNodeClick(node.id, $event)"
+            @mouseenter="graph.onFallbackNodeEnter(node.id)"
+            @mouseleave="graph.onFallbackNodeLeave"
+            @click="graph.onFallbackNodeClick(node.id, $event)"
           >
             <rect
-              :x="-WEB_PIPELINE_FALLBACK_NODE_WIDTH / 2"
-              :y="-WEB_PIPELINE_FALLBACK_NODE_HEIGHT / 2"
-              :width="WEB_PIPELINE_FALLBACK_NODE_WIDTH"
-              :height="WEB_PIPELINE_FALLBACK_NODE_HEIGHT"
+              :x="-canvas.nodeWidth / 2"
+              :y="-canvas.nodeHeight / 2"
+              :width="canvas.nodeWidth"
+              :height="canvas.nodeHeight"
               fill="var(--background)"
               :fill-opacity="node.visual.backdropOpacity"
               rx="8"
               ry="8"
             />
             <rect
-              :x="-WEB_PIPELINE_FALLBACK_NODE_WIDTH / 2"
-              :y="-WEB_PIPELINE_FALLBACK_NODE_HEIGHT / 2"
-              :width="WEB_PIPELINE_FALLBACK_NODE_WIDTH"
-              :height="WEB_PIPELINE_FALLBACK_NODE_HEIGHT"
-              :fill="pipeline.nodeColor(node.kind)"
+              :x="-canvas.nodeWidth / 2"
+              :y="-canvas.nodeHeight / 2"
+              :width="canvas.nodeWidth"
+              :height="canvas.nodeHeight"
+              :fill="graph.nodeColor(node.kind)"
               :fill-opacity="node.visual.fillOpacity"
-              :stroke="pipeline.nodeStrokeColor()"
+              :stroke="graph.nodeStrokeColor()"
               :stroke-opacity="node.visual.strokeOpacity"
               :stroke-width="node.visual.strokeWidth"
               rx="8"

@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import type { WorkflowNode } from '@/types/web-pipeline'
+import type { WorkflowNode } from '@/types/workflow'
 import { onClickOutside, useMagicKeys, whenever } from '@vueuse/core'
 import { computed, nextTick, ref, watch } from 'vue'
-import { WEB_PIPELINE_KIND_LABELS, WEB_PIPELINE_NODES } from '@/constants/web-pipeline'
 
 interface SearchResultItem {
   id: string
@@ -10,6 +9,15 @@ interface SearchResultItem {
   kindLabel: string
   stage: number
 }
+
+const props = withDefaults(defineProps<{
+  nodes: WorkflowNode<string>[]
+  kindLabels?: Record<string, string>
+  placeholder?: string
+}>(), {
+  kindLabels: () => ({}),
+  placeholder: '输入节点名、ID、stage...',
+})
 
 const emit = defineEmits<{
   (event: 'selectNode', nodeId: string): void
@@ -21,7 +29,10 @@ const open = ref(false)
 const query = ref('')
 const activeIndex = ref(0)
 
-const orderedNodes = [...WEB_PIPELINE_NODES].sort((a, b) => a.stage - b.stage || a.lane - b.lane)
+const orderedNodes = computed(() => {
+  return [...props.nodes].sort((a, b) => a.stage - b.stage || a.lane - b.lane)
+})
+
 const keys = useMagicKeys({
   passive: false,
   onEventFired(event) {
@@ -34,10 +45,10 @@ const triggerSearchHotkey = computed(() => keys['Meta+K'].value || keys['Ctrl+K'
 const results = computed<SearchResultItem[]>(() => {
   const keyword = query.value.trim().toLowerCase()
   if (!keyword) {
-    return orderedNodes.map(node => toResultItem(node))
+    return orderedNodes.value.map(node => toResultItem(node))
   }
 
-  return orderedNodes
+  return orderedNodes.value
     .map((node) => {
       const score = searchScore(node, keyword)
       return {
@@ -90,19 +101,19 @@ onClickOutside(panelRef, () => {
     closePanel()
 })
 
-function toResultItem(node: WorkflowNode): SearchResultItem {
+function toResultItem(node: WorkflowNode<string>): SearchResultItem {
   return {
     id: node.id,
     title: node.title,
-    kindLabel: WEB_PIPELINE_KIND_LABELS[node.kind],
+    kindLabel: props.kindLabels[node.kind] ?? node.kind,
     stage: node.stage,
   }
 }
 
-function searchScore(node: WorkflowNode, keyword: string): number {
+function searchScore(node: WorkflowNode<string>, keyword: string): number {
   const title = node.title.toLowerCase()
   const id = node.id.toLowerCase()
-  const kindLabel = WEB_PIPELINE_KIND_LABELS[node.kind].toLowerCase()
+  const kindLabel = (props.kindLabels[node.kind] ?? node.kind).toLowerCase()
   const stageToken = `stage:${node.stage}`
   const stageCnToken = `阶段${node.stage}`
 
@@ -212,7 +223,7 @@ function onInputKeydown(event: KeyboardEvent): void {
           ref="inputRef"
           v-model="query"
           type="text"
-          placeholder="输入节点名、ID、stage..."
+          :placeholder="placeholder"
           class="text-sm outline-none bg-transparent w-full placeholder:text-foreground/40"
           @keydown="onInputKeydown"
         >

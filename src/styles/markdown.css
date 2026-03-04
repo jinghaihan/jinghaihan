@@ -10,6 +10,10 @@
   background-color: var(--shiki-dark-bg) !important;
 }
 
+.astro-code code {
+  padding: 0 !important;
+}
+
 .prose {
   --un-prose-body: color-mix(in oklab, var(--foreground) 80%, transparent);
 }

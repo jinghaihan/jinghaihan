@@ -1,22 +1,16 @@
 <script setup lang="ts">
-import type { NodeLinkItem, WorkflowNode } from '@/types/web-pipeline'
-import { computed, ref, watch } from 'vue'
+import type { WorkflowNode, WorkflowNodeLinkItem } from '@/types/workflow'
+import { ref, watch } from 'vue'
 import Spinner from '@/components/ui/spinner.vue'
 import { useResizableSidebar } from '@/composables/use-resizable-sidebar'
-import { useNodeTopicContent } from '@/composables/web-pipeline/use-node-topic-content'
-import NodeNeighborLinks from './node-neighbor-links.vue'
+import WorkflowNodeNeighborLinks from './node-neighbor-links.vue'
 
-interface Props {
-  node: WorkflowNode
-  previousNodes: NodeLinkItem[]
-  nextNodes: NodeLinkItem[]
-  minWidth?: number
-  maxWidth?: number
-  collapsedWidth?: number
-  defaultWidth?: number
-}
+defineOptions({
+  name: 'WorkflowSidebar',
+})
 
 const props = withDefaults(defineProps<Props>(), {
+  contentLoading: false,
   minWidth: 280,
   maxWidth: 640,
   collapsedWidth: 0,
@@ -26,6 +20,18 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (event: 'selectNode', nodeId: string): void
 }>()
+
+interface Props {
+  node: WorkflowNode<string>
+  previousNodes: WorkflowNodeLinkItem[]
+  nextNodes: WorkflowNodeLinkItem[]
+  contentHtml: string
+  contentLoading?: boolean
+  minWidth?: number
+  maxWidth?: number
+  collapsedWidth?: number
+  defaultWidth?: number
+}
 
 const {
   collapsed,
@@ -40,11 +46,6 @@ const {
   defaultWidth: props.defaultWidth,
 })
 
-const nodeId = computed(() => props.node.id)
-const {
-  html: nodeTopicHtml,
-  loading: nodeTopicLoading,
-} = useNodeTopicContent(nodeId)
 const resizeHovering = ref(false)
 
 watch(() => props.node.id, () => {
@@ -125,7 +126,7 @@ function onResizeHandleLeave(): void {
 
       <div class="px-5 pb-4 flex-1 min-h-0 overflow-y-auto">
         <div
-          v-if="nodeTopicLoading"
+          v-if="contentLoading"
           class="flex h-full items-center justify-center"
         >
           <Spinner class="max-w-20" />
@@ -133,11 +134,11 @@ function onResizeHandleLeave(): void {
         <div
           v-else
           class="[&_h2]:text-base [&_h3]:text-sm [&_h2]:font-semibold [&_h3]:font-medium [&_ol]:my-2 [&_pre]:my-2 [&_ul]:my-2 [&_h2]:mb-2 [&_h2]:mt-5 [&_h3]:mb-1 [&_h3]:mt-4 [&_li]:mb-1 [&_pre]:p-3 [&_ol]:pl-5 [&_ul]:pl-5 [&_pre]:rounded-md [&_pre]:bg-muted [&_pre]:overflow-x-auto"
-          v-html="nodeTopicHtml"
+          v-html="contentHtml"
         />
       </div>
 
-      <NodeNeighborLinks
+      <WorkflowNodeNeighborLinks
         :previous-nodes="previousNodes"
         :next-nodes="nextNodes"
         @select-node="emit('selectNode', $event)"

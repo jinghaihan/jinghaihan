@@ -1,45 +1,26 @@
+import type {
+  WorkflowEdge as GenericWorkflowEdge,
+  WorkflowFallbackEdge as GenericWorkflowFallbackEdge,
+  WorkflowFallbackNode as GenericWorkflowFallbackNode,
+  WorkflowNode as GenericWorkflowNode,
+  WorkflowNodeLinkItem as GenericWorkflowNodeLinkItem,
+  WorkflowPositionedEdge as GenericWorkflowPositionedEdge,
+  WorkflowPositionedNode as GenericWorkflowPositionedNode,
+} from './workflow'
+
 export type NodeKind = 'entry' | 'cache' | 'network' | 'server' | 'render' | 'perf'
 export type EdgeKind = 'normal' | 'hit' | 'miss' | 'validate' | 'optimize'
 
-export interface WorkflowNode {
-  id: string
-  title: string
-  kind: NodeKind
-  stage: number
-  lane: number
-}
+export type WorkflowNode = GenericWorkflowNode<NodeKind>
 
-export interface WorkflowEdge {
-  source: string
-  target: string
-  label: string
-  kind: EdgeKind
-}
+export type WorkflowEdge = GenericWorkflowEdge<EdgeKind>
 
-export interface NodeLinkItem {
-  id: string
-  title: string
-}
+export type NodeLinkItem = GenericWorkflowNodeLinkItem
 
-export interface PositionedNode extends WorkflowNode {
-  x: number
-  y: number
-}
+export type PositionedNode = GenericWorkflowPositionedNode<NodeKind>
 
-export interface PositionedEdge extends WorkflowEdge {
-  sourceNode: PositionedNode
-  targetNode: PositionedNode
-}
+export type PositionedEdge = GenericWorkflowPositionedEdge<NodeKind, EdgeKind>
 
-export interface FallbackNode {
-  id: string
-  title: string
-  kind: NodeKind
-  x: number
-  y: number
-}
+export type FallbackNode = GenericWorkflowFallbackNode<NodeKind>
 
-export interface FallbackEdge extends WorkflowEdge {
-  sourceNode: FallbackNode
-  targetNode: FallbackNode
-}
+export type FallbackEdge = GenericWorkflowFallbackEdge<NodeKind, EdgeKind>

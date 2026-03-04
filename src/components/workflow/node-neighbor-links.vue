@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { NodeLinkItem } from '@/types/web-pipeline'
+import type { WorkflowNodeLinkItem } from '@/types/workflow'
 
 defineProps<{
-  previousNodes: NodeLinkItem[]
-  nextNodes: NodeLinkItem[]
+  previousNodes: WorkflowNodeLinkItem[]
+  nextNodes: WorkflowNodeLinkItem[]
 }>()
 
 const emit = defineEmits<{

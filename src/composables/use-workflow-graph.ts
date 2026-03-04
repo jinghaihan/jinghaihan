@@ -1,12 +1,6 @@
-import type { EdgeKind, FallbackEdge, NodeKind } from '@/types/web-pipeline'
+import type { Ref } from 'vue'
+import type { WorkflowFallbackEdge, WorkflowFallbackNode } from '@/types/workflow'
 import { computed, ref } from 'vue'
-import {
-  WEB_PIPELINE_FALLBACK_EDGES,
-  WEB_PIPELINE_FALLBACK_NODE_HEIGHT,
-  WEB_PIPELINE_FALLBACK_NODE_WIDTH,
-  WEB_PIPELINE_FALLBACK_NODES,
-} from '@/constants/web-pipeline'
-import { isDark } from '../use-reactive-dark'
 
 interface ZoomContainerExpose {
   fitContent: () => void
@@ -54,24 +48,35 @@ interface NodeVisualState {
   strokeWidth: number
 }
 
-interface FallbackEdgeViewModel {
+export interface WorkflowFallbackEdgeViewModel<TEdgeKind extends string = string> {
   key: string
   id: string
   label: string
-  kind: EdgeKind
+  kind: TEdgeKind
   path: string
   labelTransform: string
   labelWidth: number
   visual: EdgeVisualState
 }
 
-interface FallbackNodeViewModel {
+export interface WorkflowFallbackNodeViewModel<TNodeKind extends string = string> {
   id: string
   title: string
-  kind: NodeKind
+  kind: TNodeKind
   x: number
   y: number
   visual: NodeVisualState
+}
+
+interface UseWorkflowGraphOptions<TNodeKind extends string, TEdgeKind extends string> {
+  nodes: WorkflowFallbackNode<TNodeKind>[]
+  edges: WorkflowFallbackEdge<TNodeKind, TEdgeKind>[]
+  nodeWidth: number
+  nodeHeight: number
+  isDark: Ref<boolean>
+  getNodeColor: (kind: TNodeKind, isDark: boolean) => string
+  getNodeStrokeColor?: (isDark: boolean) => string
+  getEdgeBaseWidth?: (kind: TEdgeKind) => number
 }
 
 const EDGE_LABEL_HEIGHT = 18
@@ -79,7 +84,7 @@ const EDGE_LABEL_PADDING_X = 10
 const EDGE_LABEL_OFFSETS = [0.5, 0.62, 0.38, 0.72, 0.28, 0.82, 0.18] as const
 const BACKGROUND_CLICK_GUARD_MS = 220
 
-function edgeKey(edge: FallbackEdge, index: number): string {
+function edgeKey<TNodeKind extends string, TEdgeKind extends string>(edge: WorkflowFallbackEdge<TNodeKind, TEdgeKind>, index: number): string {
   return `${index}-${edge.source}-${edge.target}-${edge.kind}`
 }
 
@@ -126,35 +131,24 @@ function normalizeTextAngle(rawAngle: number): number {
     angle -= 180
   if (angle < -90)
     angle += 180
-
-  // Keep near-vertical labels horizontal to avoid tall blocks covering nodes.
   if (Math.abs(angle) > 65)
     return 0
-
   return angle
 }
 
-function edgeBaseWidth(kind: EdgeKind): number {
-  if (kind === 'hit')
-    return 1.85
-  if (kind === 'miss')
-    return 1.8
-  if (kind === 'validate')
-    return 1.7
-  if (kind === 'optimize')
-    return 1.55
-  return 1.65
-}
-
-function edgeCurve(edge: FallbackEdge): CubicCurve {
+function edgeCurve<TNodeKind extends string, TEdgeKind extends string>(
+  edge: WorkflowFallbackEdge<TNodeKind, TEdgeKind>,
+  nodeWidth: number,
+  nodeHeight: number,
+): CubicCurve {
   const source = edge.sourceNode
   const target = edge.targetNode
-  const halfWidth = WEB_PIPELINE_FALLBACK_NODE_WIDTH / 2 + 5
-  const halfHeight = WEB_PIPELINE_FALLBACK_NODE_HEIGHT / 2 + 4
+  const halfWidth = nodeWidth / 2 + 5
+  const halfHeight = nodeHeight / 2 + 4
   const dx = target.x - source.x
   const dy = target.y - source.y
 
-  if (Math.abs(dx) <= WEB_PIPELINE_FALLBACK_NODE_WIDTH * 0.35) {
+  if (Math.abs(dx) <= nodeWidth * 0.35) {
     const down = dy >= 0
     const start = {
       x: source.x,
@@ -207,7 +201,10 @@ function curvePath(curve: CubicCurve): string {
   return `M${curve.start.x},${curve.start.y} C${curve.control1.x},${curve.control1.y} ${curve.control2.x},${curve.control2.y} ${curve.end.x},${curve.end.y}`
 }
 
-function fallbackLabelGeometry(edge: FallbackEdge, curve: CubicCurve): Pick<EdgeLabelGeometry, 'labelTransform' | 'labelWidth'> {
+function fallbackLabelGeometry<TNodeKind extends string, TEdgeKind extends string>(
+  edge: WorkflowFallbackEdge<TNodeKind, TEdgeKind>,
+  curve: CubicCurve,
+): Pick<EdgeLabelGeometry, 'labelTransform' | 'labelWidth'> {
   const center = cubicPointAt(curve, 0.5)
   const tangent = cubicDerivativeAt(curve, 0.5)
   const rawAngle = Math.atan2(tangent.y, tangent.x) * (180 / Math.PI)
@@ -217,11 +214,14 @@ function fallbackLabelGeometry(edge: FallbackEdge, curve: CubicCurve): Pick<Edge
   }
 }
 
-export function useWebPipeline() {
+export function useWorkflowGraph<TNodeKind extends string, TEdgeKind extends string>(options: UseWorkflowGraphOptions<TNodeKind, TEdgeKind>) {
   const zoomContainerRef = ref<ZoomContainerExpose | null>(null)
   const selectedNodeId = ref('')
   const hoveredNodeId = ref('')
   const ignoreBackgroundClickUntil = ref(0)
+
+  const resolveEdgeBaseWidth = options.getEdgeBaseWidth ?? (() => 1.65)
+  const resolveNodeStrokeColor = options.getNodeStrokeColor ?? (dark => dark ? 'oklch(0.74 0.03 235)' : 'var(--muted-foreground)')
 
   const interactionState = computed(() => {
     const focusNodeId = hoveredNodeId.value || selectedNodeId.value
@@ -236,7 +236,7 @@ export function useWebPipeline() {
     }
 
     relatedNodeIdSet.add(focusNodeId)
-    for (const edge of WEB_PIPELINE_FALLBACK_EDGES) {
+    for (const edge of options.edges) {
       if (edge.source === focusNodeId || edge.target === focusNodeId) {
         relatedNodeIdSet.add(edge.source)
         relatedNodeIdSet.add(edge.target)
@@ -251,19 +251,19 @@ export function useWebPipeline() {
   })
 
   const edgeGeometryMap = computed(() => {
-    const nodeBoxes: Rect[] = WEB_PIPELINE_FALLBACK_NODES.map(node => ({
-      left: node.x - WEB_PIPELINE_FALLBACK_NODE_WIDTH / 2 - 10,
-      right: node.x + WEB_PIPELINE_FALLBACK_NODE_WIDTH / 2 + 10,
-      top: node.y - WEB_PIPELINE_FALLBACK_NODE_HEIGHT / 2 - 8,
-      bottom: node.y + WEB_PIPELINE_FALLBACK_NODE_HEIGHT / 2 + 8,
+    const nodeBoxes: Rect[] = options.nodes.map(node => ({
+      left: node.x - options.nodeWidth / 2 - 10,
+      right: node.x + options.nodeWidth / 2 + 10,
+      top: node.y - options.nodeHeight / 2 - 8,
+      bottom: node.y + options.nodeHeight / 2 + 8,
     }))
 
     const placedLabelBoxes: Rect[] = []
     const geometry = new Map<string, EdgeLabelGeometry>()
 
-    WEB_PIPELINE_FALLBACK_EDGES.forEach((edge, index) => {
+    options.edges.forEach((edge, index) => {
       const key = edgeKey(edge, index)
-      const curve = edgeCurve(edge)
+      const curve = edgeCurve(edge, options.nodeWidth, options.nodeHeight)
       const path = curvePath(curve)
       const directDistance = Math.hypot(curve.end.x - curve.start.x, curve.end.y - curve.start.y)
       const candidates = directDistance < 290
@@ -306,24 +306,24 @@ export function useWebPipeline() {
     return geometry
   })
 
-  const fallbackEdges = computed<FallbackEdgeViewModel[]>(() => {
+  const fallbackEdges = computed<WorkflowFallbackEdgeViewModel<TEdgeKind>[]>(() => {
     const { hasFocus, focusNodeId } = interactionState.value
 
-    return WEB_PIPELINE_FALLBACK_EDGES.map((edge, index) => {
+    return options.edges.map((edge, index) => {
       const key = edgeKey(edge, index)
       const geometry = edgeGeometryMap.value.get(key) ?? (() => {
-        const curve = edgeCurve(edge)
+        const curve = edgeCurve(edge, options.nodeWidth, options.nodeHeight)
         return {
           path: curvePath(curve),
           ...fallbackLabelGeometry(edge, curve),
         }
       })()
       const related = hasFocus && (edge.source === focusNodeId || edge.target === focusNodeId)
-      const baseWidth = edgeBaseWidth(edge.kind)
+      const baseWidth = resolveEdgeBaseWidth(edge.kind)
 
       return {
         key,
-        id: `web-pipeline-edge-${key}`,
+        id: `workflow-edge-${key}`,
         label: edge.label,
         kind: edge.kind,
         path: geometry.path,
@@ -333,18 +333,18 @@ export function useWebPipeline() {
           opacity: !hasFocus ? 0.3 : related ? 0.98 : 0.08,
           width: !hasFocus ? baseWidth : related ? baseWidth + 1.35 : Math.max(1, baseWidth - 0.45),
           stroke: hasFocus && related ? 'var(--foreground)' : 'var(--border)',
-          marker: hasFocus && related ? 'url(#fallback-arrow-focus)' : 'url(#fallback-arrow)',
+          marker: hasFocus && related ? 'url(#workflow-arrow-focus)' : 'url(#workflow-arrow)',
           labelOpacity: !hasFocus ? 0.82 : related ? 1 : 0.16,
         },
       }
     })
   })
 
-  const fallbackNodes = computed<FallbackNodeViewModel[]>(() => {
+  const fallbackNodes = computed<WorkflowFallbackNodeViewModel<TNodeKind>[]>(() => {
     const { hasFocus, focusNodeId, relatedNodeIdSet } = interactionState.value
-    const dark = isDark.value
+    const dark = options.isDark.value
 
-    return WEB_PIPELINE_FALLBACK_NODES.map((node) => {
+    return options.nodes.map((node) => {
       const focused = hasFocus && focusNodeId === node.id
       const related = hasFocus && relatedNodeIdSet.has(node.id)
 
@@ -374,38 +374,12 @@ export function useWebPipeline() {
     })
   })
 
-  function nodeColor(kind: NodeKind): string {
-    if (isDark.value) {
-      if (kind === 'entry')
-        return 'oklch(0.64 0.1 248)'
-      if (kind === 'cache')
-        return 'oklch(0.65 0.085 208)'
-      if (kind === 'network')
-        return 'oklch(0.61 0.12 230)'
-      if (kind === 'server')
-        return 'oklch(0.63 0.095 220)'
-      if (kind === 'render')
-        return 'oklch(0.66 0.08 188)'
-      return 'oklch(0.62 0.11 268)'
-    }
-
-    if (kind === 'entry')
-      return 'oklch(0.62 0.095 252)'
-    if (kind === 'cache')
-      return 'oklch(0.68 0.088 187)'
-    if (kind === 'network')
-      return 'oklch(0.6 0.1 224)'
-    if (kind === 'server')
-      return 'oklch(0.66 0.1 35)'
-    if (kind === 'render')
-      return 'oklch(0.62 0.085 152)'
-    return 'oklch(0.66 0.075 300)'
+  function nodeColor(kind: TNodeKind): string {
+    return options.getNodeColor(kind, options.isDark.value)
   }
 
   function nodeStrokeColor(): string {
-    if (isDark.value)
-      return 'oklch(0.74 0.03 235)'
-    return 'var(--muted-foreground)'
+    return resolveNodeStrokeColor(options.isDark.value)
   }
 
   function onFallbackNodeEnter(nodeId: string): void {
