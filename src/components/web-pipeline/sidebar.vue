@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NodeLinkItem, WorkflowNode } from '@/types/web-pipeline'
 import { computed, ref, watch } from 'vue'
+import Spinner from '@/components/ui/spinner.vue'
 import { useResizableSidebar } from '@/composables/use-resizable-sidebar'
 import { useNodeTopicContent } from '@/composables/web-pipeline/use-node-topic-content'
 import NodeNeighborLinks from './node-neighbor-links.vue'
@@ -125,9 +126,9 @@ function onResizeHandleLeave(): void {
       <div class="px-5 pb-4 flex-1 min-h-0 overflow-y-auto">
         <div
           v-if="nodeTopicLoading"
-          class="text-sm text-muted-foreground"
+          class="flex h-full items-center justify-center"
         >
-          正在加载节点内容...
+          <Spinner class="max-w-20" />
         </div>
         <div
           v-else
