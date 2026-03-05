@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { WorkflowNode, WorkflowNodeLinkItem } from '@/types/workflow'
-import { ref, watch } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
+import { computed, ref, watch } from 'vue'
 import Spinner from '@/components/ui/spinner.vue'
 import { useResizableSidebar } from '@/composables/use-resizable-sidebar'
 import WorkflowNodeNeighborLinks from './node-neighbor-links.vue'
@@ -49,6 +50,15 @@ const {
 })
 
 const resizeHovering = ref(false)
+const isDesktop = useMediaQuery('(min-width: 1024px)')
+const sidebarStyle = computed(() => {
+  if (collapsed.value)
+    return undefined
+
+  return {
+    width: isDesktop.value ? `${trackWidth.value}px` : '100vw',
+  }
+})
 
 watch(() => props.node.id, () => {
   expandSidebar()
@@ -81,11 +91,11 @@ function onToggleCheck(): void {
 
 <template>
   <aside
-    class="h-full relative"
+    class="h-full pointer-events-auto relative"
     :class="collapsed
       ? 'w-0 overflow-visible'
-      : 'border border-border/55 rounded-l-xl bg-background/76 shadow-lg overflow-hidden backdrop-blur-sm'"
-    :style="collapsed ? undefined : { width: `${trackWidth}px` }"
+      : 'bg-background overflow-hidden backdrop-blur-sm lg:border lg:border-border/55 lg:rounded-l-xl lg:bg-background/76 lg:shadow-lg'"
+    :style="sidebarStyle"
   >
     <div v-if="collapsed" class="h-full w-0">
       <button

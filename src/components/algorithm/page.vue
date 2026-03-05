@@ -120,7 +120,7 @@ function selectGraphNode(label: string): void {
 
 <template>
   <div class="px-3 pb-3 size-full min-h-0 lg:px-5 sm:px-4 lg:pb-3 sm:pb-4">
-    <div class="gap-3 grid grid-rows-[minmax(0,1.35fr)_minmax(0,0.65fr)] h-full min-h-0 lg:gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:grid-rows-1">
+    <div class="gap-3 grid grid-cols-1 grid-rows-1 h-full min-h-0 lg:gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
       <section class="min-h-0">
         <ChecklistPanel
           :groups="topicGroups"
@@ -139,7 +139,7 @@ function selectGraphNode(label: string): void {
         />
       </section>
 
-      <section class="min-h-0">
+      <section class="min-h-0 hidden lg:block">
         <KnowledgeGraph
           :groups="topicGroups"
           :topics="ALGORITHM_KNOWLEDGE.topics"

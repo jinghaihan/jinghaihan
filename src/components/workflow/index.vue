@@ -173,8 +173,8 @@ function normalizeCheckProgress(value: unknown, validNodeIdSet: Set<string>): Wo
 
 <template>
   <div
-    class="grid size-full min-h-0"
-    :class="showSidebar ? 'grid-cols-[minmax(0,1fr)_auto]' : ''"
+    class="grid size-full min-h-0 relative"
+    :class="showSidebar ? 'lg:grid-cols-[minmax(0,1fr)_auto]' : ''"
   >
     <section class="min-h-0">
       <WorkflowCanvas
@@ -193,7 +193,7 @@ function normalizeCheckProgress(value: unknown, validNodeIdSet: Set<string>): Wo
     </section>
     <div
       v-if="showSidebar && selectedNode"
-      class="pb-3 h-full min-h-0"
+      class="flex h-full min-h-0 pointer-events-none items-stretch inset-0 justify-end absolute z-[60] lg:p-0 lg:pb-3 lg:pointer-events-auto lg:static lg:z-auto"
     >
       <WorkflowSidebar
         :node="selectedNode"

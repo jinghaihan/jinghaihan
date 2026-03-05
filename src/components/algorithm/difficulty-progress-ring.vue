@@ -27,8 +27,8 @@ const dashOffset = computed(() => circumference.value * (1 - progress.value))
 </script>
 
 <template>
-  <div class="px-1.5 py-1 rounded-md bg-muted/25 inline-flex gap-1.5 items-center">
-    <span class="text-xs text-foreground/60 leading-none shrink-0">{{ label }}</span>
+  <div class="px-1.5 py-1 rounded-md bg-muted/25 inline-flex gap-1 items-center sm:gap-1.5">
+    <span class="text-xs text-foreground/60 leading-none shrink-0 hidden sm:inline">{{ label }}</span>
     <span class="text-xs text-foreground/72 leading-none font-mono shrink-0 tabular-nums">{{ done }}/{{ total }}</span>
     <svg
       :width="props.size"

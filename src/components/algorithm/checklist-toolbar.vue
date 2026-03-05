@@ -71,25 +71,27 @@ function onClearAll(): void {
 
 <template>
   <div class="px-3 py-2.5">
-    <div class="flex flex-wrap gap-2.5 items-center">
+    <div class="flex flex-col gap-2.5 min-w-0 w-full sm:flex-row sm:items-center">
       <InputSearch
         v-model="searchKeywordModel"
         placeholder="搜索分组 / 专题 / 题号 / 题名"
-        class="flex-1 min-w-0"
+        class="min-w-0 w-full sm:flex-1"
       />
-      <DifficultyFilter v-model="selectedDifficultiesModel" />
-      <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
-      <RecommendTopicPopover
-        :topics="props.topics"
-        :progress="props.progress"
-        :selected-topic-ids="props.selectedTopicIds"
-        @toggle-topic="onToggleTopicFilter"
-        @clear="onClearTopicFilters"
-      />
-      <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
-      <RandomProblemButton :disabled="!props.canRandomOpen" @click="onOpenRandomProblem" />
+      <div class="flex flex-wrap gap-2.5 min-w-0 w-full items-center sm:w-auto">
+        <DifficultyFilter v-model="selectedDifficultiesModel" />
+        <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
+        <RecommendTopicPopover
+          :topics="props.topics"
+          :progress="props.progress"
+          :selected-topic-ids="props.selectedTopicIds"
+          @toggle-topic="onToggleTopicFilter"
+          @clear="onClearTopicFilters"
+        />
+        <span aria-hidden="true" class="bg-border/40 shrink-0 h-4 w-px" />
+        <RandomProblemButton :disabled="!props.canRandomOpen" @click="onOpenRandomProblem" />
+      </div>
     </div>
-    <div class="mt-2 flex gap-2.5 items-center">
+    <div class="mt-2 gap-2.5 grid grid-cols-[minmax(0,1fr)_auto] w-full items-center">
       <div class="flex flex-wrap gap-1.5 min-w-0 items-center">
         <DifficultyProgressRing
           v-for="stat in props.difficultyStats"
@@ -106,7 +108,7 @@ function onClearAll(): void {
         select-label="全部标记为已完成"
         select-title="全部标记为已完成"
         clear-label="清空所有已完成"
-        class="text-sm text-foreground/65 ml-auto shrink-0"
+        class="text-sm text-foreground/65 shrink-0"
         @select="onSelectAll"
         @clear="onClearAll"
       />
