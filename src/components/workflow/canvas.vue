@@ -45,6 +45,7 @@ const graph = useWorkflowGraph({
 
 const fallbackEdges = computed(() => graph.fallbackEdges.value)
 const fallbackNodes = computed(() => graph.fallbackNodes.value)
+const fallbackLabeledEdges = computed(() => fallbackEdges.value.filter(edge => edge.label.trim().length > 0))
 
 watch(() => graph.selectedNodeId.value, (nodeId) => {
   emit('selectionChange', nodeId)
@@ -107,35 +108,6 @@ function onSearchNodeSelect(nodeId: string): void {
             fill="none"
           />
         </g>
-        <g pointer-events="none">
-          <g
-            v-for="edge in fallbackEdges"
-            :key="`${edge.key}-label`"
-            :transform="edge.labelTransform"
-            :opacity="edge.visual.labelOpacity"
-          >
-            <rect
-              :x="-edge.labelWidth / 2"
-              y="-9"
-              :width="edge.labelWidth"
-              height="18"
-              rx="6"
-              ry="6"
-              fill="var(--background)"
-              fill-opacity="0.9"
-            />
-            <text
-              x="0"
-              y="3.5"
-              text-anchor="middle"
-              font-size="10.5"
-              font-weight="600"
-              fill="var(--muted-foreground)"
-            >
-              {{ edge.label }}
-            </text>
-          </g>
-        </g>
         <g>
           <g
             v-for="node in fallbackNodes"
@@ -180,6 +152,35 @@ function onSearchNodeSelect(nodeId: string): void {
               fill="var(--foreground)"
             >
               {{ node.title }}
+            </text>
+          </g>
+        </g>
+        <g pointer-events="none">
+          <g
+            v-for="edge in fallbackLabeledEdges"
+            :key="`${edge.key}-label`"
+            :transform="edge.labelTransform"
+            :opacity="edge.visual.labelOpacity"
+          >
+            <rect
+              :x="-edge.labelWidth / 2"
+              y="-9"
+              :width="edge.labelWidth"
+              height="18"
+              rx="6"
+              ry="6"
+              fill="var(--background)"
+              fill-opacity="0.9"
+            />
+            <text
+              x="0"
+              y="3.5"
+              text-anchor="middle"
+              font-size="10.5"
+              font-weight="600"
+              fill="var(--muted-foreground)"
+            >
+              {{ edge.label }}
             </text>
           </g>
         </g>

@@ -26,5 +26,4 @@ dev-dist
 *.sw?
 
 .vite-ssg-temp
-
-checklist.md
+AGENTS.md

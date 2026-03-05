@@ -272,6 +272,8 @@ export function useWorkflowGraph<TNodeKind extends string, TEdgeKind extends str
 
       let selectedOffset = 0.5
       let selectedWidth = estimateLabelWidth(edge.label)
+      let selectedBox: Rect | null = null
+      let bestPenalty = Number.POSITIVE_INFINITY
 
       for (const offset of candidates) {
         const point = cubicPointAt(curve, offset)
@@ -285,13 +287,25 @@ export function useWorkflowGraph<TNodeKind extends string, TEdgeKind extends str
 
         const hitNode = nodeBoxes.some(nodeBox => overlaps(nodeBox, labelBox))
         const hitLabel = placedLabelBoxes.some(existing => overlaps(existing, labelBox))
+        const penalty = (hitNode ? 100 : 0) + (hitLabel ? 10 : 0)
+
         if (!hitNode && !hitLabel) {
           selectedOffset = offset
           selectedWidth = labelWidth
-          placedLabelBoxes.push(labelBox)
+          selectedBox = labelBox
           break
         }
+
+        if (penalty < bestPenalty) {
+          bestPenalty = penalty
+          selectedOffset = offset
+          selectedWidth = labelWidth
+          selectedBox = labelBox
+        }
       }
+
+      if (selectedBox)
+        placedLabelBoxes.push(selectedBox)
 
       const point = cubicPointAt(curve, selectedOffset)
       const tangent = cubicDerivativeAt(curve, selectedOffset)

@@ -71,6 +71,8 @@ function getNodeStrokeColor(dark: boolean): string {
 }
 
 function getEdgeBaseWidth(kind: string): number {
+  if (kind === 'spine')
+    return 2.24
   if (kind === 'risk')
     return 1.95
   if (kind === 'guard')
