@@ -1,0 +1,11 @@
+---
+import KnowledgeGraphPage from '@/components/knowledge-graph/page.vue'
+import BaseLayout from '@/layouts/base-layout.astro'
+---
+
+<BaseLayout
+  title="Knowledge Graph - octohash"
+  layout="fullscreen"
+>
+  <KnowledgeGraphPage client:load />
+</BaseLayout>

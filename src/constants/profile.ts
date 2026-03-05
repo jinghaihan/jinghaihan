@@ -11,8 +11,8 @@ export const GIST_STATS_URL = `${GIST_BASE_URL}/github-stats.json`
 export const timeline: TimelineEvent[] = [
   {
     date: 'Mar. 2026',
-    title: 'Added web pipeline.',
-    description: 'Added web pipeline to support knowledge points related to computer networks, browser rendering, and performance optimization.',
+    title: 'Added knowledge graph.',
+    description: 'Built a knowledge graph workflow for reviewing core frontend knowledge.',
   },
   {
     date: 'Mar. 2026',

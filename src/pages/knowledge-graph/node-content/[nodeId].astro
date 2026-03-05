@@ -1,0 +1,44 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { getCollection, render } from 'astro:content'
+
+export const partial = true
+
+type NodeCollectionEntry = CollectionEntry<'knowledgeGraphNodes'>
+
+interface Props {
+  entry: NodeCollectionEntry
+}
+
+interface StaticPathItem {
+  params: {
+    nodeId: string
+  }
+  props: Props
+}
+
+export async function getStaticPaths() {
+  const entries = await getCollection('knowledgeGraphNodes')
+  const paths: StaticPathItem[] = []
+  for (const entry of entries) {
+    const fileName = entry.id.split('/').pop() ?? ''
+    const nodeId = fileName.replace(/\.mdx$/, '')
+    if (!nodeId)
+      continue
+
+    paths.push({
+      params: { nodeId },
+      props: { entry },
+    })
+  }
+
+  return paths
+}
+
+const { entry } = Astro.props as Props
+const { Content } = await render(entry)
+---
+
+<article class="max-w-none prose prose-sm">
+  <Content />
+</article>

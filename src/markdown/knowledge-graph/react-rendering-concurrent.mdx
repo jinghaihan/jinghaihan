@@ -1,0 +1,175 @@
+---
+id: react-rendering-concurrent
+title: 渲染阶段与并发能力
+nodeId: react-rendering-concurrent
+---
+
+## 概念定位
+
+React 并发渲染能力建立在 Fiber 架构之上。它解决的是：当更新很多时，如何让高优先级交互先响应，而不是被低优先级渲染任务堵住。
+
+核心要点：
+
+- Fiber 让渲染工作可拆分、可中断、可恢复
+- Render/Commit 分阶段保证可中断与可提交边界
+- Lanes（优先级车道）决定谁先执行
+
+## Fiber 数据结构（高频面试点）
+
+每个 Fiber 节点是一个可工作的单元，典型字段：
+
+- `tag`：节点类型（函数组件、类组件、Host 节点等）
+- `type`：组件定义
+- `key`：同层级稳定身份
+- `return/child/sibling`：树结构指针
+- `alternate`：当前树与工作树双缓冲指针
+- `pendingProps/memoizedProps`：新旧 props
+- `memoizedState`：hooks 状态链
+- `updateQueue`：更新队列
+- `flags/subtreeFlags`：副作用标记
+- `lanes/childLanes`：优先级信息
+
+这也是“为什么叫 Fiber”而不是普通虚拟 DOM 节点：它不仅描述 UI，还描述工作调度状态。
+
+## 工作机制
+
+### 1) Render 阶段（可中断）
+
+Render 阶段主要做两件事：
+
+1. `beginWork`：根据新输入计算子树是否需要更新
+2. `completeWork`：回溯构建副作用链与变更信息
+
+这个阶段可以被打断，让高优先级任务插队。
+
+### 2) Commit 阶段（不可中断）
+
+Commit 是真正写入宿主环境（DOM）的阶段，通常分三步：
+
+1. before mutation
+2. mutation
+3. layout
+
+另外 passive effects（`useEffect`）通常在提交后异步处理。
+
+### 3) 双缓冲
+
+React 同时维护：
+
+- current tree（当前已提交树）
+- workInProgress tree（正在计算树）
+
+算完后通过切换指针完成提交。
+
+## Lanes 与优先级
+
+React 18 引入 lanes 模型，核心思想是“多个优先级并行存在”，而不是单一队列。
+
+- 离散输入（点击、键盘）通常高优先级
+- transition 更新可降低优先级
+- 不同 lanes 可被合并、抢占或延后
+
+这就是 `startTransition` / `useTransition` 能改善输入流畅度的底层原因。
+
+## 并发特性与 API 选择
+
+### 什么时候用 startTransition
+
+当更新“不是立即反馈所必需”时，例如：
+
+- 搜索框输入时列表大渲染
+- 筛选条件变化触发复杂计算
+
+输入框值本身保持高优先级，同步更新；大列表放进 transition。
+
+### useDeferredValue
+
+适合“值变化很快，但消费端很重”的场景。它让消费端稍后跟上，减少主线程拥塞。
+
+### Suspense
+
+并发与 Suspense 常配合使用，让异步边界可控显示 fallback，避免整页阻塞。
+
+## 对页面性能的影响
+
+- 并发能力可显著改善交互响应（INP）。
+- 但并发不是“渲染总量减少”，而是“调度更聪明”。
+- 若组件本身计算过重，并发只会缓解体感，不会自动消灭成本。
+
+## 观测与排障
+
+### 常见线上问题
+
+1. 输入卡顿：高优先级更新被重渲染挤占
+2. 过渡闪烁：transition 边界设计不合理
+3. effect 抖动：StrictMode 下副作用不幂等
+
+### 排障步骤
+
+1. 用 React Profiler 看 commit 次数和耗时。
+2. 区分“调度问题”与“组件本身重计算问题”。
+3. 检查 key 稳定性和 memo 边界。
+4. 对重列表更新尝试 transition/deferred value。
+5. 校验 effect 是否可重复执行（StrictMode）。
+
+## 常见误区
+
+- “并发模式让 React 自动更快”：错误，它提升的是调度能力，不保证总计算更少。
+- “Fiber 就是新的虚拟 DOM 名字”：错误，Fiber 还承载调度状态和优先级信息。
+- “startTransition 可以包所有 setState”：错误，高优先级交互更新不应被降级。
+
+## 进阶深挖（第二轮）
+
+### 并发调度落地点
+
+- 高优先级：用户输入、可见区交互。
+- 中优先级：常规状态更新。
+- 低优先级：后台计算与非关键渲染。
+
+### transition 使用边界
+
+1. 把不影响即时反馈的更新放入 transition。
+2. 不要把所有更新都塞进 transition。
+3. 结合 Suspense 控制过渡体验。
+
+### 追问扩展
+
+1. 并发渲染是不是“多线程渲染”？
+
+不是。核心是可中断、可恢复的调度模型，不是简单多线程并行 DOM 更新。
+
+2. lane 设计的价值是什么？
+
+为不同优先级更新建立可控调度通道，避免低优先级任务堵住关键交互。
+
+## 面试补充
+
+### 30 秒说明
+
+React 并发能力建立在 Fiber 上。Fiber 让渲染工作可拆分并可中断，Render 阶段可抢占，Commit 阶段原子提交。Lanes 模型用优先级区分更新，`startTransition` 把非紧急更新降级，从而改善交互响应。它优化的是调度顺序，不是自动减少业务计算量。
+
+### 高频追问
+
+1. Fiber 为什么能支持“可中断渲染”？
+
+因为每个 Fiber 节点都是可恢复的工作单元，Render 阶段可在节点边界暂停并继续。
+
+2. Render 和 Commit 为什么要分开？
+
+Render 可中断以服务调度；Commit 需保证 DOM 提交一致性，因此不可中断。
+
+3. lanes 解决了什么问题？
+
+解决“不同优先级更新抢同一队列”的问题，让紧急交互先被处理。
+
+4. transition 什么时候会适得其反？
+
+把本应立即反馈的状态也降级，会导致 UI 反馈迟钝。
+
+5. StrictMode 双调用和并发有什么关系？
+
+它帮助暴露副作用不幂等问题，确保并发和重试场景下行为稳定。
+
+6. Fiber 性能优化落地第一步是什么？
+
+先用 Profiler 定位高成本组件，再决定是调度优化（transition）还是组件级优化（memo/拆分）。

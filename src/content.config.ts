@@ -21,13 +21,13 @@ const pages = defineCollection({
   schema: frontmatterSchema,
 })
 
-const webPipelineNodes = defineCollection({
-  loader: glob({ pattern: 'web-pipeline/nodes/*.mdx', base: './src/markdown' }),
+const knowledgeGraphNodes = defineCollection({
+  loader: glob({ pattern: 'knowledge-graph/*.mdx', base: './src/markdown' }),
   schema: frontmatterSchema,
 })
 
 export const collections = {
   pages,
   posts,
-  webPipelineNodes,
+  knowledgeGraphNodes,
 }
