@@ -84,14 +84,39 @@ priority: P1
 1. 两栏布局的实现
    - 标准答案：可用浮动 + `margin`、BFC、Flex、定位等方案。机制上本质是“固定列 + 弹性列”的空间分配。场景上现代项目优先 Flex 实现。
    - 考察点：是否能给出多方案并说明取舍。
+```css
+.layout {
+  display: flex;
+}
+.left {
+  width: 240px;
+}
+.right {
+  flex: 1;
+}
+```
 
 2. 三栏布局的实现
    - 标准答案：可用绝对定位、浮动、Flex、Grid 实现。机制上核心是左右固定宽度、中间自适应。场景上内容动态变化时优先 Flex / Grid。
    - 考察点：是否掌握方案多样性和适用边界。
+```css
+.layout {
+  display: grid;
+  grid-template-columns: 200px 1fr 220px;
+  gap: 16px;
+}
+```
 
 3. 水平垂直居中的实现
    - 标准答案：常见方案有 Flex 居中、绝对定位 + `transform`、Grid 居中。机制上居中本质是主轴和交叉轴对齐控制。场景上未知宽高元素优先 Flex。
    - 考察点：是否能覆盖“已知尺寸/未知尺寸”两类情况。
+```css
+.parent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+```
 
 4. 对Flex布局的理解及其使用场景
    - 标准答案：结论是 Flex 适合一维布局的分布和对齐。机制上通过主轴、交叉轴和弹性因子控制空间分配。场景上导航栏、表单行、卡片列表是高频场景。
@@ -104,7 +129,30 @@ priority: P1
 6. 实现“品” 字布局
    - 标准答案：可用 Flex + 换行或 Grid 模板实现。机制上核心是行列分组和跨度控制。场景上推荐 Grid，表达更直观。
    - 考察点：是否能把题目映射到对应布局模型。
+```css
+.pin {
+  display: grid;
+  grid-template-columns: repeat(2, 120px);
+  grid-template-areas:
+    "top top"
+    "left right";
+  gap: 8px;
+}
+.pin > :nth-child(1) { grid-area: top; justify-self: center; }
+.pin > :nth-child(2) { grid-area: left; }
+.pin > :nth-child(3) { grid-area: right; }
+```
 
 7. 实现九宫格布局
    - 标准答案：可用 Grid 三行三列、Flex 换行配合固定项宽，或定位方案。机制上关键是容器分轨与子项对齐。场景上现代项目优先 Grid。
    - 考察点：是否具备工程可维护视角。
+```css
+.grid9 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.grid9 > div {
+  aspect-ratio: 1 / 1;
+}
+```

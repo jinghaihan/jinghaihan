@@ -1,0 +1,106 @@
+---
+id: js-runtime-basics
+title: 语言基础与内置能力
+nodeId: js-runtime-basics
+type: topic
+priority: P2
+---
+
+## 概念定义
+
+- 本质定义：语言基础与内置能力覆盖 `new`、Map、WeakMap、JSON、类数组与模块机制。
+- 解决问题：解决“会用 API 但说不清机制与边界”的问题。
+- 边界说明：不展开异步调度、复杂原型继承和框架运行时细节。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. `new` 先创建对象并挂接构造函数原型，再用该对象执行构造函数。
+2. Map 保存强引用键值；WeakMap 只允许对象键且是弱引用。
+3. JSON 负责可序列化数据在字符串与对象之间转换。
+4. 类数组通过 `Array.from` 或展开运算符转成真数组后再使用数组方法。
+5. 模块系统决定依赖加载时机与可见性边界。
+
+### 2) 关键条件与触发点
+
+- 条件 A：WeakMap 的键必须是对象，且不会因为该键被引用就阻止垃圾回收。
+- 条件 B：Map 的键和值只要还在容器内，就会保持强引用。
+- 条件 C：`arguments`、`NodeList` 是类数组，不能直接调用数组原型方法。
+
+### 3) 结果与影响
+
+- 对稳定性的影响：理解引用语义可减少缓存与关联表误用。
+- 对可维护性的影响：按语义选 Map/WeakMap 可显著降低清理成本。
+
+## 相似概念对比
+
+| 维度 | Map | WeakMap | 结论 |
+|---|---|---|---|
+| 键类型 | 任意值 | 仅对象 | WeakMap 只做对象关联 |
+| 可枚举性 | 可迭代、可 `size` | 不可枚举、无 `size` | WeakMap 不用于遍历 |
+| 引用关系 | 强引用 | 弱引用键 | WeakMap 适合临时元数据 |
+| 泄漏风险 | 忘记 `delete` 可能累积 | 键对象回收后记录会自动释放 | WeakMap 降低泄漏风险但不等于无泄漏 |
+
+## 代码
+
+```ts
+function myNew<T extends object>(Ctor: new (...args: any[]) => T, ...args: any[]): T {
+  const obj = Object.create(Ctor.prototype)
+  const ret = Ctor.apply(obj, args) as unknown
+  return (ret && (typeof ret === 'object' || typeof ret === 'function')) ? ret : obj
+}
+
+const strongCache = new Map<object, { expensive: number }>()
+const weakCache = new WeakMap<object, { expensive: number }>()
+
+function getWithMap(key: object) {
+  if (!strongCache.has(key))
+    strongCache.set(key, { expensive: Date.now() })
+  return strongCache.get(key)!
+}
+
+function getWithWeakMap(key: object) {
+  if (!weakCache.has(key))
+    weakCache.set(key, { expensive: Date.now() })
+  return weakCache.get(key)!
+}
+
+const arrLike = { 0: 'a', 1: 'b', length: 2 }
+console.log(Array.from(arrLike))
+```
+
+### 示例说明
+
+- `myNew` 展示了实例化四步：建对象、挂原型、执行构造函数、返回结果裁决。
+- Map 与 WeakMap 示例展示了“强引用缓存”与“弱引用缓存”的本质区别。
+- WeakMap 可以降低“缓存忘记清理”导致的泄漏风险，但如果值对象又强引用大对象，仍可能泄漏。
+
+## 相关面试题
+
+1. new 操作符的实现原理
+   - 标准答案：结论是 4 步流程。先创建新对象并连接 `prototype`，再以该对象为 `this` 调用构造函数，最后按“若显式返回对象则覆盖默认实例”的规则返回。这个规则解释了为什么有些构造函数会返回非实例对象。
+   - 考察点：是否掌握实例化机制而非只会使用。
+```ts
+function myNew<T extends object>(Ctor: new (...args: any[]) => T, ...args: any[]): T {
+  const obj = Object.create(Ctor.prototype)
+  const ret = Ctor.apply(obj, args) as unknown
+  return (ret && (typeof ret === 'object' || typeof ret === 'function')) ? (ret as T) : obj
+}
+```
+
+2. map 和 Object 的区别
+   - 标准答案：Map 的键可为任意类型、可直接迭代且有 `size`；Object 的键主要是字符串或 `symbol`，更适合表达固定结构体。频繁增删改查的字典数据优先 Map，配置对象与序列化结构优先 Object。
+   - 考察点：是否能按场景选型。
+
+3. map 和 weakMap 的区别
+   - 标准答案：WeakMap 只能用对象做键，键是弱引用，不可枚举；Map 键可任意类型且可遍历。WeakMap 适合对象私有元数据和临时缓存，能降低因忘记 `delete` 导致的泄漏风险，但不是“自动解决所有内存泄漏”，因为值对象和其他全局引用仍可能形成泄漏链。
+   - 考察点：是否理解弱引用的意义。
+
+4. 对 JSON 的理解
+   - 标准答案：JSON 是文本交换格式，`JSON.stringify` 和 `JSON.parse` 负责序列化与反序列化。它不支持函数、`undefined`、循环引用等结构，因此不能当做通用深拷贝工具。
+   - 考察点：是否知道序列化边界。
+
+5. JavaScript 类数组对象的定义？
+   - 标准答案：类数组是“有索引和 `length` 但不是 Array 实例”的对象，如 `arguments` 和 `NodeList`。它们通常要先转成数组再做 `map/filter/reduce`，否则会触发方法不存在或行为不一致问题。
+   - 考察点：是否理解结构相似与原型能力的差异。

@@ -85,6 +85,26 @@ channel.onmessage = (event) => {
 2. 如何实现浏览器内多个标签页之间的通信?
    - 标准答案：可用 `BroadcastChannel`、`localStorage` 事件、`SharedWorker`、`postMessage` 或服务端转发通道；选型要看同源约束、实时性和兼容要求。
    - 考察点：是否能列举方案并给出选型依据。
+```ts
+const channel = new BroadcastChannel('tab-sync')
+const KEY = 'tab-sync-event'
+
+function publish(event: { type: string, payload?: unknown }) {
+  const data = { ...event, ts: Date.now() }
+  channel.postMessage(data)
+  localStorage.setItem(KEY, JSON.stringify(data))
+}
+
+channel.onmessage = ({ data }) => {
+  if (data.type === 'logout') location.reload()
+}
+
+window.addEventListener('storage', (e) => {
+  if (e.key !== KEY || !e.newValue) return
+  const data = JSON.parse(e.newValue)
+  if (data.type === 'logout') location.reload()
+})
+```
    - 追问 1：为什么常做双通道兜底？
    - 标准答案 1：单一通道在兼容或异常场景可能失效，双通道可提升一致性和可恢复性。
 

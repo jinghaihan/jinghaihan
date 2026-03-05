@@ -1,0 +1,101 @@
+---
+id: js-type-system-coercion
+title: 数据类型与类型转换
+nodeId: js-type-system-coercion
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：数据类型与类型转换描述值的分类、比较规则和运算中的隐式转换机制。
+- 解决问题：解决 `==`、`+`、`typeof`、`instanceof` 等高频行为难以解释的问题。
+- 边界说明：不解决对象继承关系和异步执行顺序问题。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 先确定值属于原始类型还是引用类型。
+2. 在比较或运算时按规范触发显式或隐式转换。
+3. 针对特殊值（`null`、`undefined`、`NaN`）应用专门规则。
+4. 运算结束后返回转换后的结果类型。
+
+### 2) 关键条件与触发点
+
+- 条件 A：`==`、`+`、逻辑运算会触发隐式转换。
+- 条件 B：`Object.is`、`===` 不做类型转换，但对 `NaN` 和 `-0` 处理不同。
+
+### 3) 结果与影响
+
+- 对稳定性的影响：理解转换规则可减少边界值 bug。
+- 对可维护性的影响：统一比较和转换约定可降低认知成本。
+
+## 相似概念对比
+
+| 维度 | `==` | `===` | 结论 |
+|---|---|---|---|
+| 是否转换类型 | 会 | 不会 | 默认优先 `===` |
+| `NaN` 比较 | `false` | `false` | 用 `Number.isNaN` |
+| `+0` 与 `-0` | 相等 | 相等 | `Object.is` 可区分 |
+| 适用场景 | 兼容旧逻辑 | 新代码主流 | 规则需统一 |
+
+## 代码
+
+```ts
+const values = [null, undefined, NaN, 0, '0', [], {}]
+
+console.log(typeof null) // object
+console.log(Number.isNaN(NaN)) // true
+console.log(isNaN('foo')) // true
+console.log(Number.isNaN('foo')) // false
+
+console.log(Object.is(NaN, NaN)) // true
+console.log(Object.is(+0, -0)) // false
+```
+
+### 示例说明
+
+- 这段代码覆盖了类型检测与特殊值比较。
+- `isNaN` 会先做数字转换，`Number.isNaN` 不会。
+- 常见错误写法是把 `typeof null === 'object'` 误认为 `null` 是对象。
+
+## 真实场景示例
+
+- 场景描述：表单校验中把空字符串、`null`、`undefined` 混作同一种“空值”。
+- 问题表现：后端收到错误类型，出现条件判断分支错乱。
+- 处理方案：统一空值判定函数，显式转换后再比较。
+- 验证方式：针对边界值补齐单元测试并回归。
+
+## 常见误区
+
+- 误区：`typeof` 可以准确判断所有类型。
+  - 正解：`typeof null` 是历史行为，复杂类型应配合 `Object.prototype.toString`。
+- 误区：`isNaN` 和 `Number.isNaN` 一样。
+  - 正解：前者有强制转换，后者是严格判断。
+
+## 相关面试题
+
+1. JavaScript 有哪些数据类型，它们的区别？
+   - 标准答案：可分为原始类型和引用类型。原始类型按值存储，复制时互不影响；引用类型按引用访问，复制的是地址。机制差异体现在比较、拷贝和参数传递行为上。
+   - 考察点：是否理解值语义和引用语义。
+
+2. 数据类型检测的方式有哪些
+   - 标准答案：常用 `typeof`、`instanceof`、`Object.prototype.toString.call`、`Array.isArray`。其中 `typeof` 适合基础类型，复杂对象更适合 `toString` 或专用 API。
+   - 考察点：是否知道不同检测方式的边界。
+
+3. null 和 undefined 区别
+   - 标准答案：`undefined` 表示“未定义”，`null` 表示“有意置空”。二者在 `==` 下相等，在 `===` 下不等，项目里应按语义区分使用。
+   - 考察点：是否能从语义和比较规则两侧回答。
+
+4. typeof null 的结果是什么，为什么？
+   - 标准答案：结果是 `object`，源于早期实现用低位标记类型导致 `null` 被误判并保留至今。结论上这是历史兼容行为，不应据此判断 `null` 是对象。
+   - 考察点：是否知道“结论 + 历史机制”。
+
+5. isNaN 和 Number.isNaN 函数的区别？
+   - 标准答案：`isNaN` 会先把参数转成数字再判断，`Number.isNaN` 只在值本身是 `NaN` 时返回 `true`。例如 `isNaN('abc')` 为 `true`，`Number.isNaN('abc')` 为 `false`。
+   - 考察点：是否能说明隐式转换带来的差异。
+
+6. Object.is() 与比较操作符 “===”、“==” 的区别？
+   - 标准答案：`Object.is` 与 `===` 大多数场景一致，但能把 `NaN` 判为相等、把 `+0` 与 `-0` 判为不等。`==` 还会触发类型转换，语义最宽松。
+   - 考察点：是否理解比较规则的精细边界。

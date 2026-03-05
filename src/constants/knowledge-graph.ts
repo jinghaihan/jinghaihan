@@ -16,7 +16,6 @@ export const KNOWLEDGE_GRAPH_KIND_LABELS: Record<string, string> = {
   build: '工程化',
   core: 'Vue',
   state: 'React',
-  quality: '手写代码',
 }
 
 interface TopicDefinition {
@@ -44,7 +43,7 @@ function topic(id: string, title: string, kind?: string): TopicDefinition {
 
 const ROOT_NODE: PositionedNode = {
   id: 'frontend-interview-map',
-  title: '前端面试知识图谱',
+  title: '前端知识图谱',
   kind: 'plan',
   stage: 0,
   lane: 0,
@@ -58,13 +57,41 @@ const DOMAIN_DEFINITIONS: DomainDefinition[] = [
     title: 'JavaScript 体系',
     kind: 'javascript',
     topics: [
-      topic('js-scope-closure', '作用域、闭包与模块化'),
+      topic('js-type-system-coercion', '数据类型与类型转换'),
+      topic('js-es6-language-features', 'ES6 语法与语言特性'),
+      topic('js-runtime-basics', '语言基础与内置能力'),
+      topic('js-scope-closure', '作用域链与闭包'),
+      topic('js-prototype-oop', '原型链与面向对象'),
+      topic('js-this-binding', 'this、call、apply、bind'),
       topic('js-event-loop', '事件循环与任务队列'),
-      topic('js-async-pattern', '异步模式与错误处理'),
-      topic('network-request-pattern', '请求模式与重试治理', 'browser'),
-      topic('runtime-storage', '运行时与存储关联', 'perf'),
+      topic('js-async-pattern', 'Promise 与 async/await'),
+      topic('network-request-pattern', 'AJAX、axios、fetch 与请求模式'),
+      topic('runtime-storage', '垃圾回收与内存泄漏'),
+      topic('js-builtins-iteration-dom', '内置对象、遍历与 DOM/BOM'),
+      topic('handwrite-js-foundation', '手写 JS 基础能力'),
+      topic('handwrite-promise-async', '手写 Promise 与异步控制'),
+      topic('handwrite-data-processing', '手写数据处理题'),
+      topic('handwrite-scenario-application', '手写场景应用题'),
+      topic('code-output-analysis', '代码输出与执行结果分析'),
     ],
-    backbone: ['js-scope-closure', 'js-event-loop', 'js-async-pattern', 'network-request-pattern'],
+    backbone: [
+      'js-type-system-coercion',
+      'js-es6-language-features',
+      'js-runtime-basics',
+      'js-scope-closure',
+      'js-prototype-oop',
+      'js-this-binding',
+      'js-event-loop',
+      'js-async-pattern',
+      'network-request-pattern',
+      'runtime-storage',
+      'js-builtins-iteration-dom',
+      'handwrite-js-foundation',
+      'handwrite-promise-async',
+      'handwrite-data-processing',
+      'handwrite-scenario-application',
+      'code-output-analysis',
+    ],
   },
   {
     id: 'html-strategy',
@@ -238,7 +265,7 @@ const DOMAIN_DEFINITIONS: DomainDefinition[] = [
     kind: 'build',
     topics: [
       topic('git-collaboration-history', 'Git 协作与历史整合'),
-      topic('bundler-toolchain-selection', '构建工具选型）'),
+      topic('bundler-toolchain-selection', '构建工具选型'),
       topic('webpack-module-build-pipeline', 'Webpack 模块图与构建流程'),
       topic('webpack-loader-plugin-extension', 'Loader 与 Plugin 扩展机制'),
       topic('webpack-hmr-runtime', 'Webpack 热更新运行时'),
@@ -284,18 +311,6 @@ const DOMAIN_DEFINITIONS: DomainDefinition[] = [
       topic('react-governance', '规范治理与复盘闭环'),
     ],
     backbone: ['react-jsx-components', 'react-hooks-rules', 'react-effect-lifecycle', 'react-routing-data', 'react-rendering-concurrent', 'react-performance', 'react-testing-deploy', 'react-governance'],
-  },
-  {
-    id: 'handwrite-core',
-    title: '手写代码体系',
-    kind: 'quality',
-    topics: [
-      topic('handwrite-js-foundation', '手写 JS 基础能力'),
-      topic('handwrite-data-processing', '手写数据处理题'),
-      topic('handwrite-scenario-application', '手写场景应用题'),
-      topic('code-output-analysis', '代码输出与执行结果分析'),
-    ],
-    backbone: ['handwrite-js-foundation', 'handwrite-data-processing', 'handwrite-scenario-application', 'code-output-analysis'],
   },
 ]
 

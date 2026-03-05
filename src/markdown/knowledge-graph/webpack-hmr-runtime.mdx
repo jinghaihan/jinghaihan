@@ -90,3 +90,15 @@ if (import.meta.webpackHot) {
 1. webpack 热更新的实现原理？
    - 标准答案：核心链路是“文件变更触发增量编译 -> 服务端推送新哈希 -> 客户端拉取更新清单与模块补丁 -> 运行时替换模块并执行回调 -> 失败回退整页刷新”。能否替换成功取决于模块接受边界和依赖关系。
    - 考察点：是否理解服务端通知、客户端拉取和运行时替换三段式机制。
+```ts
+if (import.meta.webpackHot) {
+  import.meta.webpackHot.accept('./render', async () => {
+    const { render } = await import('./render')
+    render()
+  })
+
+  import.meta.webpackHot.dispose(() => {
+    // 释放旧模块副作用，例如事件监听、定时器、订阅
+  })
+}
+```

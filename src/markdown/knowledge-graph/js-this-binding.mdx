@@ -1,0 +1,103 @@
+---
+id: js-this-binding
+title: this、call、apply、bind
+nodeId: js-this-binding
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：`this` 是函数执行时的上下文绑定值，`call/apply/bind` 是手动控制绑定的核心 API。
+- 解决问题：解决方法调用对象不确定、回调丢失上下文和函数复用问题。
+- 边界说明：不处理变量作用域和原型继承链路。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 普通函数根据调用方式决定 `this`。
+2. `call/apply` 立即调用并显式指定 `this`。
+3. `bind` 返回新函数，延迟调用并持久绑定 `this`。
+4. 箭头函数不创建自身 `this`，继承外层上下文。
+
+### 2) 关键条件与触发点
+
+- 条件 A：对象方法被单独赋值调用时，容易丢失原 `this`。
+- 条件 B：回调传递给事件或定时器时，若未绑定上下文常出现 `undefined` 访问。
+
+### 3) 结果与影响
+
+- 对稳定性的影响：正确绑定可避免运行时 `this` 为空导致异常。
+- 对可维护性的影响：减少隐式上下文依赖可提升可读性。
+
+## 相似概念对比
+
+| 维度 | call | apply | bind |
+|---|---|---|---|
+| 调用时机 | 立即 | 立即 | 延迟 |
+| 参数形式 | 逐个传参 | 数组传参 | 预绑定后再传 |
+| 返回值 | 函数执行结果 | 函数执行结果 | 新函数 |
+| 适用场景 | 临时借用方法 | 参数数组已存在 | 回调场景长期绑定 |
+
+## 代码
+
+```ts
+function greet(this: any, a: string, b: string) {
+  return `${a}, ${this.name}${b}`
+}
+
+const ctx = { name: 'Tom' }
+console.log(greet.call(ctx, 'hi', '!'))
+console.log(greet.apply(ctx, ['hello', '.']))
+
+const bound = greet.bind(ctx, 'welcome')
+console.log(bound('~'))
+```
+
+### 示例说明
+
+- 展示了三者调用时机和参数形式差异。
+- `bind` 适合事件回调与异步回调场景。
+- 常见错误写法是把 `bind` 当作立即执行函数。
+
+## 相关面试题
+
+1. 对 this 对象的理解
+   - 标准答案：`this` 不是函数定义时决定，而是调用时决定。默认调用、隐式调用、显式绑定和 `new` 调用各自规则不同，箭头函数除外。
+   - 考察点：是否理解调用语义。
+
+2. call() 和 apply() 的区别？
+   - 标准答案：两者都可显式指定 `this` 并立即执行，区别在参数传递形式：`call` 逐个参数，`apply` 数组参数。
+   - 考察点：是否能给出明确选择条件。
+
+3. 实现 call、apply 及 bind 函数
+   - 标准答案：核心是把目标函数临时挂到上下文对象上执行，再清理临时属性；`bind` 需要返回闭包函数并处理参数预绑定。
+   - 考察点：是否理解 API 底层行为。
+```ts
+function myCall(fn: Function, context: unknown, ...args: unknown[]) {
+  const ctx = context == null ? globalThis : Object(context)
+  const key = Symbol('fn')
+  ;(ctx as any)[key] = fn
+  const ret = (ctx as any)[key](...args)
+  delete (ctx as any)[key]
+  return ret
+}
+
+function myApply(fn: Function, context: unknown, args: unknown[] = []) {
+  return myCall(fn, context, ...args)
+}
+
+function myBind(fn: Function, context: unknown, ...preset: unknown[]) {
+  function bound(this: unknown, ...runtime: unknown[]) {
+    const thisArg = this instanceof (bound as any) ? this : context
+    return fn.apply(thisArg, [...preset, ...runtime])
+  }
+  bound.prototype = Object.create(fn.prototype)
+  return bound
+}
+```
+
+4. 箭头函数的 this 指向哪里？
+   - 标准答案：箭头函数没有自己的 `this`，会捕获定义位置外层上下文。它不能通过 `call/apply/bind` 改变指向，也不能作为构造函数。
+   - 考察点：是否区分箭头函数与普通函数绑定机制。

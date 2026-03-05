@@ -1,0 +1,82 @@
+---
+id: js-prototype-oop
+title: 原型链与面向对象
+nodeId: js-prototype-oop
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：原型链是对象属性查找机制，面向对象模式是在此基础上组织复用与继承。
+- 解决问题：解决对象创建、方法复用、继承扩展和类型判断问题。
+- 边界说明：不覆盖异步队列和网络请求模式。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 对象访问属性时先查自身。
+2. 未命中则沿 `[[Prototype]]` 向上查找。
+3. 查找到 `Object.prototype` 后仍未命中返回 `undefined`。
+4. 继承本质是构造函数原型链连接和实例链路传递。
+
+### 2) 关键条件与触发点
+
+- 条件 A：重写原型对象会改变后续实例行为。
+- 条件 B：动态改原型可能破坏既有实例的预期能力。
+
+### 3) 结果与影响
+
+- 对可维护性的影响：合理原型复用可减少重复方法定义。
+- 对稳定性的影响：原型污染或错误继承会导致全局行为异常。
+
+## 相似概念对比
+
+| 维度 | 原型继承 | 类继承（语法糖） | 结论 |
+|---|---|---|---|
+| 底层机制 | 原型链 | 仍是原型链 | 本质一致 |
+| 表达方式 | 手动连接原型 | `class/extends` | 可读性不同 |
+| 易错点 | `constructor`、原型污染 | super 调用顺序 | 都需理解底层 |
+| 适用场景 | 底层库与兼容实现 | 业务代码组织 | 可混合使用 |
+
+## 代码
+
+```ts
+function Animal(this: any, name: string) {
+  this.name = name
+}
+Animal.prototype.say = function () {
+  return `hi ${this.name}`
+}
+
+function Dog(this: any, name: string) {
+  Animal.call(this, name)
+}
+Dog.prototype = Object.create(Animal.prototype)
+Dog.prototype.constructor = Dog
+```
+
+### 示例说明
+
+- 展示了组合构造函数调用与原型链继承。
+- `Dog.prototype.constructor` 需要回指，便于类型识别和调试。
+- 常见错误写法是直接 `Dog.prototype = Animal.prototype`，导致原型互相污染。
+
+## 相关面试题
+
+1. 对原型、原型链的理解
+   - 标准答案：对象通过内部原型链接到其构造函数原型，再逐级向上形成查找链。属性查找按“自身优先，原型后置”的顺序进行。
+   - 考察点：是否理解属性查找路径。
+
+2. 原型链的终点是什么？如何打印出原型链的终点？
+   - 标准答案：终点是 `null`，通常通过 `Object.getPrototypeOf` 循环向上直到 `null`。`Object.prototype` 是最后一个有对象能力的节点。
+   - 考察点：是否知道终止条件。
+
+3. 对象创建的方式有哪些？
+   - 标准答案：常见有对象字面量、构造函数、`Object.create`、`class`。不同方式本质都能落到原型链模型，差异在语法表达和初始化流程。
+   - 考察点：是否能列举并归纳。
+
+4. 对象继承的方式有哪些？
+   - 标准答案：原型链继承、构造函数借用、组合继承、寄生组合继承和 `class extends`。实战中常用寄生组合或 `class`，能兼顾复用与可读性。
+   - 考察点：是否理解继承方案演进。

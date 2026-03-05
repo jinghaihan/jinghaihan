@@ -1,0 +1,216 @@
+---
+id: handwrite-js-foundation
+title: 手写 JS 基础能力
+nodeId: handwrite-js-foundation
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：手写 JS 基础能力是把语言机制转成可运行实现的能力验证。
+- 解决问题：解决“只会背 API，不理解底层机制”的面试短板。
+- 边界说明：不覆盖复杂算法题和业务场景建模。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 先明确目标 API 的输入输出与边界。
+2. 抽象核心机制，再实现最小可运行版本。
+3. 补齐异常分支与类型判断。
+4. 用用例验证与原生行为一致性。
+
+### 2) 关键条件与触发点
+
+- 条件 A：涉及原型、上下文、引用语义的题目，要先画机制图再写代码。
+- 条件 B：面试场景时间有限，应先给核心版本再补边界。
+
+### 3) 结果与影响
+
+- 对面试表现的影响：能显著提升“机制掌握度”评分。
+- 对工程能力的影响：可沉淀团队工具函数与规范实现。
+
+## 相似概念对比
+
+| 维度 | 浅拷贝 | 深拷贝 | 结论 |
+|---|---|---|---|
+| 拷贝层级 | 一层 | 递归层级 | 语义不同 |
+| 引用对象 | 共享 | 尝试断开 | 深拷贝成本更高 |
+| 典型方法 | `Object.assign`、扩展语法 | 递归、结构化克隆 | 按场景选 |
+| 风险点 | 嵌套引用污染 | 循环引用、函数丢失 | 需明确边界 |
+
+## 真实场景示例
+
+- 场景描述：中台表单引擎需要缓存字段 schema 的派生结果，并支持用户在运行中切换模板。
+- 问题表现：团队使用浅拷贝复制模板配置，嵌套对象被共享引用，导致 A 模板改动污染 B 模板。
+- 处理方案：基础场景使用 `shallowClone`，涉及嵌套编辑和历史快照时切到 `deepClone` 并增加循环引用保护。
+- 验证方式：在切换模板与回滚历史后做快照比对，确认跨模板对象地址不再共享。
+
+## 相关面试题
+
+1. 手写 Object.create
+   - 标准答案：结论是“建立原型关系而不是复制属性”。做法是创建中间构造函数，把其 `prototype` 指向目标对象，再返回实例；这能保证原型链正确，适用于创建基于现有对象的轻量继承对象。
+   - 考察点：是否理解“创建继承关系”而非“拷贝对象”。
+```ts
+function myObjectCreate(proto: object | null) {
+  function F() {}
+  F.prototype = proto
+  return new (F as any)()
+}
+```
+
+2. 手写 instanceof 方法
+   - 标准答案：结论是“沿原型链匹配”。左值若是基础类型直接返回 `false`，对象则通过 `Object.getPrototypeOf` 逐级上溯，命中右值 `prototype` 就返回 `true`；这解释了跨层继承为什么也能命中。
+   - 考察点：是否掌握原型链查找机制。
+```ts
+function myInstanceof(left: unknown, right: Function): boolean {
+  if (left === null || (typeof left !== 'object' && typeof left !== 'function'))
+    return false
+  let proto = Object.getPrototypeOf(left)
+  while (proto) {
+    if (proto === right.prototype) return true
+    proto = Object.getPrototypeOf(proto)
+  }
+  return false
+}
+```
+
+3. 手写 new 操作符
+   - 标准答案：结论是“4 步实例化流程”。创建对象、挂接原型、绑定 `this` 执行构造函数、按返回值规则裁决；若构造函数返回对象则覆盖默认实例，返回基础类型则忽略。
+   - 考察点：是否理解实例创建全过程。
+```ts
+function myNew<T extends object>(Ctor: new (...args: any[]) => T, ...args: any[]): T {
+  const obj = Object.create(Ctor.prototype)
+  const ret = Ctor.apply(obj, args) as unknown
+  return (ret && (typeof ret === 'object' || typeof ret === 'function')) ? (ret as T) : obj
+}
+```
+
+4. 手写类型判断函数
+   - 标准答案：结论是 `Object.prototype.toString.call` 最稳定，可区分 `array/date/regexp` 等复杂类型；`typeof` 适合快速判断基础类型与函数，不适合精确区分引用类型。
+   - 考察点：是否知道检测边界。
+```ts
+function getType(value: unknown): string {
+  if (value === null) return 'null'
+  if (value === undefined) return 'undefined'
+  return Object.prototype.toString.call(value).slice(8, -1).toLowerCase()
+}
+```
+
+5. 手写 call 函数
+   - 标准答案：结论是“把函数作为上下文临时属性执行”。关键点是 `null/undefined` 指向 `globalThis`、基础类型要装箱、执行后删除临时属性，避免污染上下文对象。
+   - 考察点：是否理解显式绑定本质。
+```ts
+function myCall(fn: Function, context: unknown, ...args: unknown[]) {
+  const ctx = context == null ? globalThis : Object(context)
+  const key = Symbol('fn')
+  ;(ctx as any)[key] = fn
+  const ret = (ctx as any)[key](...args)
+  delete (ctx as any)[key]
+  return ret
+}
+```
+
+6. 手写 apply 函数
+   - 标准答案：实现与 `call` 同源，区别只是参数形式为数组。真实场景常见于“参数个数动态不固定”的调用转发场景。
+   - 考察点：是否理解参数展开与上下文绑定的组合。
+```ts
+function myApply(fn: Function, context: unknown, args: unknown[] = []) {
+  const ctx = context == null ? globalThis : Object(context)
+  const key = Symbol('fn')
+  ;(ctx as any)[key] = fn
+  const ret = (ctx as any)[key](...args)
+  delete (ctx as any)[key]
+  return ret
+}
+```
+
+7. 手写 bind 函数
+   - 标准答案：`bind` 返回新函数并预置部分参数，执行时再合并运行参数；若作为构造函数调用，要让 `new` 的实例 `this` 优先级高于绑定对象。
+   - 考察点：是否理解偏函数和构造调用优先级。
+```ts
+function myBind(fn: Function, context: unknown, ...preset: unknown[]) {
+  function bound(this: unknown, ...runtime: unknown[]) {
+    const thisArg = this instanceof (bound as any) ? this : context
+    return fn.apply(thisArg, [...preset, ...runtime])
+  }
+  bound.prototype = Object.create(fn.prototype)
+  return bound
+}
+```
+
+8. 实现浅拷贝
+   - 标准答案：浅拷贝只复制第一层属性，嵌套对象仍共享引用。它适用于扁平配置和不可变更新第一层字段，不适合编辑深层嵌套状态。
+   - 考察点：是否能说明引用边界。
+```ts
+function shallowClone<T extends object>(source: T): T {
+  return Array.isArray(source) ? ([...source] as unknown as T) : ({ ...source } as T)
+}
+```
+
+9. 实现深拷贝
+   - 标准答案：深拷贝要递归复制并处理循环引用，常见做法是 WeakMap 记录已访问对象。`JSON.parse(JSON.stringify())` 会丢失函数、`undefined`、`Date`、`Map` 等结构，只适合简单可序列化数据。
+   - 考察点：是否能指出常见方案局限。
+```ts
+function deepClone<T>(source: T, seen = new WeakMap<object, any>()): T {
+  if (source === null || typeof source !== 'object') return source
+  if (seen.has(source as object)) return seen.get(source as object)
+
+  const target: any = Array.isArray(source) ? [] : {}
+  seen.set(source as object, target)
+
+  for (const key of Reflect.ownKeys(source as object))
+    target[key] = deepClone((source as any)[key], seen)
+
+  return target
+}
+```
+
+10. 手写防抖函数
+   - 标准答案：防抖的结论是“在连续触发结束后一段时间只执行一次”。实现关键是每次触发先清理旧定时器，再重新计时；常用于输入搜索和窗口 resize，减少无效调用。
+   - 考察点：是否理解“延迟执行 + 重置计时器”机制。
+```ts
+function debounce<T extends (...args: any[]) => any>(fn: T, delay = 300) {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  return function(this: unknown, ...args: Parameters<T>) {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      fn.apply(this, args)
+    }, delay)
+  }
+}
+```
+
+11. 手写节流函数
+   - 标准答案：节流的结论是“高频触发下按固定间隔执行”。可用时间戳或定时器实现，常见于滚动监听和拖拽计算，目标是稳定帧率而不是绝对不丢事件。
+   - 考察点：是否理解“限制频率”与“保留最后一次触发”权衡。
+```ts
+function throttle<T extends (...args: any[]) => any>(fn: T, wait = 300) {
+  let last = 0
+  let trailing: ReturnType<typeof setTimeout> | null = null
+
+  return function(this: unknown, ...args: Parameters<T>) {
+    const now = Date.now()
+    const remaining = wait - (now - last)
+
+    if (remaining <= 0) {
+      if (trailing) {
+        clearTimeout(trailing)
+        trailing = null
+      }
+      last = now
+      fn.apply(this, args)
+      return
+    }
+
+    if (!trailing) {
+      trailing = setTimeout(() => {
+        last = Date.now()
+        trailing = null
+        fn.apply(this, args)
+      }, remaining)
+    }
+  }
+}
+```

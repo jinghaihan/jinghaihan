@@ -1,0 +1,84 @@
+---
+id: js-builtins-iteration-dom
+title: 内置对象、遍历与 DOM/BOM
+nodeId: js-builtins-iteration-dom
+type: topic
+priority: P3
+---
+
+## 概念定义
+
+- 本质定义：本主题覆盖内置对象、编码、遍历协议、DOM/BOM 和常见基础 API。
+- 解决问题：解决“会写代码但解释不清 API 机制和边界”的问题。
+- 边界说明：不展开原型继承和异步调度机制。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 识别数据结构是否可迭代。
+2. 选择合适遍历 API 与编码方法。
+3. 在 DOM/BOM 操作中区分查询、创建、更新、删除。
+4. 事件监听采用标准参数并显式卸载。
+
+### 2) 关键条件与触发点
+
+- 条件 A：`for...in` 遍历可枚举键，`for...of` 遍历可迭代值。
+- 条件 B：URI 编码函数选择错误会导致参数丢失或重复编码。
+
+### 3) 结果与影响
+
+- 对稳定性的影响：API 语义选对可减少边界 bug。
+- 对可维护性的影响：遍历和编码规范统一后更易读。
+
+## 相似概念对比
+
+| 维度 | for...in | for...of | 结论 |
+|---|---|---|---|
+| 遍历对象 | 可枚举键 | 需可迭代对象 | 语义不同 |
+| 常见对象 | Object | Array、Map、Set、String | 不要互换 |
+| 是否遍历原型链 | 可能 | 不会 | `for...in` 需过滤 |
+| 适用场景 | 枚举对象键 | 遍历集合值 | 按数据结构选 |
+
+## 代码
+
+```ts
+const arr = [1, 2, 3]
+for (const value of arr) console.log(value)
+
+const obj = { a: 1, b: 2 }
+for (const key in obj) {
+  if (Object.prototype.hasOwnProperty.call(obj, key))
+    console.log(key, obj[key as keyof typeof obj])
+}
+
+console.log(encodeURIComponent('a=1&b=2'))
+```
+
+### 示例说明
+
+- 展示了 `for...in` 与 `for...of` 的语义区别。
+- `for...in` 需配合 `hasOwnProperty` 过滤继承属性。
+- 常见错误写法是用 `for...of` 直接遍历普通对象。
+
+## 相关面试题
+
+1. JavaScript 有哪些内置对象
+   - 标准答案：常见有 `Object`、`Array`、`Map`、`Set`、`Date`、`RegExp`、`Promise`、`Math` 等。回答时应给分类而非只堆名称。
+   - 考察点：是否具备体系化认知。
+
+2. 什么是 DOM 和 BOM？
+   - 标准答案：DOM 表示文档结构与节点操作接口，BOM 表示浏览器窗口与环境接口，如 `window`、`location`、`history`。前者偏页面结构，后者偏宿主环境。
+   - 考察点：是否区分对象模型层级。
+
+3. for...in 和 for...of 的区别
+   - 标准答案：`for...in` 遍历键名并可能含继承键，`for...of` 遍历可迭代对象的值。对象遍历键常用 `for...in + hasOwnProperty` 或 `Object.keys`。
+   - 考察点：是否理解迭代协议。
+
+4. escape、encodeURI、encodeURIComponent 的区别
+   - 标准答案：`encodeURI` 用于整体 URL，保留协议和分隔符；`encodeURIComponent` 用于参数片段，编码更彻底；`escape` 已不推荐。
+   - 考察点：是否按使用位置正确选择。
+
+5. 常见的 DOM 操作有哪些
+   - 标准答案：包括节点查询、创建、插入、删除、属性与样式更新、事件绑定与解绑。应按“查改增删 + 事件”分类回答。
+   - 考察点：是否能结构化列举。

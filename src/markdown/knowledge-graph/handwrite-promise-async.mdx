@@ -1,0 +1,187 @@
+---
+id: handwrite-promise-async
+title: 手写 Promise 与异步控制
+nodeId: handwrite-promise-async
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：手写 Promise 与异步控制是对状态机、回调队列和并发组合的实现验证。
+- 解决问题：解决异步流程编排、结果聚合和失败传播机制不清的问题。
+- 边界说明：不覆盖网络协议与浏览器调度底层实现。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. Promise 保存状态、值和回调队列。
+2. `resolve/reject` 单向改变状态并触发队列。
+3. `then` 返回新 Promise 以支持链式调用。
+4. `all/race` 通过聚合器封装多 Promise 并发表达。
+
+### 2) 关键条件与触发点
+
+- 条件 A：`then` 需处理返回值是普通值或 Promise 两类情况。
+- 条件 B：聚合方法要处理空数组、异常中断和顺序保证。
+
+### 3) 结果与影响
+
+- 对面试表现的影响：能体现异步状态机理解深度。
+- 对工程实践的影响：有助于写出可维护的异步工具层。
+
+## 相似概念对比
+
+| 维度 | Promise.all | Promise.race | 结论 |
+|---|---|---|---|
+| 完成条件 | 全部完成 | 首个 settled | 语义不同 |
+| 失败行为 | 任一失败即失败 | 首个失败即失败 | 风险不同 |
+| 返回结果 | 按输入顺序数组 | 单个结果 | 适用场景不同 |
+| 场景 | 聚合依赖 | 超时抢占 | 不能互换 |
+
+## 真实场景示例
+
+- 场景描述：订单页同时请求用户信息、优惠券和库存，任一失败都要阻止提交。
+- 问题表现：并发请求散落在页面代码里，错误处理重复且不一致。
+- 处理方案：用 `Promise.all` 聚合关键依赖，超时场景用 `Promise.race` 接超时 Promise，统一在调用层处理异常。
+- 验证方式：压测中注入超时与 500 响应，确认页面统一进入降级分支并打点。
+
+## 相关面试题
+
+1. 手写 Promise
+   - 标准答案：最小实现必须包含 `pending/fulfilled/rejected` 状态、不可逆状态迁移和回调队列。构造函数执行报错要走 `reject`，否则异常链会丢失。
+   - 考察点：是否理解 Promise 最小模型。
+```ts
+class MyPromise<T = unknown> {
+  private state: 'pending' | 'fulfilled' | 'rejected' = 'pending'
+  private value: unknown
+  private fulfilledQueue: Array<(value: T) => void> = []
+  private rejectedQueue: Array<(reason: unknown) => void> = []
+
+  constructor(executor: (resolve: (value: T | MyPromise<T>) => void, reject: (reason?: unknown) => void) => void) {
+    const resolve = (value: T | MyPromise<T>) => {
+      if (this.state !== 'pending') return
+      if (value instanceof MyPromise) return value.then(resolve as any, reject)
+      this.state = 'fulfilled'
+      this.value = value
+      this.fulfilledQueue.forEach(fn => fn(value as T))
+    }
+    const reject = (reason?: unknown) => {
+      if (this.state !== 'pending') return
+      this.state = 'rejected'
+      this.value = reason
+      this.rejectedQueue.forEach(fn => fn(reason))
+    }
+    try { executor(resolve, reject) } catch (e) { reject(e) }
+  }
+}
+```
+
+2. 手写 Promise.then
+   - 标准答案：`then` 必须返回新 Promise，这样才能链式传递结果和错误。回调返回 Promise 时需要等待它决议，回调抛错时必须转成 `reject`。
+   - 考察点：是否理解链式决议流程。
+```ts
+then<R = T>(onFulfilled?: (value: T) => R | MyPromise<R>, onRejected?: (reason: unknown) => R | MyPromise<R>) {
+  return new MyPromise<R>((resolve, reject) => {
+    const fulfilled = (value: T) => {
+      try {
+        if (!onFulfilled) return resolve(value as unknown as R)
+        const ret = onFulfilled(value)
+        ret instanceof MyPromise ? ret.then(resolve, reject) : resolve(ret)
+      } catch (error) {
+        reject(error)
+      }
+    }
+    const rejected = (reason: unknown) => {
+      try {
+        if (!onRejected) return reject(reason)
+        const ret = onRejected(reason)
+        ret instanceof MyPromise ? ret.then(resolve, reject) : resolve(ret)
+      } catch (error) {
+        reject(error)
+      }
+    }
+    if (this.state === 'fulfilled') queueMicrotask(() => fulfilled(this.value as T))
+    else if (this.state === 'rejected') queueMicrotask(() => rejected(this.value))
+    else {
+      this.fulfilledQueue.push(fulfilled)
+      this.rejectedQueue.push(rejected)
+    }
+  })
+}
+```
+
+3. 手写 Promise.all
+   - 标准答案：维护结果数组和完成计数器，全部成功后按输入顺序返回；任一失败立即 `reject`。输入项要先 `Promise.resolve`，才能兼容普通值。
+   - 考察点：是否能处理并发聚合细节。
+```ts
+function myPromiseAll<T>(list: Iterable<T | Promise<T>>) {
+  const items = Array.from(list)
+  if (items.length === 0) return Promise.resolve([] as T[])
+
+  return new Promise<T[]>((resolve, reject) => {
+    const result: T[] = new Array(items.length)
+    let finished = 0
+
+    items.forEach((item, index) => {
+      Promise.resolve(item)
+        .then((value) => {
+          result[index] = value
+          finished += 1
+          if (finished === items.length) resolve(result)
+        })
+        .catch(reject)
+    })
+  })
+}
+```
+
+4. 手写 Promise.race
+   - 标准答案：首个 settled 的结果直接决议返回值，后续结果全部忽略。常用于超时控制和多数据源抢占。
+   - 考察点：是否理解“首个决议”语义。
+```ts
+function myPromiseRace<T>(list: Iterable<T | Promise<T>>) {
+  return new Promise<T>((resolve, reject) => {
+    for (const item of list)
+      Promise.resolve(item).then(resolve, reject)
+  })
+}
+```
+
+5. 实现 sleep 函数（使用 Promise 封装 setTimeout）
+   - 标准答案：返回一个在定时结束后 `resolve` 的 Promise，再由 `await` 让当前异步流程暂停。它不会阻塞主线程，只是延后后续微任务链执行。
+   - 考察点：是否区分异步等待与同步阻塞。
+```ts
+function sleep(ms: number) {
+  return new Promise<void>(resolve => setTimeout(resolve, ms))
+}
+
+async function run() {
+  console.log('start')
+  await sleep(1000)
+  console.log('1s later')
+}
+```
+
+6. 使用 Promise 封装 AJAX 请求
+   - 标准答案：在 `XMLHttpRequest` 的 `onload/onerror/ontimeout` 中决议 Promise，并按状态码处理成功与失败。封装目的不是换写法，而是统一异常语义和调用方式。
+   - 考察点：是否具备请求层封装意识。
+```ts
+function ajax(url: string, method: 'GET' | 'POST' = 'GET', body?: Document | XMLHttpRequestBodyInit | null) {
+  return new Promise<any>((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open(method, url, true)
+    xhr.responseType = 'json'
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.response)
+      else reject(new Error(`HTTP ${xhr.status}`))
+    }
+    xhr.onerror = () => reject(new Error('network error'))
+    xhr.ontimeout = () => reject(new Error('request timeout'))
+
+    xhr.send(body ?? null)
+  })
+}
+```

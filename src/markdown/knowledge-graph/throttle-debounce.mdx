@@ -41,37 +41,6 @@ priority: P1
 | 实时反馈 | 弱 | 强 | 节流更适合连续反馈 |
 | 请求控制 | 抑制重复提交效果好 | 控制频率效果好 | 可组合使用 |
 
-## 代码
-
-```ts
-export function debounce<T extends (...args: any[]) => void>(fn: T, wait = 300) {
-  let timer: ReturnType<typeof setTimeout> | null = null
-  return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
-    if (timer) clearTimeout(timer)
-    timer = setTimeout(() => {
-      fn.apply(this, args)
-      timer = null
-    }, wait)
-  }
-}
-
-export function throttle<T extends (...args: any[]) => void>(fn: T, wait = 300) {
-  let last = 0
-  return function(this: ThisParameterType<T>, ...args: Parameters<T>) {
-    const now = Date.now()
-    if (now - last < wait) return
-    last = now
-    fn.apply(this, args)
-  }
-}
-```
-
-### 示例说明
-
-- 示例分别实现了尾触发防抖和时间戳节流。
-- 防抖重点在“重置计时器”，节流重点在“窗口判断”。
-- 常见错误写法是节流函数里忘记更新时间戳，导致节流失效。
-
 ## 真实场景示例
 
 - 场景描述：搜索框每输入一个字符都触发接口请求。
@@ -101,5 +70,45 @@ export function throttle<T extends (...args: any[]) => void>(fn: T, wait = 300) 
 2. 实现节流函数和防抖函数
    - 标准答案：防抖实现关键是“重置定时器”，节流实现关键是“记录上次执行时间或定时窗口”。工程里还需要补充 `this` 绑定、参数透传和清理能力，避免内存泄漏。
    - 考察点：是否能写出可复用而非一次性实现。
+```ts
+function debounce<T extends (...args: any[]) => unknown>(fn: T, wait = 300) {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  return function(this: unknown, ...args: Parameters<T>) {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      fn.apply(this, args)
+      timer = null
+    }, wait)
+  }
+}
+
+function throttle<T extends (...args: any[]) => unknown>(fn: T, wait = 300) {
+  let last = 0
+  let trailing: ReturnType<typeof setTimeout> | null = null
+
+  return function(this: unknown, ...args: Parameters<T>) {
+    const now = Date.now()
+    const remaining = wait - (now - last)
+
+    if (remaining <= 0) {
+      if (trailing) {
+        clearTimeout(trailing)
+        trailing = null
+      }
+      last = now
+      fn.apply(this, args)
+      return
+    }
+
+    if (!trailing) {
+      trailing = setTimeout(() => {
+        last = Date.now()
+        trailing = null
+        fn.apply(this, args)
+      }, remaining)
+    }
+  }
+}
+```
    - 追问 1：搜索联想为什么更常用防抖？
    - 标准答案 1：因为用户连续输入期间中间值大多无意义，防抖可把请求收敛到最后一次，减少服务压力和响应乱序。

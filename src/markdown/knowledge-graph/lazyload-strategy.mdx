@@ -98,5 +98,20 @@ document.querySelectorAll<HTMLImageElement>('img[data-src]').forEach((img) => {
 3. 懒加载的实现原理
    - 标准答案：先保存真实资源地址，再在元素进入可视区时把真实地址赋值给 `src` 或触发动态导入。机制关键是“可视区判断 + 触发赋值 + 卸载监听”，而不是简单监听滚动。
    - 考察点：是否能说清触发条件和执行链路。
+```ts
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return
+    const img = entry.target as HTMLImageElement
+    const src = img.dataset.src
+    if (src) img.src = src
+    observer.unobserve(img)
+  })
+}, { rootMargin: '120px 0px' })
+
+document.querySelectorAll<HTMLImageElement>('img[data-src]').forEach((img) => {
+  observer.observe(img)
+})
+```
    - 追问 1：为什么推荐 `IntersectionObserver`？
    - 标准答案 1：因为它由浏览器调度可见性变化，避免手写滚动计算导致高频回调和布局查询开销。

@@ -1,0 +1,175 @@
+---
+id: handwrite-scenario-application
+title: 手写场景应用题
+nodeId: handwrite-scenario-application
+type: topic
+priority: P2
+---
+
+## 概念定义
+
+- 本质定义：手写场景应用题是把基础能力组合到真实交互或业务流程中的实现题。
+- 解决问题：解决时序控制、事件模型、发布订阅和小型架构题的表达能力问题。
+- 边界说明：不覆盖大型系统设计与跨端架构问题。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 抽象场景中的状态机与时序。
+2. 选择实现模型（回调、Promise、`async/await`、事件总线）。
+3. 提供最小可运行版本。
+4. 补齐取消、异常和资源清理逻辑。
+
+### 2) 关键条件与触发点
+
+- 条件 A：涉及周期调度题时，需明确起止条件和取消机制。
+- 条件 B：涉及通信题时，需定义订阅关系和消息格式。
+
+### 3) 结果与影响
+
+- 对面试表现的影响：体现“从机制到落地”的工程思维。
+- 对工程实践的影响：可沉淀常用调度器和事件系统。
+
+## 相似概念对比
+
+| 维度 | 发布订阅 | 观察者模式 | 结论 |
+|---|---|---|---|
+| 依赖关系 | 通过事件中心解耦 | 观察者直接依赖目标 | 发布订阅解耦更强 |
+| 消息通道 | 中介统一分发 | 目标对象主动通知 | 结构不同 |
+| 适用场景 | 跨模块事件通信 | 单对象状态通知 | 不能混称 |
+| 风险点 | 订阅泄漏 | 目标职责过重 | 都需清理机制 |
+
+## 相关面试题
+
+1. 循环打印红黄绿
+   - 标准答案：核心是把三段任务串成顺序异步链，执行一段再等待一段。可用 `async/await + sleep`，并通过循环次数或取消标记控制退出。
+   - 考察点：时序建模与异步链组织能力。
+```ts
+function sleep(ms: number) {
+  return new Promise<void>(resolve => setTimeout(resolve, ms))
+}
+
+async function trafficLight(loop = 1) {
+  const tasks = [
+    { color: 'red', wait: 3000 },
+    { color: 'yellow', wait: 1000 },
+    { color: 'green', wait: 2000 },
+  ]
+  for (let i = 0; i < loop; i += 1) {
+    for (const task of tasks) {
+      console.log(task.color)
+      await sleep(task.wait)
+    }
+  }
+}
+```
+
+2. 实现每隔一秒打印 1,2,3,4
+   - 标准答案：可以递归 `setTimeout` 或 `await sleep` 顺序打印。关键不在定时器语法，而在“严格按顺序、严格按间隔”执行。
+   - 考察点：是否能控制时序而非只会定时器。
+```ts
+function printInOrder(list: number[]) {
+  let index = 0
+  function run() {
+    if (index >= list.length) return
+    console.log(list[index])
+    index += 1
+    setTimeout(run, 1000)
+  }
+  run()
+}
+
+printInOrder([1, 2, 3, 4])
+```
+
+3. 用 Promise 实现图片的异步加载
+   - 标准答案：在 `Image` 的 `onload/onerror` 中 `resolve/reject`，调用方就能 `await` 处理结果。该封装可以统一图片加载成功和失败路径。
+   - 考察点：是否掌握异步资源加载封装。
+```ts
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = () => reject(new Error(`load failed: ${src}`))
+    img.src = src
+  })
+}
+```
+
+4. 实现发布-订阅模式
+   - 标准答案：至少包含 `on/emit/off`，并支持同事件多个订阅函数。生产实现还要加 `once`、异常隔离和自动清理。
+   - 考察点：是否有可扩展设计意识。
+```ts
+class EventBus {
+  private events = new Map<string, Set<(...args: any[]) => void>>()
+
+  on(name: string, fn: (...args: any[]) => void) {
+    if (!this.events.has(name)) this.events.set(name, new Set())
+    this.events.get(name)!.add(fn)
+  }
+
+  emit(name: string, ...args: any[]) {
+    this.events.get(name)?.forEach(fn => fn(...args))
+  }
+
+  off(name: string, fn: (...args: any[]) => void) {
+    this.events.get(name)?.delete(fn)
+  }
+}
+```
+
+5. 实现简单路由
+   - 标准答案：最小版本可基于 hash 路由，监听 `hashchange`，根据路径表执行渲染函数。核心是“路径变化 -> 组件渲染”映射，不是复杂框架能力。
+   - 考察点：是否理解前端路由最小模型。
+```ts
+type Handler = () => void
+
+class HashRouter {
+  private routes: Record<string, Handler> = {}
+
+  register(path: string, handler: Handler) {
+    this.routes[path] = handler
+  }
+
+  start() {
+    window.addEventListener('hashchange', () => this.resolve())
+    this.resolve()
+  }
+
+  private resolve() {
+    const path = location.hash.slice(1) || '/'
+    this.routes[path]?.()
+  }
+}
+```
+
+6. 实现 jsonp
+   - 标准答案：动态插入 `script` 并约定全局回调名，服务端返回 `callback(data)` 完成跨域数据传输。它只支持 `GET` 且有全局污染风险，现代项目通常只用于兼容老接口。
+   - 考察点：是否理解跨域历史方案边界。
+```ts
+function jsonp<T = unknown>(url: string, params: Record<string, string>, callbackName = `jsonp_${Date.now()}`) {
+  return new Promise<T>((resolve, reject) => {
+    const query = new URLSearchParams({ ...params, callback: callbackName }).toString()
+    const script = document.createElement('script')
+    script.src = `${url}${url.includes('?') ? '&' : '?'}${query}`
+
+    ;(window as any)[callbackName] = (data: T) => {
+      resolve(data)
+      cleanup()
+    }
+
+    script.onerror = () => {
+      reject(new Error('jsonp error'))
+      cleanup()
+    }
+
+    function cleanup() {
+      delete (window as any)[callbackName]
+      script.remove()
+    }
+
+    document.body.appendChild(script)
+  })
+}
+```
