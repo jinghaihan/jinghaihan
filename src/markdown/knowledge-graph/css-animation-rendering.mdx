@@ -1,0 +1,93 @@
+---
+id: css-animation-rendering
+title: 动画与渲染时序
+nodeId: css-animation-rendering
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：动画与渲染时序关注动画 API（Application Programming Interface）如何与浏览器刷新节奏协同。
+- 解决问题：避免动画卡顿、错帧和任务堆积。
+- 边界说明：布局层面的回流抖动治理在“重排、重绘与渲染抖动”节点。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. `transition` 依赖状态变化触发，从起点到终点补间。
+2. `animation` 可定义多关键帧并自动执行。
+3. `requestAnimationFrame` 在浏览器下一帧前调度回调。
+4. 用 `cancelAnimationFrame` 在生命周期结束时清理动画任务。
+
+### 2) 关键条件与触发点
+
+- 条件 A：定时器驱动动画易与刷新率失步。
+- 条件 B：隐藏标签页中无效动画任务会浪费资源。
+
+### 3) 结果与影响
+
+- 对性能/稳定性/可维护性的影响：时序匹配时动画稳定流畅；时序失配时掉帧和 CPU（Central Processing Unit）浪费明显。
+
+## 相似概念对比
+
+| 维度 | `transition` | `animation` | `requestAnimationFrame` |
+|---|---|---|---|
+| 触发方式 | 状态变化触发 | 可自动执行 | 手动逐帧调度 |
+| 控制粒度 | 较低 | 中 | 高 |
+| 关键帧能力 | 起止两态为主 | 多关键帧 | 代码级任意控制 |
+| 典型场景 | 交互过渡 | 循环动效 | 复杂交互动画 |
+
+## 代码
+
+```js
+let id = 0
+function tick() {
+  // update
+  id = requestAnimationFrame(tick)
+}
+id = requestAnimationFrame(tick)
+// cancelAnimationFrame(id)
+```
+
+### 示例说明
+
+- 这段代码解决什么问题：把动画更新绑定到浏览器绘制节奏。
+- 关键语句或参数含义：`requestAnimationFrame` 会在下一次重绘前调用回调。
+- 常见错误写法：组件卸载后不取消动画，造成后台任务泄漏。
+
+## 真实场景示例
+
+- 场景描述：滚动联动动画在低端机抖动明显。
+- 问题表现：滚动时动画不同步、帧率下降。
+- 处理方案：定时器改为 `requestAnimationFrame`，并减少每帧 DOM 操作。
+- 验证方式：FPS、Long Task、交互延迟对比。
+
+## 常见误区
+
+- 误区：`requestAnimationFrame` 是宏任务，所以一定慢。
+  - 正解：它的核心价值是与刷新帧同步，而不是任务类型标签。
+- 误区：所有动画都该上 JS。
+  - 正解：简单过渡优先 CSS 动画，复杂同步逻辑再用 JS。
+
+## 关联知识点
+
+- 依赖：重排、重绘与渲染抖动。
+- 影响：交互体验与能耗表现。
+- 对比：CSS 动画与 JS 动画。
+- 组合：可见区域检测与懒触发动画。
+
+## 相关面试题
+
+1. transition和animation的区别
+   - 标准答案：结论是 `transition` 依赖状态变化触发，`animation` 可自动执行并支持多关键帧。机制上两者控制粒度不同。场景上交互反馈常用 `transition`，循环展示动画常用 `animation`。
+   - 考察点：是否能结合触发机制说明差异。
+
+2. 对requestAnimationframe的理解
+   - 标准答案：结论是它让回调和浏览器重绘节奏对齐。机制上每帧执行一次回调并可取消，通常比定时器更平滑。场景上滚动动画、拖拽动画、Canvas 动效常用该方案。
+   - 考察点：是否理解其“同步刷新帧”的本质价值。
+
+3. CSS3中有哪些新特性
+   - 标准答案：常见新特性包括动画（`transition`、`animation`、`transform`）、圆角、阴影、渐变、多列布局、媒体查询等。机制上这些能力减少了大量脚本模拟。场景上应按兼容目标选择使用。
+   - 考察点：是否能分类列举并落到使用场景。
