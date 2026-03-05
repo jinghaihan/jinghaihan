@@ -1,0 +1,77 @@
+---
+id: webpack-spa-mpa-config
+title: 单页与多页构建配置
+nodeId: webpack-spa-mpa-config
+type: topic
+priority: P3
+---
+
+## 概念定义
+
+- 本质定义：单页与多页构建配置是根据页面组织方式设计入口、模板和产物分发策略。
+- 解决问题：解决不同页面架构下的入口组织、公共依赖复用和扩展维护问题。
+- 边界说明：不直接解决运行时路由权限和后端渲染策略。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. SPA 以单入口驱动，路由在前端运行时切换。
+2. MPA 为每个页面配置独立入口和模板。
+3. 抽离公共依赖，避免多页重复打包。
+4. 为新增页面提供自动发现或约定式入口机制。
+
+### 2) 关键条件与触发点
+
+- 条件 A：页面彼此独立且上线节奏不同，通常倾向 MPA。
+- 条件 B：页面共享状态和交互较多，通常倾向 SPA。
+
+### 3) 结果与影响
+
+- 对性能的影响：SPA 首包压力更高，MPA 首次进入更轻但跨页切换成本高。
+- 对可维护性的影响：MPA 若缺少自动化入口管理，新增页面会推高维护成本。
+
+## 相似概念对比
+
+| 维度 | SPA | MPA | 结论 |
+|---|---|---|---|
+| 入口形态 | 单入口 | 多入口 | 架构目标不同 |
+| 首次加载 | 通常更重 | 通常更轻 | 取决于首屏资源量 |
+| 跨页体验 | 前端路由切换流畅 | 页面整跳 | 交互连续性差异明显 |
+| 适用场景 | 后台系统、重交互应用 | 内容型站点、独立页面群 | 按业务形态选型 |
+
+## 配置示例
+
+```ts
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+
+// SPA
+export const spaConfig = {
+  entry: './src/main.ts',
+  plugins: [new HtmlWebpackPlugin({ template: './public/index.html' })],
+}
+
+// MPA
+export const mpaConfig = {
+  entry: {
+    home: './src/pages/home/main.ts',
+    admin: './src/pages/admin/main.ts',
+  },
+  plugins: [
+    new HtmlWebpackPlugin({ filename: 'home.html', chunks: ['home'] }),
+    new HtmlWebpackPlugin({ filename: 'admin.html', chunks: ['admin'] }),
+  ],
+}
+```
+
+### 示例说明
+
+- 这段示例展示了 SPA 单入口和 MPA 多入口的最小差异。
+- MPA 场景要确保每个模板只注入对应 `chunks`，避免资源串页。
+- 常见错误写法是新增页面后忘记补模板插件，导致页面构建成功但访问 404。
+
+## 相关面试题
+
+1. 怎么配置单页应用？怎么配置多页应用？
+   - 标准答案：单页应用在 `entry` 中配置单入口并由前端路由管理页面切换；多页应用为每个页面配置独立入口和对应 HTML 模板，并抽离公共依赖避免重复加载。关键条件是页面是否共享运行时状态和发布节奏。
+   - 考察点：是否理解 SPA 和 MPA 在入口组织与产物管理上的根本差异。

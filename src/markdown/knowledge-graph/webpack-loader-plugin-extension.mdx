@@ -1,0 +1,120 @@
+---
+id: webpack-loader-plugin-extension
+title: Loader 与 Plugin 扩展机制
+nodeId: webpack-loader-plugin-extension
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：Loader 负责把非标准模块转换为可编译模块，Plugin 负责在编译生命周期中扩展行为。
+- 解决问题：解决文件格式转换和构建流程能力扩展两个不同层面的需求。
+- 边界说明：不解决业务代码分层和发布系统策略问题。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. Webpack 解析到模块后，按 `rules` 匹配需要执行的 Loader 链。
+2. Loader 从右到左执行，逐步把输入内容转换成目标代码。
+3. 编译生命周期触发钩子，Plugin 在钩子中读取或改写编译状态。
+4. `emit` 前后可产出额外文件、注入变量或做体积分析。
+5. 构建结束后输出包含扩展结果的产物和统计信息。
+
+### 2) 关键条件与触发点
+
+- 条件 A：当需要处理 CSS、图片、TypeScript 等文件时，必须配置对应 Loader。
+- 条件 B：当需要跨模块、跨阶段能力时，应使用 Plugin 而不是堆积 Loader。
+
+### 3) 结果与影响
+
+- 对性能的影响：Loader 链过长会拖慢构建，Plugin 过多会拉长生命周期耗时。
+- 对可维护性的影响：单一职责 Loader + 明确钩子 Plugin 更易排障和升级。
+
+## 相似概念对比
+
+| 维度 | Loader | Plugin | 结论 |
+|---|---|---|---|
+| 定义 | 模块转换器 | 构建生命周期扩展器 | 职责层级不同 |
+| 触发时机 | 模块解析时 | 编译生命周期钩子时 | 触发维度不同 |
+| 性能影响 | 影响单模块处理耗时 | 影响全局编译耗时 | 优化手段也不同 |
+| 适用场景 | 语法与资源转换 | 注入、分析、产物治理 | 不要互相替代 |
+
+## 配置示例
+
+```ts
+import webpack from 'webpack'
+import HtmlWebpackPlugin from 'html-webpack-plugin'
+
+export default {
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: { cacheDirectory: true },
+          },
+        ],
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+    }),
+    new HtmlWebpackPlugin(),
+  ],
+}
+```
+
+### 示例说明
+
+- 这段配置展示了 `rules` 负责资源转换，`plugins` 负责全局能力注入。
+- `style-loader` + `css-loader` 顺序体现“从右到左”执行规则。
+- 常见错误写法是把全局编译逻辑塞进 Loader，导致难以复用和调试。
+
+## 真实场景示例
+
+- 场景描述：团队引入新图片格式后，线上资源加载报错且构建时长上升。
+- 问题表现：图片模块无法解析，CI 构建比之前慢 40%。
+- 处理方案：新增图片 Loader 并限制匹配范围，同时下线低收益体积分析 Plugin。
+- 验证方式：构建恢复到原耗时区间，图片资源在预发环境可正常加载。
+
+## 常见误区
+
+- 误区：Loader 和 Plugin 都是“插件”，差别不大。
+  - 正解：Loader 面向单模块转换，Plugin 面向全局生命周期扩展。
+- 误区：Loader 顺序按从左到右执行。
+  - 正解：Webpack Loader 默认从右到左执行。
+
+## 关联知识点
+
+- 依赖：Webpack 模块图与构建流程。
+- 影响：热更新运行时、构建提速策略。
+- 组合：Babel 编译三阶段。
+
+## 相关面试题
+
+1. 有哪些常见的 Loader？
+   - 标准答案：常见 Loader 包括 `babel-loader`、`css-loader`、`style-loader`、`file-loader`、`url-loader`、`source-map-loader`。结论是 Loader 负责“把资源变成可被模块系统处理的内容”，而不是做全局流程控制。
+   - 考察点：是否知道常见资源类型对应的转换链路。
+
+2. 有哪些常见的 Plugin？
+   - 标准答案：常见 Plugin 包括 `DefinePlugin`、`HtmlWebpackPlugin`、`MiniCssExtractPlugin`、`BundleAnalyzerPlugin` 等。它们主要用于环境变量注入、HTML 产物生成、CSS 抽离和体积分析。
+   - 考察点：是否理解 Plugin 的全局扩展职责。
+
+3. Loader 和 Plugin 的不同？
+   - 标准答案：Loader 在 `module.rules` 中配置，按文件匹配并执行内容转换；Plugin 在 `plugins` 中注册，通过生命周期钩子影响编译过程和输出结果。Loader 解决“怎么转”，Plugin 解决“什么时候扩”。
+   - 考察点：是否能按配置位置、执行时机、作用范围区分两者。
+
+4. 编写 loader 或 plugin 的思路？
+   - 标准答案：写 Loader 要坚持单一职责，输入是源码字符串或 buffer，输出是转换后的代码；写 Plugin 要先选准生命周期钩子，再在钩子内读取或改写编译信息。若需求跨模块或跨阶段，应优先 Plugin。
+   - 考察点：是否具备从需求到扩展点的设计能力。
