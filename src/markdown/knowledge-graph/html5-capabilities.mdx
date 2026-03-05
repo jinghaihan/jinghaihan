@@ -1,0 +1,89 @@
+---
+id: html5-capabilities
+title: HTML5 能力总览
+nodeId: html5-capabilities
+type: topic
+priority: P2
+---
+
+## 概念定义
+
+- 本质定义：HTML5 能力总览是对语义、媒体、表单、存储、拖拽与图形能力的体系化归纳。
+- 解决问题：快速建立“有哪些能力 + 何时使用”的选型框架。
+- 边界说明：本节点做总览，不替代各专项节点的深度机制。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 先按能力分类：语义标签、媒体标签、表单增强、存储与接口、图形与交互。
+2. 再按业务目标映射：结构表达、输入校验、离线可用、交互增强。
+3. 最后按兼容风险做降级或增强策略。
+
+### 2) 关键条件与触发点
+
+- 条件 A：能力点覆盖广但缺少分类，面试答题会变成零散罗列。
+- 条件 B：只记 API 名称不记场景，项目中容易误用。
+
+### 3) 结果与影响
+
+- 对性能/稳定性/可维护性的影响：分类清晰时可快速定位合适能力，减少错误选型和返工。
+
+## 相似概念对比
+
+| 维度 | HTML5 新增能力 | 旧方案/历史能力 | 结论 |
+|---|---|---|---|
+| 结构语义 | `header`、`main`、`article` 等 | 大量 `div` 语义弱结构 | 语义化更强 |
+| 媒体播放 | `audio`、`video` | 插件依赖方案 | 原生能力更统一 |
+| 交互能力 | drag API、Canvas、SVG | 纯脚本模拟 | 原生接口更可维护 |
+| 存储能力 | `localStorage`、`sessionStorage` | 仅 Cookie（Cookies） | 能力边界更清晰 |
+
+## 代码
+
+```html
+<div draggable="true">拖拽卡片</div>
+<canvas id="chart" width="300" height="150"></canvas>
+```
+
+```js
+const card = document.querySelector('[draggable="true"]')
+
+card?.addEventListener('dragstart', (event) => {
+  event.dataTransfer?.setData('text/plain', 'card-1')
+})
+```
+
+### 示例说明
+
+- 这段代码解决什么问题：展示 HTML5 drag API 的最小可用链路。
+- 关键语句或参数含义：`draggable="true"` 开启拖拽，`dataTransfer` 传递拖拽数据。
+- 常见错误写法：只处理 `dragstart`，但目标区域未处理 `dragover` 和 `drop`。
+
+## 真实场景示例
+
+- 场景描述：运营看板需要卡片拖拽排序和图形化展示。
+- 问题表现：纯脚本模拟拖拽复杂、回归成本高。
+- 处理方案：使用原生 drag API 完成拖拽链路，图形渲染按场景选择 Canvas 或 SVG。
+- 验证方式：拖拽成功率、回归缺陷数、交互延迟指标。
+
+## 常见误区
+
+- 误区：HTML5 更新只等于语义标签更新。
+  - 正解：还包括表单、媒体、存储、拖拽、图形等能力。
+- 误区：drag API 只要元素可拖就算完成。
+  - 正解：必须补齐事件链和数据传递处理。
+
+## 关联知识点
+
+- 依赖：语义化与可访问性。
+- 影响：媒体与图形、离线存储与 Service Worker。
+- 对比：原生能力与第三方模拟方案。
+- 组合：渐进增强与优雅降级。
+
+## 相关面试题
+
+1. HTML5 有哪些更新
+   - 标准答案：可按五类回答。第一类是语义标签：`header`、`nav`、`section`、`article`、`aside`、`footer`。第二类是媒体：`audio`、`video`、`source`。第三类是表单增强：新增输入类型和 `placeholder`、`required` 等属性。第四类是存储与接口：`localStorage`、`sessionStorage`、`querySelector` 系列。第五类是交互与图形：drag API、Canvas、SVG。机制上这些更新减少了对插件和重脚本模拟的依赖。场景上可提升可维护性和跨端一致性。
+   - 考察点：是否能“分类列举 + 解释用途”，而不是只背名词。
+   - 追问 1：说一下 HTML5 drag API
+   - 标准答案 1：核心事件是 `dragstart`、`dragenter`、`dragover`、`dragleave`、`drop`、`dragend`。机制上拖拽源通过 `dataTransfer` 传递数据，目标区必须处理 `dragover` 与 `drop`。场景上常用于列表排序、文件拖入上传和看板编排。

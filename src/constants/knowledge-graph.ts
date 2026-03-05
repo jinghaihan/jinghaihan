@@ -71,13 +71,29 @@ const DOMAIN_DEFINITIONS: DomainDefinition[] = [
     title: 'HTML 体系',
     kind: 'html',
     topics: [
-      topic('nav-start', '导航起点与文档入口'),
-      topic('html-semantic', '语义化与可访问性'),
+      topic('html-document-entry', '文档声明与 head 配置'),
+      topic('html-semantic-accessibility', '语义化与可访问性'),
       topic('html-loading-blocking', '加载与阻塞模型'),
-      topic('html-script-loading', 'script 加载策略（defer/async）'),
-      topic('html-media-offline', '离线存储、Worker 与媒体能力'),
+      topic('html-script-loading', 'script 加载策略（defer / async）'),
+      topic('html5-capabilities', 'HTML5 能力总览'),
+      topic('html-media-graphics', '媒体与图形'),
+      topic('html-iframe', 'iframe 嵌入与跨域通信'),
+      topic('html-web-worker', 'Web Worker'),
+      topic('html-offline-storage', '离线存储与 Service Worker'),
+      topic('html-compatibility-strategy', '渐进增强与优雅降级'),
     ],
-    backbone: ['nav-start', 'html-semantic', 'html-loading-blocking', 'html-script-loading', 'html-media-offline'],
+    backbone: [
+      'html-document-entry',
+      'html-semantic-accessibility',
+      'html-loading-blocking',
+      'html-script-loading',
+      'html5-capabilities',
+      'html-media-graphics',
+      'html-iframe',
+      'html-web-worker',
+      'html-offline-storage',
+      'html-compatibility-strategy',
+    ],
   },
   {
     id: 'css-strategy',
@@ -220,7 +236,7 @@ const DOMAIN_DEFINITIONS: DomainDefinition[] = [
 ]
 
 const MAINLINE_EDGES: WorkflowEdge[] = [
-  { source: 'nav-start', target: 'refresh-modes', label: '导航触发刷新策略判定', kind: 'spine' },
+  { source: 'html-document-entry', target: 'refresh-modes', label: '文档声明与 head 配置会影响首包后的处理分支', kind: 'spine' },
   { source: 'refresh-modes', target: 'sw-check', label: '先经过 Service Worker 拦截链', kind: 'spine' },
   { source: 'sw-check', target: 'memory-cache', label: '未命中 SW 时回到浏览器缓存层', kind: 'spine' },
   { source: 'memory-cache', target: 'disk-cache', label: '内存缓存未命中则检查磁盘缓存', kind: 'spine' },
@@ -242,6 +258,10 @@ const MAINLINE_PAIR_SET = new Set(MAINLINE_EDGES.map(edge => `${edge.source}->${
 
 const CROSS_DOMAIN_EDGES: WorkflowEdge[] = [
   { source: 'html-loading-blocking', target: 'cssom-js', label: '阻塞脚本与样式会推迟渲染', kind: 'optimize' },
+  { source: 'html-media-graphics', target: 'render-opt', label: '媒体与图形选型直接影响渲染成本', kind: 'optimize' },
+  { source: 'html-iframe', target: 'security-cors', label: '跨源 iframe 通信依赖同源与跨域边界', kind: 'risk' },
+  { source: 'html-web-worker', target: 'js-event-loop', label: 'Worker 与主线程通过消息队列协同', kind: 'practice' },
+  { source: 'html-offline-storage', target: 'sw-check', label: '离线能力依赖 Service Worker 拦截链', kind: 'optimize' },
   { source: 'js-event-loop', target: 'cssom-js', label: '宏微任务时机会干扰渲染时序', kind: 'practice' },
   { source: 'js-event-loop', target: 'layout', label: '读写 DOM 交错会触发布局抖动', kind: 'practice' },
   { source: 'layout', target: 'forced-layout', label: '强制同步布局通常出现在这一阶段', kind: 'risk' },

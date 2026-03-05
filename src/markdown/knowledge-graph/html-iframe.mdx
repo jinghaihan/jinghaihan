@@ -1,0 +1,107 @@
+---
+id: html-iframe
+title: iframe 嵌入与跨域通信
+nodeId: html-iframe
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：`iframe` 用于在当前页面嵌入独立文档上下文，并通过同源策略划定访问边界。
+- 解决问题：在主页面中隔离加载第三方或独立子应用，同时建立可控通信通道。
+- 边界说明：它不是通用组件拆分方案，主业务核心流程不应无边界堆到 `iframe`。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 主页面创建 `iframe`，加载独立文档。
+2. 浏览器根据同源策略判断主页面与子页面的访问权限。
+3. 同源场景可直接用 `contentWindow` 访问文档和函数。
+4. 跨源场景改用 `postMessage` 做双向消息通信。
+5. 用 `sandbox`、`allow`、`referrerpolicy` 收敛权限，避免过度暴露能力。
+
+### 2) 关键条件与触发点
+
+- 条件 A：跨源场景直接访问 `contentWindow.document` 会被同源策略阻止。
+- 条件 B：`postMessage` 发送端使用 `*` 或接收端不校验 `origin`，会带来消息伪造风险。
+- 条件 C：`iframe` 缺少权限约束时，第三方内容可能拿到超出预期的能力。
+
+### 3) 结果与影响
+
+- 对性能/稳定性/可维护性的影响：边界清晰时隔离收益明显；边界混乱时会出现通信脆弱、埋点割裂和排障复杂度上升。
+
+## 相似概念对比
+
+| 维度 | 同源 iframe | 跨源 iframe | 结论 |
+|---|---|---|---|
+| DOM 访问 | 可通过 `contentWindow.document` 访问 | 不可直接访问 | 同源策略是硬边界 |
+| JS 调用 | 可直接调用子页面暴露函数 | 不可直接调用 | 跨源走消息协议 |
+| 数据通信 | 可直接调用 + `postMessage` | 以 `postMessage` 为主 | 跨源通信要协议化 |
+| 存储访问 | 可共享同源存储上下文 | 不可直接读写对方存储 | 跨源需后端或消息桥接 |
+
+## 代码
+
+```html
+<iframe
+  id="pay-frame"
+  src="https://pay.example.com/embed"
+  sandbox="allow-scripts allow-forms"
+  referrerpolicy="strict-origin-when-cross-origin"
+></iframe>
+<script type="module">
+  const frame = document.getElementById('pay-frame')
+
+  window.addEventListener('message', (event) => {
+    if (event.origin !== 'https://pay.example.com')
+      return
+    if (event.data?.type === 'PAY_SUCCESS')
+      console.log('pay ok')
+  })
+
+  frame?.addEventListener('load', () => {
+    frame.contentWindow?.postMessage(
+      { type: 'INIT_CHECKOUT', orderId: 'A1001' },
+      'https://pay.example.com',
+    )
+  })
+</script>
+```
+
+### 示例说明
+
+- 这段代码解决什么问题：在跨源 `iframe` 场景下建立可控且可验证的通信链路。
+- 关键语句或参数含义：`sandbox` 限制子页面权限；`postMessage` 用于跨源通信；`event.origin` 校验用于防止伪造消息。
+- 常见错误写法：`targetOrigin` 用 `*`、接收端不校验来源、给 `sandbox` 放开过多能力。
+
+## 真实场景示例
+
+- 场景描述：结算页嵌入第三方支付页，主页面需要感知支付完成状态。
+- 问题表现：支付状态偶发丢失，且线上出现来源不明的消息事件。
+- 处理方案：统一通信协议字段，发送端固定 `targetOrigin`，接收端校验 `origin` + `source`，并限制 `iframe` 权限。
+- 验证方式：支付回调成功率、非法消息拦截数、通信超时率。
+
+## 常见误区
+
+- 误区：跨源 `iframe` 不能通信。
+  - 正解：可以通信，标准方案是 `postMessage`，但必须做来源校验。
+- 误区：`iframe` 只要能显示就算接入完成。
+  - 正解：还要补齐协议、权限、监控和异常回退策略。
+
+## 关联知识点
+
+- 依赖：同源与跨域策略、HTML5 能力总览。
+- 影响：安全边界、支付和登录链路稳定性。
+- 对比：同源直连访问与跨源消息通信。
+- 组合：加载与阻塞模型、渐进增强与优雅降级。
+
+## 相关面试题
+
+1. iframe 有那些优点和缺点？
+   - 标准答案：优点包括内容隔离、部署边界清晰、第三方系统接入成本低。缺点包括加载开销增加、主子页面治理复杂、跨源通信和安全治理成本高。机制上 `iframe` 创建独立文档上下文，并受同源策略约束。场景上适合支付页、广告位、外部系统嵌入，不适合无边界承载主业务。
+   - 考察点：是否能从“隔离收益 + 治理成本”两侧做权衡。
+   - 追问 1：同源和跨源的 `iframe` 通信有什么区别？
+   - 标准答案 1：结论是同源可直接访问 `contentWindow.document` 和函数，跨源不能直接访问 DOM 或存储。机制上跨源受同源策略限制，只能通过 `postMessage` 等协议化通信。场景上现代项目跨源通信优先 `postMessage`。
+   - 追问 2：`postMessage` 怎么保证安全？
+   - 标准答案 2：结论是发送端和接收端都要校验。机制上发送端必须设置精确 `targetOrigin`，接收端校验 `event.origin`、`event.source` 并校验消息结构。反例是用 `*` 且无校验，容易被恶意页面注入消息。
