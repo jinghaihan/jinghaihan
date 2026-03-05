@@ -170,6 +170,7 @@ function onToggleCheck(): void {
       </div>
 
       <WorkflowNodeNeighborLinks
+        class="shrink-0 max-h-[10%] overflow-y-auto"
         :previous-nodes="previousNodes"
         :next-nodes="nextNodes"
         @select-node="emit('selectNode', $event)"

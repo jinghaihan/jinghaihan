@@ -2,179 +2,98 @@
 id: browser-storage-security
 title: 浏览器存储与安全边界
 nodeId: browser-storage-security
+type: topic
+priority: P1
 ---
 
-## 概念定位
+## 概念定义
 
-浏览器存储与安全边界节点关注 Cookie、Web Storage 和 IndexedDB 的能力差异、容量上限、生命周期与安全风险。
+- 本质定义：浏览器存储与安全边界是指浏览器在本地数据持久化时的存储能力、作用域限制和安全约束。
+- 解决问题：在提升用户体验的同时，避免敏感数据泄露和跨源滥用。
+- 边界说明：本地存储不是权限系统，不能替代服务端鉴权与加密策略。
 
-该节点直接影响登录态安全、离线能力、跨标签同步与性能表现。
+## 核心机制拆解
 
-## 工作机制
+### 1) 机制/流程
 
-1. 按数据敏感度与访问方式选存储：认证令牌优先 Cookie（配合 HttpOnly/Secure/SameSite），业务缓存可用 localStorage/IndexedDB。
-2. 按容量和查询复杂度选型：localStorage 适合小体量同步数据，IndexedDB 适合结构化大数据。
-3. 定义生命周期：会话级（sessionStorage）、长期级（localStorage/IndexedDB）与过期淘汰策略。
-4. 处理跨标签同步：`storage` 事件或 BroadcastChannel（广播通道）机制。
-5. 建立安全基线：防 XSS（Cross Site Scripting）、防 CSRF（Cross-Site Request Forgery）、最小化敏感数据落地。
+1. 页面按数据类型选择 Cookie、LocalStorage、SessionStorage 或 IndexedDB。
+2. 浏览器按同源规则隔离不同源存储空间。
+3. 请求发送时仅 Cookie 可自动携带到服务端。
+4. 本地数据读写受容量、生命周期和策略限制。
 
-## 关键知识点
+### 2) 关键条件与触发点
 
-### 必须掌握
+- 条件 A：数据是否需要随请求自动携带，决定是否使用 Cookie。
+- 条件 B：数据是否包含敏感信息，决定是否必须加密和最小化持久化。
 
-- Cookie 容量小（通常单条约 4KB），但可随请求自动携带。
-- localStorage/sessionStorage 是同步 API，大量读写会阻塞主线程。
-- IndexedDB 是异步事务模型，适合离线缓存和复杂查询。
-- 不要把长期有效敏感令牌存 localStorage，XSS 风险高。
-- SameSite、CSRF Token 与双重提交策略要结合后端一起设计。
-- 存储清理策略必须明确，否则会出现缓存污染与配额溢出。
+### 3) 结果与影响
 
-### 选型与取舍
+- 对性能 / 稳定性 / 可维护性的影响：存储选型正确可减少重复请求和状态丢失，选型错误会带来安全风险和同步复杂度。
 
-- Cookie 安全属性强但容量小，且每次请求会带来额外头部开销。
-- localStorage 读写简单但同步阻塞，适合小数据。
-- IndexedDB 功能强但复杂度高，需要封装统一访问层。
+## 相似概念对比
 
-## 对页面性能与稳定性的影响
+| 维度 | LocalStorage | SessionStorage | 结论 |
+|---|---|---|---|
+| 定义 | 同源持久化键值存储 | 同源会话级键值存储 | 生命周期是核心差异 |
+| 触发时机 | 页面读写本地配置和缓存数据 | 单标签会话状态维护 | 前者跨会话，后者随标签关闭失效 |
+| 性能影响 | 读写简单但容量有限 | 同样简单且隔离更强 | 二者都不适合大规模结构化数据 |
+| 适用场景 | 主题配置、非敏感偏好 | 临时表单态、一次性会话状态 | 大数据优先 IndexedDB |
 
-- 节点稳定时，前端基础（HTML/CSS/JavaScript） 的链路可预测性会明显提升，发布和排障成本更可控。
-- 节点失稳时，问题会向上下游扩散，常表现为性能回退、交互异常或交付风险叠加。
-- 该节点优化应和上下游协同验证，避免“局部优化把成本转移给后续节点”。
+## 代码
 
-## 观测与排障
+```js
+localStorage.setItem('theme', 'dark')
+sessionStorage.setItem('draft', 'v1')
 
-### 核心指标
+const req = indexedDB.open('app-db', 1)
+req.onupgradeneeded = () => {
+  req.result.createObjectStore('kv', { keyPath: 'key' })
+}
+```
 
-- 存储命中率与回源率
-- 存储读写耗时（主线程占用）
-- 配额溢出/写入失败次数
-- 安全告警（XSS/CSRF 相关）数量
+### 示例说明
 
-### 排障顺序
+- 这段代码解决什么问题：展示三种本地存储入口和典型用途。
+- 关键语句或参数含义：`createObjectStore` 用于定义 IndexedDB（Indexed Database API）对象仓库。
+- 常见错误写法：把访问令牌长期明文放在 LocalStorage。
 
-1. 先确认问题是“读取不到”还是“被清理/被覆盖”。
-2. 检查不同存储的作用域：域名、路径、标签页、会话。
-3. 检查是否受浏览器隐私策略和第三方 cookie 限制影响。
-4. 检查是否存在同步大读写阻塞交互。
-5. 修复后补充容量监控和安全策略回归。
+## 真实场景示例
 
-### 常见故障场景
-
-- “登录态偶发丢失”：常见是 Cookie 属性配置不当。
-- “页面偶发卡顿”：常见是 localStorage 大对象同步读写。
-- “离线数据不一致”：常见是 IndexedDB 事务和版本升级处理不完整。
-- “跨标签状态不同步”：常见是缺少同步广播机制。
+- 场景描述：后台系统需要保存筛选条件和临时编辑内容。
+- 问题表现：刷新后状态丢失，跨标签页同步混乱。
+- 处理方案：偏好配置放 LocalStorage，编辑草稿放 SessionStorage，大体量离线数据放 IndexedDB。
+- 验证方式：刷新、重开标签页和跨标签页场景分别验证数据行为。
 
 ## 常见误区
 
-- 把所有数据都放 localStorage。
-- 忽略浏览器存储容量和淘汰策略。
-- 只谈存储方便，不谈安全边界。
+- 误区：LocalStorage 更大就一定更适合存用户凭证。
+  - 正解：凭证应优先使用受策略保护的 Cookie，并配合 `HttpOnly`、`Secure` 和 `SameSite`。
 
-## 深入拆解
+## 关联知识点
 
-### 存储能力与上限（典型范围）
+- 依赖：依赖 `security-cors` 与同源策略约束。
+- 影响：影响 `browser-web-security` 中 XSS 数据泄露风险面。
+- 对比：`browser-storage-security` 关注本地数据边界，`memory-cache` 关注资源副本复用。
+- 组合：常与 `sw-check` 结合实现离线能力。
 
-| 类型 | 典型容量 | API 特性 | 生命周期 | 适配场景 |
-| --- | --- | --- | --- | --- |
-| Cookie | 单条约 4KB | 请求自动携带 | 可配置过期 | 会话标识、服务端协同 |
-| sessionStorage | 约 5MB 级 | 同步 API | 标签页会话级 | 临时态、一次性表单 |
-| localStorage | 约 5MB~10MB 级 | 同步 API | 长期 | 小体量持久配置 |
-| IndexedDB | 通常更大（与配额策略相关） | 异步事务 | 长期 | 离线缓存、结构化数据 |
+## 相关面试题
 
-### 安全基线建议
+1. 浏览器本地存储方式及使用场景
+   - 标准答案：常见方式有 Cookie、LocalStorage、SessionStorage、IndexedDB；Cookie 适合会话标识，LocalStorage 适合持久偏好，SessionStorage 适合标签页临时状态，IndexedDB 适合结构化大数据。
+   - 考察点：是否能按“能力边界 + 场景”完整列举。
 
-1. 认证态优先使用 HttpOnly Cookie，限制脚本读取。
-2. 开启 SameSite + CSRF Token 组合防护跨站请求伪造。
-3. 对落地存储做最小化原则：能不存就不存，能短存不长存。
-4. 清理策略与版本策略绑定，避免旧结构数据长期遗留。
+2. Cookie 有哪些字段，作用分别是什么
+   - 标准答案：常见字段包括 `Name`、`Value`、`Domain`、`Path`、`Expires/Max-Age`、`HttpOnly`、`Secure`、`SameSite`；它们分别控制标识内容、作用域、有效期和安全策略。
+   - 考察点：是否能显式列出字段及作用，而不是只说“用于会话”。
 
-### 性能侧提醒
+3. Cookie、LocalStorage、SessionStorage 区别
+   - 标准答案：三者区别在容量、生命周期、是否自动随请求发送和作用域隔离；其中只有 Cookie 会自动随请求携带，LocalStorage 持久化，SessionStorage 随标签页关闭失效。
+   - 考察点：是否能按维度对比而非单点描述。
 
-- localStorage 是同步读写，频繁大对象操作会卡主线程。
-- IndexedDB 虽是异步，但事务设计不当会带来复杂一致性问题。
+4. 前端储存的⽅式有哪些？
+   - 标准答案：可分为 Cookie、Web Storage（LocalStorage / SessionStorage）、IndexedDB、Cache API 和内存态存储，各自适配不同容量、持久化和安全要求。
+   - 考察点：是否能列举并区分轻量键值和结构化存储。
 
-## 题库深挖补充
-
-### 高频对比与边界（基于题库）
-
-- Cookie、localStorage、sessionStorage、IndexedDB 的容量、生命周期和安全边界不同。
-- HttpOnly Cookie 更适合保存敏感会话标识，降低 XSS 读取风险。
-- localStorage/sessionStorage 为同步 API，大量读写会阻塞主线程。
-- IndexedDB 适合结构化大数据和离线场景，但事务治理更复杂。
-- CSRF 防护通常依赖 SameSite + Token 组合，不是单点策略。
-- 面试常问“token 放哪里”，答案要结合威胁模型而非教条。
-
-### 线上排障剧本
-
-1. 先确认问题是权限失效还是存储读取失败。
-2. 检查 Cookie 属性（SameSite/Secure/Domain/Path）是否符合预期。
-3. 检查存储容量是否触顶及回收策略。
-4. 检查跨标签同步机制是否完整。
-5. 做安全回归：XSS/CSRF 相关防护路径。
-
-### 高频追问补充（附答案）
-
-1. 为什么不建议把长期 token 放 localStorage？
-
-XSS 一旦发生可直接读取，风险高于 HttpOnly Cookie。
-
-2. sessionStorage 和 localStorage 主要区别？
-
-sessionStorage 生命周期通常绑定标签页会话，localStorage 更持久。
-
-3. IndexedDB 的典型场景？
-
-离线缓存、结构化查询、本地索引数据。
-
-## 进阶深挖（第二轮）
-
-### 存储选型与安全矩阵
-
-| 需求 | 推荐存储 | 关键防护 |
-| --- | --- | --- |
-| 会话标识 | Cookie（HttpOnly） | SameSite + Secure + CSRF Token |
-| 小体量配置 | localStorage | 避免敏感信息落地 |
-| 页面临时态 | sessionStorage | 会话结束自动清理 |
-| 大体量离线数据 | IndexedDB | 版本迁移与配额治理 |
-
-### 容量治理建议
-
-1. 对持久化字段设上限和过期策略。
-2. 对大对象持久化前做压缩与裁剪。
-3. 对写失败和配额异常做可观测告警。
-4. 定期清理历史版本遗留数据。
-
-### 追问扩展
-
-1. 为什么很多项目 Cookie 安全属性配了还是出问题？
-
-常见是跨子域、路径或代理层配置不一致，导致策略失效。
-
-2. IndexedDB 的主要工程风险是什么？
-
-版本升级与事务一致性处理复杂，缺少治理时容易产生脏数据。
-
-## 面试补充
-
-### 30 秒说明
-
-存储选型的核心是“三问”：数据敏感吗、数据多吗、是否要跨会话与跨标签。安全与性能必须一起权衡。
-
-### 高频追问
-
-1. Cookie、localStorage、sessionStorage、IndexedDB 的核心区别？
-
-Cookie 可随请求携带且安全属性丰富；local/sessionStorage 简单但同步阻塞；IndexedDB 异步且适合大数据。
-
-2. 为什么不建议把 token 长期放 localStorage？
-
-一旦 XSS，脚本可直接读取；Cookie 配合 HttpOnly 更安全。
-
-3. IndexedDB 适合什么场景？
-
-离线缓存、复杂对象存储、本地搜索索引等大体量数据场景。
-
-4. 如何做存储容量治理？
-
-监控写入失败、建立淘汰策略、分级缓存并保留回源兜底。
+5. IndexedDB 有哪些特点？
+   - 标准答案：IndexedDB 具备较大容量、事务能力、索引查询和异步读写，适合离线数据和复杂对象存储，但使用复杂度高于键值存储。
+   - 考察点：是否理解它相对 LocalStorage 的能力提升和成本。
