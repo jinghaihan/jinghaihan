@@ -64,16 +64,16 @@ console.log(bound('~'))
 ## 相关面试题
 
 1. 对 this 对象的理解
-   - 标准答案：`this` 不是函数定义时决定，而是调用时决定。默认调用、隐式调用、显式绑定和 `new` 调用各自规则不同，箭头函数除外。
-   - 考察点：是否理解调用语义。
+- 标准答案：`this` 不是函数定义时决定，而是调用时决定。默认调用、隐式调用、显式绑定和 `new` 调用各自规则不同，箭头函数除外。
+- 考察点：是否理解调用语义。
 
 2. call() 和 apply() 的区别？
-   - 标准答案：两者都可显式指定 `this` 并立即执行，区别在参数传递形式：`call` 逐个参数，`apply` 数组参数。
-   - 考察点：是否能给出明确选择条件。
+- 标准答案：两者都可显式指定 `this` 并立即执行，区别在参数传递形式：`call` 逐个参数，`apply` 数组参数。
+- 考察点：是否能给出明确选择条件。
 
 3. 实现 call、apply 及 bind 函数
-   - 标准答案：核心是把目标函数临时挂到上下文对象上执行，再清理临时属性；`bind` 需要返回闭包函数并处理参数预绑定。
-   - 考察点：是否理解 API 底层行为。
+- 标准答案：核心是把目标函数临时挂到上下文对象上执行，再清理临时属性；`bind` 需要返回闭包函数并处理参数预绑定。
+- 考察点：是否理解 API 底层行为。
 ```ts
 function myCall(fn: Function, context: unknown, ...args: unknown[]) {
   const ctx = context == null ? globalThis : Object(context)
@@ -99,5 +99,345 @@ function myBind(fn: Function, context: unknown, ...preset: unknown[]) {
 ```
 
 4. 箭头函数的 this 指向哪里？
-   - 标准答案：箭头函数没有自己的 `this`，会捕获定义位置外层上下文。它不能通过 `call/apply/bind` 改变指向，也不能作为构造函数。
-   - 考察点：是否区分箭头函数与普通函数绑定机制。
+- 标准答案：箭头函数没有自己的 `this`，会捕获定义位置外层上下文。它不能通过 `call/apply/bind` 改变指向，也不能作为构造函数。
+- 考察点：是否区分箭头函数与普通函数绑定机制。
+
+### 代码输出题
+
+1. 代码输出结果
+```js
+function foo() {
+  console.log( this.a );
+}
+
+function doFoo() {
+  foo();
+}
+
+var obj = {
+  a: 1,
+  doFoo: doFoo
+};
+
+var a = 2;
+obj.doFoo()
+```
+- 输出结果：
+```text
+2
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+2. 代码输出结果
+```js
+var a = 10
+var obj = {
+  a: 20,
+  say: () => {
+    console.log(this.a)
+  }
+}
+obj.say()
+
+var anotherObj = { a: 30 }
+obj.say.apply(anotherObj)
+```
+- 输出结果：
+```text
+10  10
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+3. 代码输出结果
+```js
+function a() {
+  console.log(this);
+}
+a.call(null);
+```
+- 输出结果：
+```text
+'use strict';
+
+function a() {
+    console.log(this);
+}
+a.call(null); // null
+a.call(undefined); // undefined
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+4. 代码输出结果
+```js
+var obj = {
+  name: 'cuggz',
+  fun: function(){
+     console.log(this.name);
+  }
+}
+obj.fun()     // cuggz
+new obj.fun() // undefined
+```
+- 输出结果：
+```text
+cuggz
+undefined
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+5. 代码输出结果
+```js
+var obj = {
+   say: function() {
+     var f1 = () =>  {
+       console.log("1111", this);
+     }
+     f1();
+   },
+   pro: {
+     getPro:() =>  {
+        console.log(this);
+     }
+   }
+}
+var o = obj.say;
+o();
+obj.say();
+obj.pro.getPro();
+```
+- 输出结果：
+```text
+1111 window对象
+1111 obj对象
+window对象
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+6. 代码输出结果
+```js
+var myObject = {
+    foo: "bar",
+    func: function() {
+        var self = this;
+        console.log(this.foo);
+        console.log(self.foo);
+        (function() {
+            console.log(this.foo);
+            console.log(self.foo);
+        }());
+    }
+};
+myObject.func();
+```
+- 输出结果：
+```text
+bar bar undefined bar
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+7. 代码输出问题
+```js
+window.number = 2;
+var obj = {
+ number: 3,
+ db1: (function(){
+   console.log(this);
+   this.number *= 4;
+   return function(){
+     console.log(this);
+     this.number *= 5;
+   }
+ })()
+}
+var db1 = obj.db1;
+db1();
+obj.db1();
+console.log(obj.number);     // 15
+console.log(window.number);  // 40
+```
+- 输出结果：
+```text
+window 对象
+window 对象
+obj 对象
+15
+40
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+8. 代码输出结果
+```js
+var length = 10;
+function fn() {
+    console.log(this.length);
+}
+
+var obj = {
+  length: 5,
+  method: function(fn) {
+    fn();
+    arguments[0]();
+  }
+};
+
+obj.method(fn, 1);
+```
+- 输出结果：
+```text
+10 2
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+9. 代码输出结果
+```js
+var a = 1;
+function printA(){
+  console.log(this.a);
+}
+var obj={
+  a:2,
+  foo:printA,
+  bar:function(){
+    printA();
+  }
+}
+
+obj.foo(); // 2
+obj.bar(); // 1
+var foo = obj.foo;
+foo(); // 1
+```
+- 输出结果：
+```text
+2 1 1
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+10. 代码输出结果
+```js
+var x = 3;
+var y = 4;
+var obj = {
+    x: 1,
+    y: 6,
+    getX: function() {
+        var x = 5;
+        return function() {
+            return this.x;
+        }();
+    },
+    getY: function() {
+        var y = 7;
+        return this.y;
+    }
+}
+console.log(obj.getX()) // 3
+console.log(obj.getY()) // 6
+```
+- 输出结果：
+```text
+3  6
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+11. 代码输出结果
+```js
+var a = 10;
+ var obt = {
+   a: 20,
+   fn: function(){
+     var a = 30;
+     console.log(this.a)
+   }
+ }
+ obt.fn();  // 20
+ obt.fn.call(); // 10
+ (obt.fn)(); // 20
+```
+- 输出结果：
+```text
+20  10  20
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+12. 代码输出结果
+```js
+function a(xx){
+  this.x = xx;
+  return this
+};
+var x = a(5);
+var y = a(6);
+
+console.log(x.x)  // undefined
+console.log(y.x)  // 6
+```
+- 输出结果：
+```text
+undefined  6
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+13. 代码输出结果
+```js
+function foo(something){
+    this.a = something
+}
+
+var obj1 = {
+    foo: foo
+}
+
+var obj2 = {}
+
+obj1.foo(2);
+console.log(obj1.a); // 2
+
+obj1.foo.call(obj2, 3);
+console.log(obj2.a); // 3
+
+var bar = new obj1.foo(4)
+console.log(obj1.a); // 2
+console.log(bar.a); // 4
+```
+- 输出结果：
+```text
+2  3  2  4
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。
+
+14. 代码输出结果
+```js
+function foo(something){
+    this.a = something
+}
+
+var obj1 = {}
+
+var bar = foo.bind(obj1);
+bar(2);
+console.log(obj1.a); // 2
+
+var baz = new bar(3);
+console.log(obj1.a); // 2
+console.log(baz.a); // 3
+```
+- 输出结果：
+```text
+2  2  3
+```
+- 关键机制：`this` 在调用时绑定：默认绑定指向全局对象（严格模式除外），对象调用走隐式绑定，`call/apply/bind` 走显式绑定，`new` 绑定优先级最高。
+- 边界条件：严格模式下默认绑定不指向 `window`；箭头函数 `this` 来自词法环境，不能被 `call/apply/bind` 改写。

@@ -50,8 +50,8 @@ priority: P1
 ## 相关面试题
 
 1. 手写 Object.create
-   - 标准答案：结论是“建立原型关系而不是复制属性”。做法是创建中间构造函数，把其 `prototype` 指向目标对象，再返回实例；这能保证原型链正确，适用于创建基于现有对象的轻量继承对象。
-   - 考察点：是否理解“创建继承关系”而非“拷贝对象”。
+- 标准答案：结论是“建立原型关系而不是复制属性”。做法是创建中间构造函数，把其 `prototype` 指向目标对象，再返回实例；这能保证原型链正确，适用于创建基于现有对象的轻量继承对象。
+- 考察点：是否理解“创建继承关系”而非“拷贝对象”。
 ```ts
 function myObjectCreate(proto: object | null) {
   function F() {}
@@ -61,8 +61,8 @@ function myObjectCreate(proto: object | null) {
 ```
 
 2. 手写 instanceof 方法
-   - 标准答案：结论是“沿原型链匹配”。左值若是基础类型直接返回 `false`，对象则通过 `Object.getPrototypeOf` 逐级上溯，命中右值 `prototype` 就返回 `true`；这解释了跨层继承为什么也能命中。
-   - 考察点：是否掌握原型链查找机制。
+- 标准答案：结论是“沿原型链匹配”。左值若是基础类型直接返回 `false`，对象则通过 `Object.getPrototypeOf` 逐级上溯，命中右值 `prototype` 就返回 `true`；这解释了跨层继承为什么也能命中。
+- 考察点：是否掌握原型链查找机制。
 ```ts
 function myInstanceof(left: unknown, right: Function): boolean {
   if (left === null || (typeof left !== 'object' && typeof left !== 'function'))
@@ -77,8 +77,8 @@ function myInstanceof(left: unknown, right: Function): boolean {
 ```
 
 3. 手写 new 操作符
-   - 标准答案：结论是“4 步实例化流程”。创建对象、挂接原型、绑定 `this` 执行构造函数、按返回值规则裁决；若构造函数返回对象则覆盖默认实例，返回基础类型则忽略。
-   - 考察点：是否理解实例创建全过程。
+- 标准答案：结论是“4 步实例化流程”。创建对象、挂接原型、绑定 `this` 执行构造函数、按返回值规则裁决；若构造函数返回对象则覆盖默认实例，返回基础类型则忽略。
+- 考察点：是否理解实例创建全过程。
 ```ts
 function myNew<T extends object>(Ctor: new (...args: any[]) => T, ...args: any[]): T {
   const obj = Object.create(Ctor.prototype)
@@ -88,8 +88,8 @@ function myNew<T extends object>(Ctor: new (...args: any[]) => T, ...args: any[]
 ```
 
 4. 手写类型判断函数
-   - 标准答案：结论是 `Object.prototype.toString.call` 最稳定，可区分 `array/date/regexp` 等复杂类型；`typeof` 适合快速判断基础类型与函数，不适合精确区分引用类型。
-   - 考察点：是否知道检测边界。
+- 标准答案：结论是 `Object.prototype.toString.call` 最稳定，可区分 `array/date/regexp` 等复杂类型；`typeof` 适合快速判断基础类型与函数，不适合精确区分引用类型。
+- 考察点：是否知道检测边界。
 ```ts
 function getType(value: unknown): string {
   if (value === null) return 'null'
@@ -99,8 +99,8 @@ function getType(value: unknown): string {
 ```
 
 5. 手写 call 函数
-   - 标准答案：结论是“把函数作为上下文临时属性执行”。关键点是 `null/undefined` 指向 `globalThis`、基础类型要装箱、执行后删除临时属性，避免污染上下文对象。
-   - 考察点：是否理解显式绑定本质。
+- 标准答案：结论是“把函数作为上下文临时属性执行”。关键点是 `null/undefined` 指向 `globalThis`、基础类型要装箱、执行后删除临时属性，避免污染上下文对象。
+- 考察点：是否理解显式绑定本质。
 ```ts
 function myCall(fn: Function, context: unknown, ...args: unknown[]) {
   const ctx = context == null ? globalThis : Object(context)
@@ -113,8 +113,8 @@ function myCall(fn: Function, context: unknown, ...args: unknown[]) {
 ```
 
 6. 手写 apply 函数
-   - 标准答案：实现与 `call` 同源，区别只是参数形式为数组。真实场景常见于“参数个数动态不固定”的调用转发场景。
-   - 考察点：是否理解参数展开与上下文绑定的组合。
+- 标准答案：实现与 `call` 同源，区别只是参数形式为数组。真实场景常见于“参数个数动态不固定”的调用转发场景。
+- 考察点：是否理解参数展开与上下文绑定的组合。
 ```ts
 function myApply(fn: Function, context: unknown, args: unknown[] = []) {
   const ctx = context == null ? globalThis : Object(context)
@@ -127,8 +127,8 @@ function myApply(fn: Function, context: unknown, args: unknown[] = []) {
 ```
 
 7. 手写 bind 函数
-   - 标准答案：`bind` 返回新函数并预置部分参数，执行时再合并运行参数；若作为构造函数调用，要让 `new` 的实例 `this` 优先级高于绑定对象。
-   - 考察点：是否理解偏函数和构造调用优先级。
+- 标准答案：`bind` 返回新函数并预置部分参数，执行时再合并运行参数；若作为构造函数调用，要让 `new` 的实例 `this` 优先级高于绑定对象。
+- 考察点：是否理解偏函数和构造调用优先级。
 ```ts
 function myBind(fn: Function, context: unknown, ...preset: unknown[]) {
   function bound(this: unknown, ...runtime: unknown[]) {
@@ -141,8 +141,8 @@ function myBind(fn: Function, context: unknown, ...preset: unknown[]) {
 ```
 
 8. 实现浅拷贝
-   - 标准答案：浅拷贝只复制第一层属性，嵌套对象仍共享引用。它适用于扁平配置和不可变更新第一层字段，不适合编辑深层嵌套状态。
-   - 考察点：是否能说明引用边界。
+- 标准答案：浅拷贝只复制第一层属性，嵌套对象仍共享引用。它适用于扁平配置和不可变更新第一层字段，不适合编辑深层嵌套状态。
+- 考察点：是否能说明引用边界。
 ```ts
 function shallowClone<T extends object>(source: T): T {
   return Array.isArray(source) ? ([...source] as unknown as T) : ({ ...source } as T)
@@ -150,8 +150,8 @@ function shallowClone<T extends object>(source: T): T {
 ```
 
 9. 实现深拷贝
-   - 标准答案：深拷贝要递归复制并处理循环引用，常见做法是 WeakMap 记录已访问对象。`JSON.parse(JSON.stringify())` 会丢失函数、`undefined`、`Date`、`Map` 等结构，只适合简单可序列化数据。
-   - 考察点：是否能指出常见方案局限。
+- 标准答案：深拷贝要递归复制并处理循环引用，常见做法是 WeakMap 记录已访问对象。`JSON.parse(JSON.stringify())` 会丢失函数、`undefined`、`Date`、`Map` 等结构，只适合简单可序列化数据。
+- 考察点：是否能指出常见方案局限。
 ```ts
 function deepClone<T>(source: T, seen = new WeakMap<object, any>()): T {
   if (source === null || typeof source !== 'object') return source
@@ -168,8 +168,8 @@ function deepClone<T>(source: T, seen = new WeakMap<object, any>()): T {
 ```
 
 10. 手写防抖函数
-   - 标准答案：防抖的结论是“在连续触发结束后一段时间只执行一次”。实现关键是每次触发先清理旧定时器，再重新计时；常用于输入搜索和窗口 resize，减少无效调用。
-   - 考察点：是否理解“延迟执行 + 重置计时器”机制。
+- 标准答案：防抖的结论是“在连续触发结束后一段时间只执行一次”。实现关键是每次触发先清理旧定时器，再重新计时；常用于输入搜索和窗口 resize，减少无效调用。
+- 考察点：是否理解“延迟执行 + 重置计时器”机制。
 ```ts
 function debounce<T extends (...args: any[]) => any>(fn: T, delay = 300) {
   let timer: ReturnType<typeof setTimeout> | null = null
@@ -183,8 +183,8 @@ function debounce<T extends (...args: any[]) => any>(fn: T, delay = 300) {
 ```
 
 11. 手写节流函数
-   - 标准答案：节流的结论是“高频触发下按固定间隔执行”。可用时间戳或定时器实现，常见于滚动监听和拖拽计算，目标是稳定帧率而不是绝对不丢事件。
-   - 考察点：是否理解“限制频率”与“保留最后一次触发”权衡。
+- 标准答案：节流的结论是“高频触发下按固定间隔执行”。可用时间戳或定时器实现，常见于滚动监听和拖拽计算，目标是稳定帧率而不是绝对不丢事件。
+- 考察点：是否理解“限制频率”与“保留最后一次触发”权衡。
 ```ts
 function throttle<T extends (...args: any[]) => any>(fn: T, wait = 300) {
   let last = 0

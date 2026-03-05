@@ -50,8 +50,8 @@ priority: P1
 ## 相关面试题
 
 1. 手写 Promise
-   - 标准答案：最小实现必须包含 `pending/fulfilled/rejected` 状态、不可逆状态迁移和回调队列。构造函数执行报错要走 `reject`，否则异常链会丢失。
-   - 考察点：是否理解 Promise 最小模型。
+- 标准答案：最小实现必须包含 `pending/fulfilled/rejected` 状态、不可逆状态迁移和回调队列。构造函数执行报错要走 `reject`，否则异常链会丢失。
+- 考察点：是否理解 Promise 最小模型。
 ```ts
 class MyPromise<T = unknown> {
   private state: 'pending' | 'fulfilled' | 'rejected' = 'pending'
@@ -79,8 +79,8 @@ class MyPromise<T = unknown> {
 ```
 
 2. 手写 Promise.then
-   - 标准答案：`then` 必须返回新 Promise，这样才能链式传递结果和错误。回调返回 Promise 时需要等待它决议，回调抛错时必须转成 `reject`。
-   - 考察点：是否理解链式决议流程。
+- 标准答案：`then` 必须返回新 Promise，这样才能链式传递结果和错误。回调返回 Promise 时需要等待它决议，回调抛错时必须转成 `reject`。
+- 考察点：是否理解链式决议流程。
 ```ts
 then<R = T>(onFulfilled?: (value: T) => R | MyPromise<R>, onRejected?: (reason: unknown) => R | MyPromise<R>) {
   return new MyPromise<R>((resolve, reject) => {
@@ -113,8 +113,8 @@ then<R = T>(onFulfilled?: (value: T) => R | MyPromise<R>, onRejected?: (reason: 
 ```
 
 3. 手写 Promise.all
-   - 标准答案：维护结果数组和完成计数器，全部成功后按输入顺序返回；任一失败立即 `reject`。输入项要先 `Promise.resolve`，才能兼容普通值。
-   - 考察点：是否能处理并发聚合细节。
+- 标准答案：维护结果数组和完成计数器，全部成功后按输入顺序返回；任一失败立即 `reject`。输入项要先 `Promise.resolve`，才能兼容普通值。
+- 考察点：是否能处理并发聚合细节。
 ```ts
 function myPromiseAll<T>(list: Iterable<T | Promise<T>>) {
   const items = Array.from(list)
@@ -138,8 +138,8 @@ function myPromiseAll<T>(list: Iterable<T | Promise<T>>) {
 ```
 
 4. 手写 Promise.race
-   - 标准答案：首个 settled 的结果直接决议返回值，后续结果全部忽略。常用于超时控制和多数据源抢占。
-   - 考察点：是否理解“首个决议”语义。
+- 标准答案：首个 settled 的结果直接决议返回值，后续结果全部忽略。常用于超时控制和多数据源抢占。
+- 考察点：是否理解“首个决议”语义。
 ```ts
 function myPromiseRace<T>(list: Iterable<T | Promise<T>>) {
   return new Promise<T>((resolve, reject) => {
@@ -150,8 +150,8 @@ function myPromiseRace<T>(list: Iterable<T | Promise<T>>) {
 ```
 
 5. 实现 sleep 函数（使用 Promise 封装 setTimeout）
-   - 标准答案：返回一个在定时结束后 `resolve` 的 Promise，再由 `await` 让当前异步流程暂停。它不会阻塞主线程，只是延后后续微任务链执行。
-   - 考察点：是否区分异步等待与同步阻塞。
+- 标准答案：返回一个在定时结束后 `resolve` 的 Promise，再由 `await` 让当前异步流程暂停。它不会阻塞主线程，只是延后后续微任务链执行。
+- 考察点：是否区分异步等待与同步阻塞。
 ```ts
 function sleep(ms: number) {
   return new Promise<void>(resolve => setTimeout(resolve, ms))
@@ -165,8 +165,8 @@ async function run() {
 ```
 
 6. 使用 Promise 封装 AJAX 请求
-   - 标准答案：在 `XMLHttpRequest` 的 `onload/onerror/ontimeout` 中决议 Promise，并按状态码处理成功与失败。封装目的不是换写法，而是统一异常语义和调用方式。
-   - 考察点：是否具备请求层封装意识。
+- 标准答案：在 `XMLHttpRequest` 的 `onload/onerror/ontimeout` 中决议 Promise，并按状态码处理成功与失败。封装目的不是换写法，而是统一异常语义和调用方式。
+- 考察点：是否具备请求层封装意识。
 ```ts
 function ajax(url: string, method: 'GET' | 'POST' = 'GET', body?: Document | XMLHttpRequestBodyInit | null) {
   return new Promise<any>((resolve, reject) => {

@@ -66,8 +66,8 @@ async function requestJSON(url: string, timeout = 8000) {
 ## 相关面试题
 
 1. 对 AJAX 的理解，实现一个 AJAX 请求
-   - 标准答案：AJAX 是异步更新页面数据的请求模式，早期常基于 XHR。实现时至少要处理 `open/send`、状态码判断、超时与错误回调。
-   - 考察点：是否理解请求最小闭环。
+- 标准答案：AJAX 是异步更新页面数据的请求模式，早期常基于 XHR。实现时至少要处理 `open/send`、状态码判断、超时与错误回调。
+- 考察点：是否理解请求最小闭环。
 ```ts
 function ajaxGet(url: string, timeout = 8000) {
   return new Promise<string>((resolve, reject) => {
@@ -89,16 +89,16 @@ function ajaxGet(url: string, timeout = 8000) {
 ```
 
 2. ajax、axios、fetch 的区别
-   - 标准答案：ajax 指模式，axios 是封装库，fetch 是原生 API。axios 拦截和统一处理能力更强，fetch 更轻量但需自行补齐错误和超时治理。
-   - 考察点：是否能给出工程选型理由。
+- 标准答案：ajax 指模式，axios 是封装库，fetch 是原生 API。axios 拦截和统一处理能力更强，fetch 更轻量但需自行补齐错误和超时治理。
+- 考察点：是否能给出工程选型理由。
 
 3. JavaScript 脚本延迟加载的方式有哪些？
-   - 标准答案：常见有 `defer`、`async`、动态创建 `script`、按需加载模块。选择关键是是否依赖解析顺序和是否阻塞文档解析。
-   - 考察点：是否理解加载时序与执行时机。
+- 标准答案：常见有 `defer`、`async`、动态创建 `script`、按需加载模块。选择关键是是否依赖解析顺序和是否阻塞文档解析。
+- 考察点：是否理解加载时序与执行时机。
 
 4. 实现 AJAX 请求
-   - 标准答案：手写可基于 XHR 封装 Promise，处理超时、中止、状态码和异常分支。生产代码通常进一步封装重试、鉴权和统一错误映射。
-   - 考察点：是否能从“能发请求”升级到“可治理请求层”。
+- 标准答案：手写可基于 XHR 封装 Promise，处理超时、中止、状态码和异常分支。生产代码通常进一步封装重试、鉴权和统一错误映射。
+- 考察点：是否能从“能发请求”升级到“可治理请求层”。
 ```ts
 interface AjaxOptions {
   url: string

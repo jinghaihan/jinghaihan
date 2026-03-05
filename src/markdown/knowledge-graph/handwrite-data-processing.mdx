@@ -43,8 +43,8 @@ priority: P2
 ## 相关面试题
 
 1. 实现数组的扁平化
-   - 标准答案：可以用递归、栈或原生 `flat`，面试手写常用 `reduce + 递归`。关键点是支持任意层嵌套和空数组边界，而不是只拍平一层。
-   - 考察点：递归思维与边界处理。
+- 标准答案：可以用递归、栈或原生 `flat`，面试手写常用 `reduce + 递归`。关键点是支持任意层嵌套和空数组边界，而不是只拍平一层。
+- 考察点：递归思维与边界处理。
 ```ts
 function flatDeep(arr: unknown[]): unknown[] {
   return arr.reduce<unknown[]>((acc, cur) => {
@@ -56,8 +56,8 @@ function flatDeep(arr: unknown[]): unknown[] {
 ```
 
 2. 实现数组去重
-   - 标准答案：基础场景可直接 `Set` 去重，复杂对象数组要先定义唯一键再去重。只说“用 Set”不够，必须补上对象去重的判定规则。
-   - 考察点：是否知道不同数据结构的去重策略。
+- 标准答案：基础场景可直接 `Set` 去重，复杂对象数组要先定义唯一键再去重。只说“用 Set”不够，必须补上对象去重的判定规则。
+- 考察点：是否知道不同数据结构的去重策略。
 ```ts
 function unique<T>(arr: T[]): T[] {
   return [...new Set(arr)]
@@ -65,8 +65,8 @@ function unique<T>(arr: T[]): T[] {
 ```
 
 3. 实现数组的 map 方法
-   - 标准答案：遍历原数组，回调结果写入新数组并返回；实现时要保留 `thisArg` 和稀疏数组语义。`map` 的本质是一进一出映射，不应只做副作用。
-   - 考察点：是否理解原生方法语义。
+- 标准答案：遍历原数组，回调结果写入新数组并返回；实现时要保留 `thisArg` 和稀疏数组语义。`map` 的本质是一进一出映射，不应只做副作用。
+- 考察点：是否理解原生方法语义。
 ```ts
 function myMap<T, R>(arr: T[], cb: (item: T, index: number, source: T[]) => R, thisArg?: unknown): R[] {
   const result: R[] = new Array(arr.length)
@@ -79,8 +79,8 @@ function myMap<T, R>(arr: T[], cb: (item: T, index: number, source: T[]) => R, t
 ```
 
 4. 实现字符串的 repeat 方法
-   - 标准答案：可用循环或二进制快速幂拼接，核心是处理非整数和负数异常。线上高频场景是生成占位串和日志前缀。
-   - 考察点：是否关注非法输入边界。
+- 标准答案：可用循环或二进制快速幂拼接，核心是处理非整数和负数异常。线上高频场景是生成占位串和日志前缀。
+- 考察点：是否关注非法输入边界。
 ```ts
 function myRepeat(str: string, count: number) {
   if (!Number.isInteger(count) || count < 0)
@@ -98,8 +98,8 @@ function myRepeat(str: string, count: number) {
 ```
 
 5. 将数字每千分位用逗号隔开
-   - 标准答案：可用正则或分组拼接实现，必须处理负数、小数和空值。只处理正整数的答案在业务里会频繁翻车。
-   - 考察点：是否考虑格式边界。
+- 标准答案：可用正则或分组拼接实现，必须处理负数、小数和空值。只处理正整数的答案在业务里会频繁翻车。
+- 考察点：是否考虑格式边界。
 ```ts
 function thousandFormat(input: string | number) {
   const [intPart, decimalPart = ''] = String(input).split('.')
@@ -111,8 +111,8 @@ function thousandFormat(input: string | number) {
 ```
 
 6. 实现非负大整数相加和相乘
-   - 标准答案：结论是字符串按位运算。加法用双指针加进位，乘法用双层循环把每位乘积累计到结果数组。这样在超长数值下不会触发 Number 精度丢失。
-   - 考察点：是否能给出精度安全实现。
+- 标准答案：结论是字符串按位运算。加法用双指针加进位，乘法用双层循环把每位乘积累计到结果数组。这样在超长数值下不会触发 Number 精度丢失。
+- 考察点：是否能给出精度安全实现。
 ```ts
 function addBigInt(a: string, b: string) {
   let i = a.length - 1
@@ -152,8 +152,8 @@ function multiplyBigInt(a: string, b: string) {
 ```
 
 7. 解析 URL Params 为对象
-   - 标准答案：按 `&` 和 `=` 拆分并 `decodeURIComponent`，重复 key 转数组。要覆盖 `?` 前缀、空值和中文编码。
-   - 考察点：是否具备鲁棒解析思维。
+- 标准答案：按 `&` 和 `=` 拆分并 `decodeURIComponent`，重复 key 转数组。要覆盖 `?` 前缀、空值和中文编码。
+- 考察点：是否具备鲁棒解析思维。
 ```ts
 function parseQuery(search: string): Record<string, string | string[]> {
   const query = search.startsWith('?') ? search.slice(1) : search

@@ -69,9 +69,9 @@ card?.addEventListener('dragstart', (event) => {
 ## 常见误区
 
 - 误区：HTML5 更新只等于语义标签更新。
-  - 正解：还包括表单、媒体、存储、拖拽、图形等能力。
+- 正解：还包括表单、媒体、存储、拖拽、图形等能力。
 - 误区：drag API 只要元素可拖就算完成。
-  - 正解：必须补齐事件链和数据传递处理。
+- 正解：必须补齐事件链和数据传递处理。
 
 ## 关联知识点
 
@@ -83,7 +83,7 @@ card?.addEventListener('dragstart', (event) => {
 ## 相关面试题
 
 1. HTML5 有哪些更新
-   - 标准答案：可按五类回答。第一类是语义标签：`header`、`nav`、`section`、`article`、`aside`、`footer`。第二类是媒体：`audio`、`video`、`source`。第三类是表单增强：新增输入类型和 `placeholder`、`required` 等属性。第四类是存储与接口：`localStorage`、`sessionStorage`、`querySelector` 系列。第五类是交互与图形：drag API、Canvas、SVG。机制上这些更新减少了对插件和重脚本模拟的依赖。场景上可提升可维护性和跨端一致性。
-   - 考察点：是否能“分类列举 + 解释用途”，而不是只背名词。
-   - 追问 1：说一下 HTML5 drag API
-   - 标准答案 1：核心事件是 `dragstart`、`dragenter`、`dragover`、`dragleave`、`drop`、`dragend`。机制上拖拽源通过 `dataTransfer` 传递数据，目标区必须处理 `dragover` 与 `drop`。场景上常用于列表排序、文件拖入上传和看板编排。
+- 标准答案：可按五类回答。第一类是语义标签：`header`、`nav`、`section`、`article`、`aside`、`footer`。第二类是媒体：`audio`、`video`、`source`。第三类是表单增强：新增输入类型和 `placeholder`、`required` 等属性。第四类是存储与接口：`localStorage`、`sessionStorage`、`querySelector` 系列。第五类是交互与图形：drag API、Canvas、SVG。机制上这些更新减少了对插件和重脚本模拟的依赖。场景上可提升可维护性和跨端一致性。
+- 考察点：是否能“分类列举 + 解释用途”，而不是只背名词。
+- 追问 1：说一下 HTML5 drag API
+- 标准答案 1：核心事件是 `dragstart`、`dragenter`、`dragover`、`dragleave`、`drop`、`dragend`。机制上拖拽源通过 `dataTransfer` 传递数据，目标区必须处理 `dragover` 与 `drop`。场景上常用于列表排序、文件拖入上传和看板编排。

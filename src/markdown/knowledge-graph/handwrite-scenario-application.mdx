@@ -43,8 +43,8 @@ priority: P2
 ## 相关面试题
 
 1. 循环打印红黄绿
-   - 标准答案：核心是把三段任务串成顺序异步链，执行一段再等待一段。可用 `async/await + sleep`，并通过循环次数或取消标记控制退出。
-   - 考察点：时序建模与异步链组织能力。
+- 标准答案：核心是把三段任务串成顺序异步链，执行一段再等待一段。可用 `async/await + sleep`，并通过循环次数或取消标记控制退出。
+- 考察点：时序建模与异步链组织能力。
 ```ts
 function sleep(ms: number) {
   return new Promise<void>(resolve => setTimeout(resolve, ms))
@@ -66,8 +66,8 @@ async function trafficLight(loop = 1) {
 ```
 
 2. 实现每隔一秒打印 1,2,3,4
-   - 标准答案：可以递归 `setTimeout` 或 `await sleep` 顺序打印。关键不在定时器语法，而在“严格按顺序、严格按间隔”执行。
-   - 考察点：是否能控制时序而非只会定时器。
+- 标准答案：可以递归 `setTimeout` 或 `await sleep` 顺序打印。关键不在定时器语法，而在“严格按顺序、严格按间隔”执行。
+- 考察点：是否能控制时序而非只会定时器。
 ```ts
 function printInOrder(list: number[]) {
   let index = 0
@@ -84,8 +84,8 @@ printInOrder([1, 2, 3, 4])
 ```
 
 3. 用 Promise 实现图片的异步加载
-   - 标准答案：在 `Image` 的 `onload/onerror` 中 `resolve/reject`，调用方就能 `await` 处理结果。该封装可以统一图片加载成功和失败路径。
-   - 考察点：是否掌握异步资源加载封装。
+- 标准答案：在 `Image` 的 `onload/onerror` 中 `resolve/reject`，调用方就能 `await` 处理结果。该封装可以统一图片加载成功和失败路径。
+- 考察点：是否掌握异步资源加载封装。
 ```ts
 function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -98,8 +98,8 @@ function loadImage(src: string) {
 ```
 
 4. 实现发布-订阅模式
-   - 标准答案：至少包含 `on/emit/off`，并支持同事件多个订阅函数。生产实现还要加 `once`、异常隔离和自动清理。
-   - 考察点：是否有可扩展设计意识。
+- 标准答案：至少包含 `on/emit/off`，并支持同事件多个订阅函数。生产实现还要加 `once`、异常隔离和自动清理。
+- 考察点：是否有可扩展设计意识。
 ```ts
 class EventBus {
   private events = new Map<string, Set<(...args: any[]) => void>>()
@@ -120,8 +120,8 @@ class EventBus {
 ```
 
 5. 实现简单路由
-   - 标准答案：最小版本可基于 hash 路由，监听 `hashchange`，根据路径表执行渲染函数。核心是“路径变化 -> 组件渲染”映射，不是复杂框架能力。
-   - 考察点：是否理解前端路由最小模型。
+- 标准答案：最小版本可基于 hash 路由，监听 `hashchange`，根据路径表执行渲染函数。核心是“路径变化 -> 组件渲染”映射，不是复杂框架能力。
+- 考察点：是否理解前端路由最小模型。
 ```ts
 type Handler = () => void
 
@@ -145,8 +145,8 @@ class HashRouter {
 ```
 
 6. 实现 jsonp
-   - 标准答案：动态插入 `script` 并约定全局回调名，服务端返回 `callback(data)` 完成跨域数据传输。它只支持 `GET` 且有全局污染风险，现代项目通常只用于兼容老接口。
-   - 考察点：是否理解跨域历史方案边界。
+- 标准答案：动态插入 `script` 并约定全局回调名，服务端返回 `callback(data)` 完成跨域数据传输。它只支持 `GET` 且有全局污染风险，现代项目通常只用于兼容老接口。
+- 考察点：是否理解跨域历史方案边界。
 ```ts
 function jsonp<T = unknown>(url: string, params: Record<string, string>, callbackName = `jsonp_${Date.now()}`) {
   return new Promise<T>((resolve, reject) => {

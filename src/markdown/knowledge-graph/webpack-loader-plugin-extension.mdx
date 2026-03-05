@@ -91,9 +91,9 @@ export default {
 ## 常见误区
 
 - 误区：Loader 和 Plugin 都是“插件”，差别不大。
-  - 正解：Loader 面向单模块转换，Plugin 面向全局生命周期扩展。
+- 正解：Loader 面向单模块转换，Plugin 面向全局生命周期扩展。
 - 误区：Loader 顺序按从左到右执行。
-  - 正解：Webpack Loader 默认从右到左执行。
+- 正解：Webpack Loader 默认从右到左执行。
 
 ## 关联知识点
 
@@ -104,17 +104,17 @@ export default {
 ## 相关面试题
 
 1. 有哪些常见的 Loader？
-   - 标准答案：常见 Loader 包括 `babel-loader`、`css-loader`、`style-loader`、`file-loader`、`url-loader`、`source-map-loader`。结论是 Loader 负责“把资源变成可被模块系统处理的内容”，而不是做全局流程控制。
-   - 考察点：是否知道常见资源类型对应的转换链路。
+- 标准答案：常见 Loader 包括 `babel-loader`、`css-loader`、`style-loader`、`file-loader`、`url-loader`、`source-map-loader`。结论是 Loader 负责“把资源变成可被模块系统处理的内容”，而不是做全局流程控制。
+- 考察点：是否知道常见资源类型对应的转换链路。
 
 2. 有哪些常见的 Plugin？
-   - 标准答案：常见 Plugin 包括 `DefinePlugin`、`HtmlWebpackPlugin`、`MiniCssExtractPlugin`、`BundleAnalyzerPlugin` 等。它们主要用于环境变量注入、HTML 产物生成、CSS 抽离和体积分析。
-   - 考察点：是否理解 Plugin 的全局扩展职责。
+- 标准答案：常见 Plugin 包括 `DefinePlugin`、`HtmlWebpackPlugin`、`MiniCssExtractPlugin`、`BundleAnalyzerPlugin` 等。它们主要用于环境变量注入、HTML 产物生成、CSS 抽离和体积分析。
+- 考察点：是否理解 Plugin 的全局扩展职责。
 
 3. Loader 和 Plugin 的不同？
-   - 标准答案：Loader 在 `module.rules` 中配置，按文件匹配并执行内容转换；Plugin 在 `plugins` 中注册，通过生命周期钩子影响编译过程和输出结果。Loader 解决“怎么转”，Plugin 解决“什么时候扩”。
-   - 考察点：是否能按配置位置、执行时机、作用范围区分两者。
+- 标准答案：Loader 在 `module.rules` 中配置，按文件匹配并执行内容转换；Plugin 在 `plugins` 中注册，通过生命周期钩子影响编译过程和输出结果。Loader 解决“怎么转”，Plugin 解决“什么时候扩”。
+- 考察点：是否能按配置位置、执行时机、作用范围区分两者。
 
 4. 编写 loader 或 plugin 的思路？
-   - 标准答案：写 Loader 要坚持单一职责，输入是源码字符串或 buffer，输出是转换后的代码；写 Plugin 要先选准生命周期钩子，再在钩子内读取或改写编译信息。若需求跨模块或跨阶段，应优先 Plugin。
-   - 考察点：是否具备从需求到扩展点的设计能力。
+- 标准答案：写 Loader 要坚持单一职责，输入是源码字符串或 buffer，输出是转换后的代码；写 Plugin 要先选准生命周期钩子，再在钩子内读取或改写编译信息。若需求跨模块或跨阶段，应优先 Plugin。
+- 考察点：是否具备从需求到扩展点的设计能力。

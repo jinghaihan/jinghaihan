@@ -72,17 +72,196 @@ for (let i = 0; i < 3; i++) {
 ## 相关面试题
 
 1. 对闭包的理解
-   - 标准答案：闭包是函数与其词法环境的组合，可在函数外持续访问定义时作用域变量。它适合私有状态封装，但不当引用会导致内存泄漏。
-   - 考察点：是否能同时说收益和风险。
+- 标准答案：闭包是函数与其词法环境的组合，可在函数外持续访问定义时作用域变量。它适合私有状态封装，但不当引用会导致内存泄漏。
+- 考察点：是否能同时说收益和风险。
 
 2. 对作用域、作用域链的理解
-   - 标准答案：作用域规定变量可见范围，作用域链是查找变量时从当前到外层逐级查找的路径。词法作用域在定义阶段确定，不受调用位置影响。
-   - 考察点：是否理解“定义时决定”。
+- 标准答案：作用域规定变量可见范围，作用域链是查找变量时从当前到外层逐级查找的路径。词法作用域在定义阶段确定，不受调用位置影响。
+- 考察点：是否理解“定义时决定”。
 
 3. 对执行上下文的理解
-   - 标准答案：执行上下文包含变量环境、词法环境和 `this` 绑定。函数调用会入栈创建上下文，执行完出栈，决定了代码执行顺序和变量解析语义。
-   - 考察点：是否理解调用栈与上下文关系。
+- 标准答案：执行上下文包含变量环境、词法环境和 `this` 绑定。函数调用会入栈创建上下文，执行完出栈，决定了代码执行顺序和变量解析语义。
+- 考察点：是否理解调用栈与上下文关系。
 
 4. JavaScript 为什么要进行变量提升，它导致了什么问题？
-   - 标准答案：提升让声明在编译阶段提前可见，便于引擎统一处理标识符；但会带来“先使用后声明”的可读性问题。`let/const` 用暂时性死区缓解该类风险。
-   - 考察点：是否能讲“设计原因 + 问题 + 解决”。
+- 标准答案：提升让声明在编译阶段提前可见，便于引擎统一处理标识符；但会带来“先使用后声明”的可读性问题。`let/const` 用暂时性死区缓解该类风险。
+- 考察点：是否能讲“设计原因 + 问题 + 解决”。
+
+### 代码输出题
+
+1. 代码输出结果
+```js
+(function(){
+   var x = y = 1;
+})();
+var z;
+
+console.log(y); // 1
+console.log(z); // undefined
+console.log(x); // Uncaught ReferenceError: x is not defined
+```
+- 输出结果：
+```text
+1
+undefined
+Uncaught ReferenceError: x is not defined
+```
+- 关键机制：变量查找遵循词法作用域链，`var` 存在提升与函数作用域；闭包会持有外层变量引用，导致值在后续调用中继续可见。
+- 边界条件：`let/const` 与 `var` 的提升和作用域规则不同；同名变量在不同词法环境会产生遮蔽。
+
+2. 代码输出结果
+```js
+var a, b
+(function () {
+   console.log(a);
+   console.log(b);
+   var a = (b = 3);
+   console.log(a);
+   console.log(b);
+})()
+console.log(a);
+console.log(b);
+```
+- 输出结果：
+```text
+undefined
+undefined
+3
+3
+undefined
+3
+```
+- 关键机制：变量查找遵循词法作用域链，`var` 存在提升与函数作用域；闭包会持有外层变量引用，导致值在后续调用中继续可见。
+- 边界条件：`let/const` 与 `var` 的提升和作用域规则不同；同名变量在不同词法环境会产生遮蔽。
+
+3. 代码输出结果
+```js
+var friendName = 'World';
+(function() {
+  if (typeof friendName === 'undefined') {
+    var friendName = 'Jack';
+    console.log('Goodbye ' + friendName);
+  } else {
+    console.log('Hello ' + friendName);
+  }
+})();
+```
+- 输出结果：
+```text
+Goodbye Jack
+```
+- 关键机制：变量查找遵循词法作用域链，`var` 存在提升与函数作用域；闭包会持有外层变量引用，导致值在后续调用中继续可见。
+- 边界条件：`let/const` 与 `var` 的提升和作用域规则不同；同名变量在不同词法环境会产生遮蔽。
+
+4. 代码输出结果
+```js
+function fn1(){
+  console.log('fn1')
+}
+var fn2
+
+fn1()
+fn2()
+
+fn2 = function() {
+  console.log('fn2')
+}
+
+fn2()
+```
+- 输出结果：
+```text
+fn1
+Uncaught TypeError: fn2 is not a function
+fn2
+```
+- 关键机制：变量查找遵循词法作用域链，`var` 存在提升与函数作用域；闭包会持有外层变量引用，导致值在后续调用中继续可见。
+- 边界条件：`let/const` 与 `var` 的提升和作用域规则不同；同名变量在不同词法环境会产生遮蔽。
+
+5. 代码输出结果
+```js
+function a() {
+    var temp = 10;
+    function b() {
+        console.log(temp); // 10
+    }
+    b();
+}
+a();
+
+function a() {
+    var temp = 10;
+    b();
+}
+function b() {
+    console.log(temp); // 报错 Uncaught ReferenceError: temp is not defined
+}
+a();
+```
+- 输出结果：
+```text
+10
+Uncaught ReferenceError: temp is not defined
+```
+- 关键机制：变量查找遵循词法作用域链，`var` 存在提升与函数作用域；闭包会持有外层变量引用，导致值在后续调用中继续可见。
+- 边界条件：`let/const` 与 `var` 的提升和作用域规则不同；同名变量在不同词法环境会产生遮蔽。
+
+6. 代码输出结果
+```js
+var a=3;
+ function c(){
+    alert(a);
+ }
+ (function(){
+  var a=4;
+  c();
+ })();
+```
+- 输出结果：
+```text
+3
+```
+- 关键机制：变量查找遵循词法作用域链，`var` 存在提升与函数作用域；闭包会持有外层变量引用，导致值在后续调用中继续可见。
+- 边界条件：`let/const` 与 `var` 的提升和作用域规则不同；同名变量在不同词法环境会产生遮蔽。
+
+7. 代码输出问题
+```js
+function fun(n, o) {
+  console.log(o)
+  return {
+    fun: function(m){
+      return fun(m, n);
+    }
+  };
+}
+var a = fun(0);  a.fun(1);  a.fun(2);  a.fun(3);
+var b = fun(0).fun(1).fun(2).fun(3);
+var c = fun(0).fun(1);  c.fun(2);  c.fun(3);
+```
+- 输出结果：
+```text
+undefined  0  0  0
+undefined  0  1  2
+undefined  0  1  1
+```
+- 关键机制：变量查找遵循词法作用域链，`var` 存在提升与函数作用域；闭包会持有外层变量引用，导致值在后续调用中继续可见。
+- 边界条件：`let/const` 与 `var` 的提升和作用域规则不同；同名变量在不同词法环境会产生遮蔽。
+
+8. 代码输出结果
+```js
+f = function() {return true;};
+g = function() {return false;};
+(function() {
+   if (g() && [] == ![]) {
+      f = function f() {return false;};
+      function g() {return true;}
+   }
+})();
+console.log(f());
+```
+- 输出结果：
+```text
+false</font>
+```
+- 关键机制：变量查找遵循词法作用域链，`var` 存在提升与函数作用域；闭包会持有外层变量引用，导致值在后续调用中继续可见。
+- 边界条件：`let/const` 与 `var` 的提升和作用域规则不同；同名变量在不同词法环境会产生遮蔽。

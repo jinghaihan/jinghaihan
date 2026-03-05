@@ -67,7 +67,7 @@ req.onupgradeneeded = () => {
 ## 常见误区
 
 - 误区：LocalStorage 更大就一定更适合存用户凭证。
-  - 正解：凭证应优先使用受策略保护的 Cookie，并配合 `HttpOnly`、`Secure` 和 `SameSite`。
+- 正解：凭证应优先使用受策略保护的 Cookie，并配合 `HttpOnly`、`Secure` 和 `SameSite`。
 
 ## 关联知识点
 
@@ -79,21 +79,21 @@ req.onupgradeneeded = () => {
 ## 相关面试题
 
 1. 浏览器本地存储方式及使用场景
-   - 标准答案：常见方式有 Cookie、LocalStorage、SessionStorage、IndexedDB；Cookie 适合会话标识，LocalStorage 适合持久偏好，SessionStorage 适合标签页临时状态，IndexedDB 适合结构化大数据。
-   - 考察点：是否能按“能力边界 + 场景”完整列举。
+- 标准答案：常见方式有 Cookie、LocalStorage、SessionStorage、IndexedDB；Cookie 适合会话标识，LocalStorage 适合持久偏好，SessionStorage 适合标签页临时状态，IndexedDB 适合结构化大数据。
+- 考察点：是否能按“能力边界 + 场景”完整列举。
 
 2. Cookie 有哪些字段，作用分别是什么
-   - 标准答案：常见字段包括 `Name`、`Value`、`Domain`、`Path`、`Expires/Max-Age`、`HttpOnly`、`Secure`、`SameSite`；它们分别控制标识内容、作用域、有效期和安全策略。
-   - 考察点：是否能显式列出字段及作用，而不是只说“用于会话”。
+- 标准答案：常见字段包括 `Name`、`Value`、`Domain`、`Path`、`Expires/Max-Age`、`HttpOnly`、`Secure`、`SameSite`；它们分别控制标识内容、作用域、有效期和安全策略。
+- 考察点：是否能显式列出字段及作用，而不是只说“用于会话”。
 
 3. Cookie、LocalStorage、SessionStorage 区别
-   - 标准答案：三者区别在容量、生命周期、是否自动随请求发送和作用域隔离；其中只有 Cookie 会自动随请求携带，LocalStorage 持久化，SessionStorage 随标签页关闭失效。
-   - 考察点：是否能按维度对比而非单点描述。
+- 标准答案：三者区别在容量、生命周期、是否自动随请求发送和作用域隔离；其中只有 Cookie 会自动随请求携带，LocalStorage 持久化，SessionStorage 随标签页关闭失效。
+- 考察点：是否能按维度对比而非单点描述。
 
 4. 前端储存的⽅式有哪些？
-   - 标准答案：可分为 Cookie、Web Storage（LocalStorage / SessionStorage）、IndexedDB、Cache API 和内存态存储，各自适配不同容量、持久化和安全要求。
-   - 考察点：是否能列举并区分轻量键值和结构化存储。
+- 标准答案：可分为 Cookie、Web Storage（LocalStorage / SessionStorage）、IndexedDB、Cache API 和内存态存储，各自适配不同容量、持久化和安全要求。
+- 考察点：是否能列举并区分轻量键值和结构化存储。
 
 5. IndexedDB 有哪些特点？
-   - 标准答案：IndexedDB 具备较大容量、事务能力、索引查询和异步读写，适合离线数据和复杂对象存储，但使用复杂度高于键值存储。
-   - 考察点：是否理解它相对 LocalStorage 的能力提升和成本。
+- 标准答案：IndexedDB 具备较大容量、事务能力、索引查询和异步读写，适合离线数据和复杂对象存储，但使用复杂度高于键值存储。
+- 考察点：是否理解它相对 LocalStorage 的能力提升和成本。

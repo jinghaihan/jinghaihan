@@ -343,6 +343,9 @@ const CROSS_DOMAIN_EDGES: WorkflowEdge[] = [
   { source: 'html-offline-storage', target: 'sw-check', label: '离线能力依赖 Service Worker 拦截链', kind: 'optimize' },
   { source: 'js-event-loop', target: 'cssom-js', label: '宏微任务时机会干扰渲染时序', kind: 'practice' },
   { source: 'js-event-loop', target: 'layout', label: '读写 DOM 交错会触发布局抖动', kind: 'practice' },
+  { source: 'throttle-debounce', target: 'js-event-loop', label: '节流与防抖依赖事件循环和定时器机制', kind: 'practice' },
+  { source: 'throttle-debounce', target: 'browser-event-dispatch', label: '高频事件派发通常结合节流与防抖治理', kind: 'optimize' },
+  { source: 'throttle-debounce', target: 'handwrite-js-foundation', label: '手写题常考节流与防抖的实现细节', kind: 'practice' },
   { source: 'layout', target: 'forced-layout', label: '强制同步布局通常出现在这一阶段', kind: 'risk' },
   { source: 'forced-layout', target: 'render-opt', label: '回流重绘治理是渲染优化核心', kind: 'optimize' },
   { source: 'status-code-path', target: 'cache-policy', label: '状态码策略会影响缓存复用路径', kind: 'optimize' },
@@ -360,6 +363,10 @@ const CROSS_DOMAIN_EDGES: WorkflowEdge[] = [
   { source: 'js-event-loop', target: 'react-rendering-concurrent', label: '任务调度直接影响 React 渲染并发', kind: 'practice' },
   { source: 'handwrite-js-foundation', target: 'js-scope-closure', label: '手写基础题用于验证作用域模型', kind: 'practice' },
   { source: 'code-output-analysis', target: 'js-event-loop', label: '输出题最常映射事件循环机制', kind: 'practice' },
+  { source: 'code-output-analysis', target: 'js-async-pattern', label: 'Promise 输出题映射异步状态机', kind: 'practice' },
+  { source: 'code-output-analysis', target: 'js-this-binding', label: 'this 输出题映射调用绑定规则', kind: 'practice' },
+  { source: 'code-output-analysis', target: 'js-scope-closure', label: '变量提升与闭包输出题映射作用域链', kind: 'practice' },
+  { source: 'code-output-analysis', target: 'js-prototype-oop', label: '原型继承输出题映射属性查找路径', kind: 'practice' },
   { source: 'vue-governance', target: 'react-governance', label: '跨框架规范治理经验可复用', kind: 'feedback' },
 ]
 

@@ -60,16 +60,16 @@ console.log('D')
 ## 相关面试题
 
 1. await 到底在等啥？
-   - 标准答案：`await` 会等待右侧表达式转成 Promise 后的 settled 结果。若是非 Promise 值，会被包装为已完成 Promise，再在微任务阶段恢复执行。
-   - 考察点：是否理解 `await` 与微任务关系。
+- 标准答案：`await` 会等待右侧表达式转成 Promise 后的 settled 结果。若是非 Promise 值，会被包装为已完成 Promise，再在微任务阶段恢复执行。
+- 考察点：是否理解 `await` 与微任务关系。
 
 2. setTimeout、Promise、Async/Await 的区别
-   - 标准答案：`setTimeout` 基于宏任务调度，Promise 回调是微任务，`async/await` 是 Promise 语法糖。执行顺序由事件循环决定，不是“谁先写谁先执行”。
-   - 考察点：是否能用队列模型解释顺序。
+- 标准答案：`setTimeout` 基于宏任务调度，Promise 回调是微任务，`async/await` 是 Promise 语法糖。执行顺序由事件循环决定，不是“谁先写谁先执行”。
+- 考察点：是否能用队列模型解释顺序。
 
 3. 异步编程的实现方式？
-   - 标准答案：从回调、Promise 到 `async/await`，核心演进是可组合性和错误处理能力。现代代码以 Promise 与 `async/await` 为主，再结合取消和并发控制。
-   - 考察点：是否能说明演进原因。
+- 标准答案：从回调、Promise 到 `async/await`，核心演进是可组合性和错误处理能力。现代代码以 Promise 与 `async/await` 为主，再结合取消和并发控制。
+- 考察点：是否能说明演进原因。
 ```ts
 function requestWithCallback(cb: (data: string) => void) {
   setTimeout(() => cb('callback ok'), 200)
@@ -88,3 +88,376 @@ async function run() {
   console.log(await requestWithPromise())
 }
 ```
+
+### 代码输出题
+
+1. 代码输出结果
+```js
+const promise = new Promise((resolve, reject) => {
+  console.log(1);
+  setTimeout(() => {
+    console.log("timerStart");
+    resolve("success");
+    console.log("timerEnd");
+  }, 0);
+  console.log(2);
+});
+promise.then((res) => {
+  console.log(res);
+});
+console.log(4);
+```
+- 输出结果：
+```text
+1
+2
+4
+timerStart
+timerEnd
+success
+```
+- 关键机制：同步代码先执行，当前宏任务结束后清空微任务，再进入下一轮宏任务；`setTimeout` 回调属于宏任务，Promise 回调属于微任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
+2. 代码输出结果
+```js
+Promise.resolve().then(() => {
+  console.log('promise1');
+  const timer2 = setTimeout(() => {
+    console.log('timer2')
+  }, 0)
+});
+const timer1 = setTimeout(() => {
+  console.log('timer1')
+  Promise.resolve().then(() => {
+    console.log('promise2')
+  })
+}, 0)
+console.log('start');
+```
+- 输出结果：
+```text
+start
+promise1
+timer1
+promise2
+timer2
+```
+- 关键机制：同步代码先执行，当前宏任务结束后清空微任务，再进入下一轮宏任务；`setTimeout` 回调属于宏任务，Promise 回调属于微任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
+3. 代码输出结果
+```js
+const promise1 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve('success')
+  }, 1000)
+})
+const promise2 = promise1.then(() => {
+  throw new Error('error!!!')
+})
+console.log('promise1', promise1)
+console.log('promise2', promise2)
+setTimeout(() => {
+  console.log('promise1', promise1)
+  console.log('promise2', promise2)
+}, 2000)
+```
+- 输出结果：
+```text
+promise1 Promise {<pending>}
+promise2 Promise {<pending>}
+
+Uncaught (in promise) Error: error!!!
+promise1 Promise {<fulfilled>: "success"}
+promise2 Promise {<rejected>: Error: error!!}
+```
+- 关键机制：同步代码先执行，当前宏任务结束后清空微任务，再进入下一轮宏任务；`setTimeout` 回调属于宏任务，Promise 回调属于微任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
+4. 代码输出结果
+```js
+async function async1() {
+  console.log("async1 start");
+  await async2();
+  console.log("async1 end");
+}
+
+async function async2() {
+  console.log("async2");
+}
+
+console.log("script start");
+
+setTimeout(function() {
+  console.log("setTimeout");
+}, 0);
+
+async1();
+
+new Promise(resolve => {
+  console.log("promise1");
+  resolve();
+}).then(function() {
+  console.log("promise2");
+});
+console.log('script end')
+```
+- 输出结果：
+```text
+script start
+async1 start
+async2
+promise1
+script end
+async1 end
+promise2
+setTimeout
+```
+- 关键机制：同步代码先执行，当前宏任务结束后清空微任务，再进入下一轮宏任务；`setTimeout` 回调属于宏任务，Promise 回调属于微任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
+5. 代码输出结果
+```js
+const first = () => (new Promise((resolve, reject) => {
+    console.log(3);
+    let p = new Promise((resolve, reject) => {
+        console.log(7);
+        setTimeout(() => {
+            console.log(5);
+            resolve(6);
+            console.log(p)
+        }, 0)
+        resolve(1);
+    });
+    resolve(2);
+    p.then((arg) => {
+        console.log(arg);
+    });
+}));
+first().then((arg) => {
+    console.log(arg);
+});
+console.log(4);
+```
+- 输出结果：
+```text
+3
+7
+4
+1
+2
+5
+Promise{<resolved>: 1}
+```
+- 关键机制：同步代码先执行，当前宏任务结束后清空微任务，再进入下一轮宏任务；`setTimeout` 回调属于宏任务，Promise 回调属于微任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
+6. 代码输出结果
+```js
+const async1 = async () => {
+  console.log('async1');
+  setTimeout(() => {
+    console.log('timer1')
+  }, 2000)
+  await new Promise(resolve => {
+    console.log('promise1')
+  })
+  console.log('async1 end')
+  return 'async1 success'
+}
+console.log('script start');
+async1().then(res => console.log(res));
+console.log('script end');
+Promise.resolve(1)
+  .then(2)
+  .then(Promise.resolve(3))
+  .catch(4)
+  .then(res => console.log(res))
+setTimeout(() => {
+  console.log('timer2')
+}, 1000)
+```
+- 输出结果：
+```text
+script start
+async1
+promise1
+script end
+1
+timer2
+timer1
+```
+- 关键机制：同步代码先执行，当前宏任务结束后清空微任务，再进入下一轮宏任务；`setTimeout` 回调属于宏任务，Promise 回调属于微任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
+7. 代码输出结果
+```js
+console.log('1');
+
+setTimeout(function() {
+    console.log('2');
+    process.nextTick(function() {
+        console.log('3');
+    })
+    new Promise(function(resolve) {
+        console.log('4');
+        resolve();
+    }).then(function() {
+        console.log('5')
+    })
+})
+process.nextTick(function() {
+    console.log('6');
+})
+new Promise(function(resolve) {
+    console.log('7');
+    resolve();
+}).then(function() {
+    console.log('8')
+})
+
+setTimeout(function() {
+    console.log('9');
+    process.nextTick(function() {
+        console.log('10');
+    })
+    new Promise(function(resolve) {
+        console.log('11');
+        resolve();
+    }).then(function() {
+        console.log('12')
+    })
+})
+```
+- 输出结果：
+```text
+1
+7
+6
+8
+2
+4
+3
+5
+9
+11
+10
+12
+```
+- 关键机制：同步代码先执行，当前宏任务结束后依次处理微任务；在 Node 环境下 `process.nextTick` 优先级高于 Promise 微任务，随后才进入下一轮宏任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
+8. 代码输出结果
+```js
+console.log(1)
+
+setTimeout(() => {
+  console.log(2)
+})
+
+new Promise(resolve =>  {
+  console.log(3)
+  resolve(4)
+}).then(d => console.log(d))
+
+setTimeout(() => {
+  console.log(5)
+  new Promise(resolve =>  {
+    resolve(6)
+  }).then(d => console.log(d))
+})
+
+setTimeout(() => {
+  console.log(7)
+})
+
+console.log(8)
+```
+- 输出结果：
+```text
+1
+3
+8
+4
+2
+5
+6
+7
+```
+- 关键机制：同步代码先执行，当前宏任务结束后清空微任务，再进入下一轮宏任务；`setTimeout` 回调属于宏任务，Promise 回调属于微任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
+9. 代码输出结果
+```js
+console.log(1);
+
+setTimeout(() => {
+  console.log(2);
+  Promise.resolve().then(() => {
+    console.log(3)
+  });
+});
+
+new Promise((resolve, reject) => {
+  console.log(4)
+  resolve(5)
+}).then((data) => {
+  console.log(data);
+})
+
+setTimeout(() => {
+  console.log(6);
+})
+
+console.log(7);
+```
+- 输出结果：
+```text
+1
+4
+7
+5
+2
+3
+6
+```
+- 关键机制：同步代码先执行，当前宏任务结束后清空微任务，再进入下一轮宏任务；`setTimeout` 回调属于宏任务，Promise 回调属于微任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
+10. 代码输出结果
+```js
+setTimeout(function () {
+  console.log(1);
+}, 100);
+
+new Promise(function (resolve) {
+  console.log(2);
+  resolve();
+  console.log(3);
+}).then(function () {
+  console.log(4);
+  new Promise((resove, reject) => {
+    console.log(5);
+    setTimeout(() =>  {
+      console.log(6);
+    }, 10);
+  })
+});
+console.log(7);
+console.log(8);
+```
+- 输出结果：
+```text
+2
+3
+7
+8
+4
+5
+6
+1
+```
+- 关键机制：同步代码先执行，当前宏任务结束后清空微任务，再进入下一轮宏任务；`setTimeout` 回调属于宏任务，Promise 回调属于微任务。
+- 边界条件：结论成立于标准事件循环语义；浏览器与 Node 在微任务细节（如 `process.nextTick`）上存在差异。
+
