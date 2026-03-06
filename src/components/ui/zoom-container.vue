@@ -43,6 +43,7 @@ const {
   zoomOut,
   resetView,
   fitContent,
+  centerAt,
   onWheel,
   onPointerDown,
   onPointerMove,
@@ -66,6 +67,7 @@ defineExpose({
   zoomOut,
   resetView,
   fitContent,
+  centerAt,
 })
 </script>
 

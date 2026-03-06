@@ -142,6 +142,22 @@ export function useZoomContainer(options: UseZoomContainerOptions) {
     offsetY.value = (viewportHeight - contentHeight * fittedScale) / 2
   }
 
+  function centerAt(logicalX: number, logicalY: number): void {
+    const viewport = viewportRef.value
+    if (!viewport)
+      return
+
+    const viewportWidth = viewport.clientWidth
+    const viewportHeight = viewport.clientHeight
+    if (viewportWidth <= 0 || viewportHeight <= 0)
+      return
+
+    offsetX.value = viewportWidth / 2 - logicalX * scale.value
+    offsetY.value = viewportHeight / 2 - logicalY * scale.value
+    hasInteracted.value = true
+    zoomPresetOpen.value = false
+  }
+
   function onWheel(event: WheelEvent): void {
     const viewport = viewportRef.value
     if (!viewport)
@@ -344,6 +360,7 @@ export function useZoomContainer(options: UseZoomContainerOptions) {
     zoomOut,
     resetView,
     fitContent,
+    centerAt,
     onWheel,
     onPointerDown,
     onPointerMove,

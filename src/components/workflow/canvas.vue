@@ -55,10 +55,13 @@ watch(() => props.selectedNodeId, (nodeId) => {
   if (nodeId === graph.selectedNodeId.value)
     return
   graph.selectedNodeId.value = nodeId
+  if (nodeId)
+    graph.centerNodeInViewport(nodeId)
 })
 
 function onSearchNodeSelect(nodeId: string): void {
   graph.selectedNodeId.value = nodeId
+  graph.centerNodeInViewport(nodeId)
 }
 </script>
 

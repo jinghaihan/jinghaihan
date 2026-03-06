@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 
 interface ZoomContainerExpose {
   fitContent: () => void
+  centerAt: (logicalX: number, logicalY: number) => void
 }
 
 interface Point {
@@ -424,11 +425,23 @@ export function useWorkflowGraph<TNodeKind extends string, TEdgeKind extends str
     selectedNodeId.value = ''
   }
 
+  function centerNodeInViewport(nodeId: string): void {
+    if (!nodeId)
+      return
+
+    const node = options.nodes.find(item => item.id === nodeId)
+    if (!node)
+      return
+
+    zoomContainerRef.value?.centerAt(node.x, node.y)
+  }
+
   return {
     zoomContainerRef,
     selectedNodeId,
     fallbackEdges,
     fallbackNodes,
+    centerNodeInViewport,
     nodeColor,
     nodeStrokeColor,
     onFallbackNodeEnter,
