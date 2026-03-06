@@ -14,6 +14,8 @@ interface UseChecklistPogressStatsReturn {
   topicDoneCount: (topic: Topic) => number
   groupDoneCount: (group: TopicGroup) => number
   groupTotalCount: (group: TopicGroup) => number
+  getGroupVisibleProblemIds: (groupId: string) => string[]
+  getTopicVisibleProblemIds: (topicId: string) => string[]
   overallDoneCount: ComputedRef<number>
   overallTotalCount: ComputedRef<number>
   difficultyStats: ComputedRef<AlgorithmDifficultyStat[]>
@@ -32,6 +34,18 @@ const DIFFICULTY_LABEL: Record<Difficulty, string> = {
 }
 
 export function useChecklistPogressStats(options: UseChecklistPogressStatsOptions): UseChecklistPogressStatsReturn {
+  function collectUniqueProblemIds(problemIds: Iterable<string>): string[] {
+    const ids: string[] = []
+    const seen = new Set<string>()
+    for (const problemId of problemIds) {
+      if (seen.has(problemId))
+        continue
+      seen.add(problemId)
+      ids.push(problemId)
+    }
+    return ids
+  }
+
   function getProblem(problemId: string): Problem | undefined {
     return options.problems.value[problemId]
   }
@@ -41,21 +55,9 @@ export function useChecklistPogressStats(options: UseChecklistPogressStatsOption
   }
 
   const visibleProblemIds = computed(() => {
-    const ids: string[] = []
-    const seen = new Set<string>()
-
-    for (const group of options.filteredGroups.value) {
-      for (const topic of group.topics) {
-        for (const problemId of topic.problemIds) {
-          if (seen.has(problemId))
-            continue
-          seen.add(problemId)
-          ids.push(problemId)
-        }
-      }
-    }
-
-    return ids
+    return collectUniqueProblemIds(
+      options.filteredGroups.value.flatMap(group => group.topics.flatMap(topic => topic.problemIds)),
+    )
   })
 
   const unresolvedProblemIds = computed(() =>
@@ -89,6 +91,22 @@ export function useChecklistPogressStats(options: UseChecklistPogressStatsOption
 
   function groupTotalCount(group: TopicGroup): number {
     return group.topics.reduce((count, topic) => count + topic.problemIds.length, 0)
+  }
+
+  function getGroupVisibleProblemIds(groupId: string): string[] {
+    const group = options.filteredGroups.value.find(item => item.id === groupId)
+    if (!group)
+      return []
+
+    return collectUniqueProblemIds(group.topics.flatMap(topic => topic.problemIds))
+  }
+
+  function getTopicVisibleProblemIds(topicId: string): string[] {
+    return collectUniqueProblemIds(
+      options.filteredGroups.value.flatMap(group => group.topics)
+        .filter(topic => topic.id === topicId)
+        .flatMap(topic => topic.problemIds),
+    )
   }
 
   const overallDoneCount = computed(() =>
@@ -131,6 +149,8 @@ export function useChecklistPogressStats(options: UseChecklistPogressStatsOption
     topicDoneCount,
     groupDoneCount,
     groupTotalCount,
+    getGroupVisibleProblemIds,
+    getTopicVisibleProblemIds,
     overallDoneCount,
     overallTotalCount,
     difficultyStats,

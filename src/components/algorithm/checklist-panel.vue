@@ -18,12 +18,12 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'toggleProblem': [problemId: string, checked: boolean]
-  'selectGroup': [groupId: string]
-  'selectTopic': [topicId: string]
-  'selectAll': []
-  'clearGroup': [groupId: string]
-  'clearTopic': [topicId: string]
-  'clearAll': []
+  'selectGroup': [problemIds: string[]]
+  'selectTopic': [problemIds: string[]]
+  'selectAll': [problemIds: string[]]
+  'clearGroup': [problemIds: string[]]
+  'clearTopic': [problemIds: string[]]
+  'clearAll': [problemIds: string[]]
   'update:searchKeyword': [value: string]
 }>()
 
@@ -66,6 +66,9 @@ const {
   difficultyStats,
   canRandomOpen,
   openRandomProblem,
+  visibleProblemIds,
+  getGroupVisibleProblemIds,
+  getTopicVisibleProblemIds,
 } = useChecklistPogressStats({
   filteredGroups,
   progress: toRef(props, 'progress'),
@@ -81,27 +84,27 @@ function onProblemChange(problemId: string, checked: boolean): void {
 }
 
 function onClearGroup(groupId: string): void {
-  emit('clearGroup', groupId)
+  emit('clearGroup', getGroupVisibleProblemIds(groupId))
 }
 
 function onSelectGroup(groupId: string): void {
-  emit('selectGroup', groupId)
+  emit('selectGroup', getGroupVisibleProblemIds(groupId))
 }
 
 function onClearTopic(topicId: string): void {
-  emit('clearTopic', topicId)
+  emit('clearTopic', getTopicVisibleProblemIds(topicId))
 }
 
 function onSelectTopic(topicId: string): void {
-  emit('selectTopic', topicId)
+  emit('selectTopic', getTopicVisibleProblemIds(topicId))
 }
 
 function onClearAll(): void {
-  emit('clearAll')
+  emit('clearAll', [...visibleProblemIds.value])
 }
 
 function onSelectAll(): void {
-  emit('selectAll')
+  emit('selectAll', [...visibleProblemIds.value])
 }
 </script>
 

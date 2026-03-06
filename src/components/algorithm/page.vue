@@ -46,67 +46,46 @@ function toggleProblem(problemId: string, checked: boolean): void {
   progress.value = next
 }
 
-function clearGroupProgress(groupId: string): void {
-  const group = topicGroups.value.find(item => item.id === groupId)
-  if (!group)
+function clearProgress(problemIds: string[]): void {
+  if (problemIds.length === 0)
     return
-
   const next: AlgorithmProgress = { ...progress.value }
-  for (const topic of group.topics) {
-    for (const problemId of topic.problemIds)
-      delete next[problemId]
-  }
-  progress.value = next
-}
-
-function selectGroupProgress(groupId: string): void {
-  const group = topicGroups.value.find(item => item.id === groupId)
-  if (!group)
-    return
-
-  const next: AlgorithmProgress = { ...progress.value }
-  for (const topic of group.topics) {
-    for (const problemId of topic.problemIds)
-      next[problemId] = true
-  }
-  progress.value = next
-}
-
-function clearTopicProgress(topicId: string): void {
-  const topic = ALGORITHM_KNOWLEDGE.topics.find(item => item.id === topicId)
-  if (!topic)
-    return
-
-  const next: AlgorithmProgress = { ...progress.value }
-  for (const problemId of topic.problemIds)
+  for (const problemId of problemIds)
     delete next[problemId]
   progress.value = next
 }
 
-function selectTopicProgress(topicId: string): void {
-  const topic = ALGORITHM_KNOWLEDGE.topics.find(item => item.id === topicId)
-  if (!topic)
+function selectProgress(problemIds: string[]): void {
+  if (problemIds.length === 0)
     return
-
   const next: AlgorithmProgress = { ...progress.value }
-  for (const problemId of topic.problemIds)
+  for (const problemId of problemIds)
     next[problemId] = true
   progress.value = next
 }
 
-function clearAllProgress(): void {
-  progress.value = {}
+function clearGroupProgress(problemIds: string[]): void {
+  clearProgress(problemIds)
 }
 
-function selectAllProgress(): void {
-  const next: AlgorithmProgress = { ...progress.value }
-  for (const group of topicGroups.value) {
-    for (const topic of group.topics) {
-      for (const problemId of topic.problemIds)
-        next[problemId] = true
-    }
-  }
-  progress.value = next
+function selectGroupProgress(problemIds: string[]): void {
+  selectProgress(problemIds)
+}
+
+function clearTopicProgress(problemIds: string[]): void {
+  clearProgress(problemIds)
+}
+
+function selectTopicProgress(problemIds: string[]): void {
+  selectProgress(problemIds)
+}
+
+function clearAllProgress(problemIds: string[]): void {
+  clearProgress(problemIds)
+}
+
+function selectAllProgress(problemIds: string[]): void {
+  selectProgress(problemIds)
 }
 
 function updateSearchKeyword(value: string): void {
