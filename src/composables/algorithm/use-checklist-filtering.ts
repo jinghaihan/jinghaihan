@@ -1,6 +1,7 @@
 import type { ComputedRef, Ref } from 'vue'
 import type { Difficulty, Problem, Topic, TopicGroup } from '@/types'
 import { computed } from 'vue'
+import { ALGORITHM_PROBLEM_TAG_LABELS, ALGORITHM_STUDY_PLAN_TITLES } from '@/constants/algorithm'
 
 interface UseChecklistFilteringOptions {
   groups: Ref<TopicGroup[]>
@@ -44,9 +45,17 @@ export function useChecklistFiltering(options: UseChecklistFilteringOptions): Us
       return problemId.toLowerCase().includes(keyword)
 
     const problemNumber = (problem.number || problem.id).toLowerCase()
+    const compactKeyword = keyword.replaceAll(' ', '')
+    const problemTags = (problem.tags ?? []).flatMap((tag) => {
+      const label = ALGORITHM_PROBLEM_TAG_LABELS[tag].toLowerCase()
+      const title = ALGORITHM_STUDY_PLAN_TITLES[tag].toLowerCase()
+      return [tag.toLowerCase(), label, title, title.replaceAll(' ', '')]
+    })
+
     return problem.title.toLowerCase().includes(keyword)
       || problemNumber.includes(keyword)
       || problem.id.toLowerCase().includes(keyword)
+      || problemTags.some(tag => tag.includes(keyword) || tag.includes(compactKeyword))
   }
 
   function matchProblemDifficulty(problemId: string): boolean {

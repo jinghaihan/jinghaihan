@@ -1,4 +1,5 @@
 export type Difficulty = 'easy' | 'medium' | 'hard'
+export type AlgorithmProblemTag = 'hot100' | 'interview150'
 
 export interface Group {
   id: string
@@ -30,6 +31,7 @@ export interface Problem {
   slug: string
   title: string
   difficulty: Difficulty
+  tags?: AlgorithmProblemTag[]
 }
 
 export interface AlgorithmDifficultyStat {

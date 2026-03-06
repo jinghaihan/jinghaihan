@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { AlgorithmProgress, Problem, Topic, TopicGroup } from '@/types'
+import type { AlgorithmProblemTag, AlgorithmProgress, Problem, Topic, TopicGroup } from '@/types'
 import { ref } from 'vue'
 import Checkbox from '@/components/ui/checkbox.vue'
 import Collapse from '@/components/ui/collapse.vue'
-import { getAlgorithmDifficultyColor } from '@/constants/algorithm'
+import { ALGORITHM_PROBLEM_TAG_LABELS, ALGORITHM_PROBLEM_TAG_ORDER, getAlgorithmDifficultyColor } from '@/constants/algorithm'
 import CompletionStat from './completion-stat.vue'
 import ProblemSeq from './problem-seq.vue'
 
@@ -27,6 +27,11 @@ const emit = defineEmits<{
   selectTopic: [topicId: string]
   clearTopic: [topicId: string]
 }>()
+
+const ALGORITHM_PROBLEM_TAG_ICONS: Record<AlgorithmProblemTag, string> = {
+  hot100: 'i-ri:fire-fill text-red-500/90',
+  interview150: 'i-ri:trophy-fill text-amber-500/90',
+}
 
 const collapsedGroupIds = ref<Set<string>>(new Set())
 const collapsedTopicIds = ref<Set<string>>(new Set())
@@ -109,6 +114,11 @@ function problemUrl(problemId: string): string {
 function problemDifficultyColor(problemId: string): string {
   return getAlgorithmDifficultyColor(getProblem(problemId)?.difficulty)
 }
+
+function problemTags(problemId: string): AlgorithmProblemTag[] {
+  const tags = getProblem(problemId)?.tags ?? []
+  return ALGORITHM_PROBLEM_TAG_ORDER.filter(tag => tags.includes(tag))
+}
 </script>
 
 <template>
@@ -184,9 +194,21 @@ function problemDifficultyColor(problemId: string): string {
                   :href="problemUrl(problemId)"
                   target="_blank"
                   rel="noreferrer"
-                  class="text-foreground/75 flex-1 min-w-0 truncate transition-colors duration-150 hover:text-foreground hover:underline hover:decoration-foreground/55 hover:underline-offset-3"
+                  class="text-foreground/75 flex-1 min-w-0 transition-colors duration-150 hover:text-foreground hover:underline hover:decoration-foreground/55 hover:underline-offset-3"
                 >
-                  {{ problemLabel(problemId) }}
+                  <span class="flex gap-1.5 min-w-0 items-center">
+                    <span class="block truncate">{{ problemLabel(problemId) }}</span>
+                    <span v-if="problemTags(problemId).length > 0" class="flex shrink-0 gap-1 items-center">
+                      <i
+                        v-for="tag in problemTags(problemId)"
+                        :key="`${problemId}-${tag}`"
+                        class="size-3.5"
+                        :class="ALGORITHM_PROBLEM_TAG_ICONS[tag]"
+                        :title="ALGORITHM_PROBLEM_TAG_LABELS[tag]"
+                        :aria-label="ALGORITHM_PROBLEM_TAG_LABELS[tag]"
+                      />
+                    </span>
+                  </span>
                 </a>
               </li>
             </ul>

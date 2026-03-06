@@ -1,4 +1,4 @@
-import type { AlgorithmKnowledgeData, Difficulty, Relation } from '@/types'
+import type { AlgorithmKnowledgeData, AlgorithmProblemTag, Difficulty, Relation } from '@/types'
 
 export const ALGORITHM_DIFFICULTY_COLORS: Record<Difficulty, string> = {
   easy: 'rgba(94, 234, 212, 0.78)',
@@ -31,6 +31,18 @@ const CHECKIN_TOPIC_SEQUENCE: Array<{ id: string, title: string }> = [
   {
     id: '2d-array-ops',
     title: '二维数组',
+  },
+  {
+    id: 'array-ops',
+    title: '数组技巧',
+  },
+  {
+    id: 'interval',
+    title: '区间',
+  },
+  {
+    id: 'string-ops',
+    title: '字符串',
   },
   {
     id: 'cycle-array',
@@ -139,6 +151,10 @@ const CHECKIN_TOPIC_SEQUENCE: Array<{ id: string, title: string }> = [
   {
     id: 'math',
     title: '数学',
+  },
+  {
+    id: 'bitwise',
+    title: '位运算',
   },
 ]
 
@@ -199,6 +215,18 @@ export const ALGORITHM_RELATIONS: Relation[] = [
   { source: 'bfs', target: 'shortest-path' },
 ]
 
+export const ALGORITHM_PROBLEM_TAG_LABELS: Record<AlgorithmProblemTag, string> = {
+  hot100: 'hot100',
+  interview150: 'interview150',
+}
+
+export const ALGORITHM_STUDY_PLAN_TITLES: Record<AlgorithmProblemTag, string> = {
+  hot100: 'Hot 100',
+  interview150: 'Interview 150',
+}
+
+export const ALGORITHM_PROBLEM_TAG_ORDER: AlgorithmProblemTag[] = ['hot100', 'interview150']
+
 const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
   {
     id: 'diff-array',
@@ -217,12 +245,50 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
     groupId: 'array-operation-group',
     difficulty: 'easy',
     problemIds: [
+      'lc:36',
       'lc:48',
       'lc:54',
       'lc:59',
       'lc:61',
+      'lc:73',
       'lc:151',
+      'lc:289',
       'lc:lcr-146',
+    ],
+  },
+  {
+    id: 'array-ops',
+    title: '数组技巧',
+    groupId: 'array-operation-group',
+    difficulty: 'medium',
+    problemIds: [
+      'lc:31',
+      'lc:41',
+      'lc:189',
+      'lc:274',
+    ],
+  },
+  {
+    id: 'interval',
+    title: '区间',
+    groupId: 'array-operation-group',
+    difficulty: 'medium',
+    problemIds: [
+      'lc:56',
+      'lc:57',
+      'lc:228',
+    ],
+  },
+  {
+    id: 'string-ops',
+    title: '字符串',
+    groupId: 'array-operation-group',
+    difficulty: 'medium',
+    problemIds: [
+      'lc:6',
+      'lc:28',
+      'lc:58',
+      'lc:68',
     ],
   },
   {
@@ -261,10 +327,12 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
     difficulty: 'medium',
     problemIds: [
       'lc:20',
+      'lc:32',
       'lc:71',
       'lc:143',
       'lc:150',
       'lc:155',
+      'lc:394',
       'lc:225',
       'lc:388',
       'lc:895',
@@ -294,6 +362,7 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:496',
       'lc:503',
       'lc:581',
+      'lc:84',
       'lc:739',
       'lc:853',
       'lc:901',
@@ -339,6 +408,8 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:442',
       'lc:448',
       'lc:519',
+      'lc:205',
+      'lc:383',
     ],
   },
   {
@@ -358,6 +429,7 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:950',
       'lc:1670',
       'lc:1700',
+      'lc:380',
     ],
   },
   {
@@ -407,6 +479,7 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:713',
       'lc:1004',
       'lc:1658',
+      'lc:30',
     ],
   },
   {
@@ -431,6 +504,10 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:852',
       'lc:875',
       'lc:1011',
+      'lc:4',
+      'lc:69',
+      'lc:153',
+      'lc:287',
       'lc:lcr-172',
     ],
   },
@@ -475,6 +552,7 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
     problemIds: [
       'lc:25',
       'lc:92',
+      'lc:24',
       'lc:206',
       'lc:234',
     ],
@@ -487,6 +565,9 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:94',
       'lc:102',
       'lc:104',
+      'lc:100',
+      'lc:101',
+      'lc:112',
       'lc:111',
       'lc:144',
       'lc:145',
@@ -515,6 +596,8 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:257',
       'lc:297',
       'lc:331',
+      'lc:437',
+      'lc:124',
       'lc:654',
       'lc:872',
       'lc:889',
@@ -559,8 +642,13 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:8',
       'lc:9',
       'lc:50',
+      'lc:12',
+      'lc:13',
+      'lc:66',
       'lc:67',
+      'lc:149',
       'lc:172',
+      'lc:202',
       'lc:204',
       'lc:263',
       'lc:264',
@@ -585,11 +673,27 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
     problemIds: [
       'lc:45',
       'lc:55',
+      'lc:121',
+      'lc:122',
       'lc:134',
+      'lc:135',
       'lc:253',
       'lc:435',
       'lc:452',
+      'lc:763',
       'lc:1235',
+    ],
+  },
+  {
+    id: 'bitwise',
+    title: '位运算',
+    groupId: 'other-group',
+    difficulty: 'medium',
+    problemIds: [
+      'lc:137',
+      'lc:190',
+      'lc:191',
+      'lc:201',
     ],
   },
   {
@@ -620,6 +724,7 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:47',
       'lc:51',
       'lc:52',
+      'lc:22',
       'lc:77',
       'lc:78',
       'lc:79',
@@ -644,6 +749,8 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
     difficulty: 'hard',
     problemIds: [
       'lc:23',
+      'lc:148',
+      'lc:427',
       'lc:912',
     ],
   },
@@ -655,11 +762,23 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
     problemIds: [
       'lc:53',
       'lc:72',
+      'lc:62',
+      'lc:63',
+      'lc:64',
+      'lc:70',
+      'lc:97',
+      'lc:118',
+      'lc:120',
+      'lc:123',
       'lc:198',
+      'lc:139',
       'lc:213',
       'lc:279',
       'lc:300',
       'lc:322',
+      'lc:152',
+      'lc:188',
+      'lc:221',
       'lc:337',
       'lc:354',
       'lc:416',
@@ -682,6 +801,7 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:117',
       'lc:310',
       'lc:433',
+      'lc:127',
       'lc:662',
       'lc:752',
       'lc:773',
@@ -691,6 +811,8 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:1091',
       'lc:1306',
       'lc:1926',
+      'lc:909',
+      'lc:994',
     ],
   },
   {
@@ -714,8 +836,11 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:95',
       'lc:96',
       'lc:98',
+      'lc:108',
+      'lc:173',
       'lc:230',
       'lc:450',
+      'lc:530',
       'lc:538',
       'lc:700',
       'lc:701',
@@ -732,6 +857,7 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
       'lc:23',
       'lc:215',
       'lc:295',
+      'lc:502',
       'lc:313',
       'lc:347',
       'lc:355',
@@ -753,6 +879,7 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
     problemIds: [
       'lc:208',
       'lc:211',
+      'lc:212',
       'lc:648',
       'lc:677',
       'lc:1804',
@@ -766,6 +893,7 @@ const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
     problemIds: [
       'lc:130',
       'lc:133',
+      'lc:399',
       'lc:207',
       'lc:210',
       'lc:261',
@@ -795,13 +923,14 @@ const KNOWLEDGE_TOPICS: AlgorithmKnowledgeData['topics'] = KNOWLEDGE_TOPICS_RAW
   )
 
 /// keep-sorted
-const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
+const KNOWLEDGE_PROBLEMS_BASE: AlgorithmKnowledgeData['problems'] = {
   'lc:1': {
     id: 'lc:1',
     number: '1',
     slug: 'two-sum',
     title: '两数之和',
     difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
   },
   'lc:2': {
     id: 'lc:2',
@@ -809,6 +938,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'add-two-numbers',
     title: '两数相加',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:3': {
     id: 'lc:3',
@@ -816,6 +946,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'longest-substring-without-repeating-characters',
     title: '无重复字符的最长子串',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:5': {
     id: 'lc:5',
@@ -823,6 +954,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'longest-palindromic-substring',
     title: '最长回文子串',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:8': {
     id: 'lc:8',
@@ -837,6 +969,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'palindrome-number',
     title: '回文数',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:11': {
     id: 'lc:11',
@@ -844,6 +977,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'container-with-most-water',
     title: '盛最多水的容器',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:14': {
     id: 'lc:14',
@@ -851,6 +985,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'longest-common-prefix',
     title: '最长公共前缀',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:15': {
     id: 'lc:15',
@@ -858,6 +993,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: '3sum',
     title: '三数之和',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:17': {
     id: 'lc:17',
@@ -865,6 +1001,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'letter-combinations-of-a-phone-number',
     title: '电话号码的字母组合',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:18': {
     id: 'lc:18',
@@ -879,6 +1016,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'remove-nth-node-from-end-of-list',
     title: '删除链表的倒数第 N 个结点',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:20': {
     id: 'lc:20',
@@ -886,6 +1024,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'valid-parentheses',
     title: '有效的括号',
     difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
   },
   'lc:21': {
     id: 'lc:21',
@@ -893,6 +1032,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'merge-two-sorted-lists',
     title: '合并两个有序链表',
     difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
   },
   'lc:23': {
     id: 'lc:23',
@@ -900,6 +1040,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'merge-k-sorted-lists',
     title: '合并 K 个升序链表',
     difficulty: 'hard',
+    tags: ['hot100', 'interview150'],
   },
   'lc:25': {
     id: 'lc:25',
@@ -907,6 +1048,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'reverse-nodes-in-k-group',
     title: 'K 个一组翻转链表',
     difficulty: 'hard',
+    tags: ['hot100', 'interview150'],
   },
   'lc:26': {
     id: 'lc:26',
@@ -914,6 +1056,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'remove-duplicates-from-sorted-array',
     title: '删除有序数组中的重复项',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:27': {
     id: 'lc:27',
@@ -921,6 +1064,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'remove-element',
     title: '移除元素',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:33': {
     id: 'lc:33',
@@ -928,6 +1072,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'search-in-rotated-sorted-array',
     title: '搜索旋转排序数组',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:34': {
     id: 'lc:34',
@@ -935,6 +1080,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'find-first-and-last-position-of-element-in-sorted-array',
     title: '在排序数组中查找元素的第一个和最后一个位置',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:35': {
     id: 'lc:35',
@@ -942,6 +1088,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'search-insert-position',
     title: '搜索插入位置',
     difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
   },
   'lc:37': {
     id: 'lc:37',
@@ -956,6 +1103,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'combination-sum',
     title: '组合总和',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:40': {
     id: 'lc:40',
@@ -970,6 +1118,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'trapping-rain-water',
     title: '接雨水',
     difficulty: 'hard',
+    tags: ['hot100', 'interview150'],
   },
   'lc:45': {
     id: 'lc:45',
@@ -977,6 +1126,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'jump-game-ii',
     title: '跳跃游戏 II',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:46': {
     id: 'lc:46',
@@ -984,6 +1134,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'permutations',
     title: '全排列',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:47': {
     id: 'lc:47',
@@ -998,6 +1149,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'rotate-image',
     title: '旋转图像',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:49': {
     id: 'lc:49',
@@ -1005,6 +1157,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'group-anagrams',
     title: '字母异位词分组',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:50': {
     id: 'lc:50',
@@ -1012,6 +1165,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'powx-n',
     title: 'x 的 n 次幂',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:51': {
     id: 'lc:51',
@@ -1019,6 +1173,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'n-queens',
     title: 'N 皇后',
     difficulty: 'hard',
+    tags: ['hot100'],
   },
   'lc:52': {
     id: 'lc:52',
@@ -1026,6 +1181,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'n-queens-ii',
     title: 'N 皇后 II',
     difficulty: 'hard',
+    tags: ['interview150'],
   },
   'lc:53': {
     id: 'lc:53',
@@ -1033,6 +1189,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'maximum-subarray',
     title: '最大子数组和',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:54': {
     id: 'lc:54',
@@ -1040,6 +1197,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'spiral-matrix',
     title: '螺旋矩阵',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:55': {
     id: 'lc:55',
@@ -1047,6 +1205,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'jump-game',
     title: '跳跃游戏',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:59': {
     id: 'lc:59',
@@ -1061,6 +1220,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'rotate-list',
     title: '旋转链表',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:67': {
     id: 'lc:67',
@@ -1068,6 +1228,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'add-binary',
     title: '二进制求和',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:71': {
     id: 'lc:71',
@@ -1075,6 +1236,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'simplify-path',
     title: '简化路径',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:72': {
     id: 'lc:72',
@@ -1082,6 +1244,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'edit-distance',
     title: '编辑距离',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:74': {
     id: 'lc:74',
@@ -1089,6 +1252,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'search-a-2d-matrix',
     title: '搜索二维矩阵',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:75': {
     id: 'lc:75',
@@ -1096,6 +1260,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'sort-colors',
     title: '颜色分类',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:76': {
     id: 'lc:76',
@@ -1103,6 +1268,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'minimum-window-substring',
     title: '最小覆盖子串',
     difficulty: 'hard',
+    tags: ['hot100', 'interview150'],
   },
   'lc:77': {
     id: 'lc:77',
@@ -1110,6 +1276,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'combinations',
     title: '组合',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:78': {
     id: 'lc:78',
@@ -1117,6 +1284,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'subsets',
     title: '子集',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:79': {
     id: 'lc:79',
@@ -1124,6 +1292,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'word-search',
     title: '单词搜索',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:80': {
     id: 'lc:80',
@@ -1131,6 +1300,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'remove-duplicates-from-sorted-array-ii',
     title: '删除有序数组中的重复项 II',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:81': {
     id: 'lc:81',
@@ -1145,6 +1315,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'remove-duplicates-from-sorted-list-ii',
     title: '删除排序链表中的重复元素 II',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:83': {
     id: 'lc:83',
@@ -1159,6 +1330,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'partition-list',
     title: '分隔链表',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:88': {
     id: 'lc:88',
@@ -1166,6 +1338,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'merge-sorted-array',
     title: '合并两个有序数组',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:89': {
     id: 'lc:89',
@@ -1187,6 +1360,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'reverse-linked-list-ii',
     title: '反转链表 II',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:93': {
     id: 'lc:93',
@@ -1201,6 +1375,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'binary-tree-inorder-traversal',
     title: '二叉树的中序遍历',
     difficulty: 'easy',
+    tags: ['hot100'],
   },
   'lc:95': {
     id: 'lc:95',
@@ -1222,6 +1397,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'validate-binary-search-tree',
     title: '验证二叉搜索树',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:102': {
     id: 'lc:102',
@@ -1229,6 +1405,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'binary-tree-level-order-traversal',
     title: '二叉树的层序遍历',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:103': {
     id: 'lc:103',
@@ -1236,6 +1413,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'binary-tree-zigzag-level-order-traversal',
     title: '二叉树的锯齿形层序遍历',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:104': {
     id: 'lc:104',
@@ -1243,6 +1421,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'maximum-depth-of-binary-tree',
     title: '二叉树的最大深度',
     difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
   },
   'lc:105': {
     id: 'lc:105',
@@ -1250,6 +1429,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'construct-binary-tree-from-preorder-and-inorder-traversal',
     title: '从前序与中序遍历序列构造二叉树',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:106': {
     id: 'lc:106',
@@ -1257,6 +1437,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'construct-binary-tree-from-inorder-and-postorder-traversal',
     title: '从中序与后序遍历序列构造二叉树',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:107': {
     id: 'lc:107',
@@ -1278,6 +1459,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'flatten-binary-tree-to-linked-list',
     title: '二叉树展开为链表',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:116': {
     id: 'lc:116',
@@ -1292,6 +1474,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'populating-next-right-pointers-in-each-node-ii',
     title: '填充每个节点的下一个右侧节点指针 II',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:125': {
     id: 'lc:125',
@@ -1299,6 +1482,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'valid-palindrome',
     title: '验证回文串',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:128': {
     id: 'lc:128',
@@ -1306,6 +1490,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'longest-consecutive-sequence',
     title: '最长连续序列',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:129': {
     id: 'lc:129',
@@ -1313,6 +1498,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'sum-root-to-leaf-numbers',
     title: '求根节点到叶节点数字之和',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:130': {
     id: 'lc:130',
@@ -1320,6 +1506,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'surrounded-regions',
     title: '被围绕的区域',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:131': {
     id: 'lc:131',
@@ -1327,6 +1514,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'palindrome-partitioning',
     title: '分割回文串',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:133': {
     id: 'lc:133',
@@ -1334,6 +1522,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'clone-graph',
     title: '克隆图',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:134': {
     id: 'lc:134',
@@ -1341,6 +1530,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'gas-station',
     title: '加油站',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:136': {
     id: 'lc:136',
@@ -1348,6 +1538,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'single-number',
     title: '只出现一次的数字',
     difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
   },
   'lc:138': {
     id: 'lc:138',
@@ -1355,6 +1546,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'copy-list-with-random-pointer',
     title: '随机链表的复制',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:141': {
     id: 'lc:141',
@@ -1362,6 +1554,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'linked-list-cycle',
     title: '环形链表',
     difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
   },
   'lc:142': {
     id: 'lc:142',
@@ -1369,6 +1562,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'linked-list-cycle-ii',
     title: '环形链表 II',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:143': {
     id: 'lc:143',
@@ -1397,6 +1591,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'lru-cache',
     title: 'LRU 缓存',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:150': {
     id: 'lc:150',
@@ -1404,6 +1599,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'evaluate-reverse-polish-notation',
     title: '逆波兰表达式求值',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:151': {
     id: 'lc:151',
@@ -1411,6 +1607,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'reverse-words-in-a-string',
     title: '反转字符串中的单词',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:155': {
     id: 'lc:155',
@@ -1418,6 +1615,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'min-stack',
     title: '最小栈',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:160': {
     id: 'lc:160',
@@ -1425,6 +1623,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'intersection-of-two-linked-lists',
     title: '相交链表',
     difficulty: 'easy',
+    tags: ['hot100'],
   },
   'lc:162': {
     id: 'lc:162',
@@ -1432,6 +1631,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'find-peak-element',
     title: '寻找峰值',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:167': {
     id: 'lc:167',
@@ -1439,6 +1639,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'two-sum-ii-input-array-is-sorted',
     title: '两数之和 II - 输入有序数组',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:169': {
     id: 'lc:169',
@@ -1446,6 +1647,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'majority-element',
     title: '多数元素',
     difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
   },
   'lc:172': {
     id: 'lc:172',
@@ -1453,6 +1655,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'factorial-trailing-zeroes',
     title: '阶乘后的零',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:198': {
     id: 'lc:198',
@@ -1460,6 +1663,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'house-robber',
     title: '打家劫舍',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:199': {
     id: 'lc:199',
@@ -1467,6 +1671,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'binary-tree-right-side-view',
     title: '二叉树的右视图',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:200': {
     id: 'lc:200',
@@ -1474,6 +1679,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'number-of-islands',
     title: '岛屿数量',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:204': {
     id: 'lc:204',
@@ -1488,6 +1694,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'reverse-linked-list',
     title: '反转链表',
     difficulty: 'easy',
+    tags: ['hot100'],
   },
   'lc:207': {
     id: 'lc:207',
@@ -1495,6 +1702,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'course-schedule',
     title: '课程表',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:208': {
     id: 'lc:208',
@@ -1502,6 +1710,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'implement-trie-prefix-tree',
     title: '实现 Trie (前缀树)',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:209': {
     id: 'lc:209',
@@ -1509,6 +1718,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'minimum-size-subarray-sum',
     title: '长度最小的子数组',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:210': {
     id: 'lc:210',
@@ -1516,6 +1726,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'course-schedule-ii',
     title: '课程表 II',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:211': {
     id: 'lc:211',
@@ -1523,6 +1734,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'design-add-and-search-words-data-structure',
     title: '添加与搜索单词 - 数据结构设计',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:213': {
     id: 'lc:213',
@@ -1537,6 +1749,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'kth-largest-element-in-an-array',
     title: '数组中的第K个最大元素',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:216': {
     id: 'lc:216',
@@ -1558,6 +1771,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'contains-duplicate-ii',
     title: '存在重复元素 II',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:220': {
     id: 'lc:220',
@@ -1572,6 +1786,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'count-complete-tree-nodes',
     title: '完全二叉树的节点个数',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:224': {
     id: 'lc:224',
@@ -1579,6 +1794,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'basic-calculator',
     title: '基本计算器',
     difficulty: 'hard',
+    tags: ['interview150'],
   },
   'lc:225': {
     id: 'lc:225',
@@ -1593,6 +1809,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'invert-binary-tree',
     title: '翻转二叉树',
     difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
   },
   'lc:227': {
     id: 'lc:227',
@@ -1607,6 +1824,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'kth-smallest-element-in-a-bst',
     title: '二叉搜索树中第K小的元素',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:232': {
     id: 'lc:232',
@@ -1621,6 +1839,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'palindrome-linked-list',
     title: '回文链表',
     difficulty: 'easy',
+    tags: ['hot100'],
   },
   'lc:235': {
     id: 'lc:235',
@@ -1635,6 +1854,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'lowest-common-ancestor-of-a-binary-tree',
     title: '二叉树的最近公共祖先',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:238': {
     id: 'lc:238',
@@ -1642,6 +1862,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'product-of-array-except-self',
     title: '除自身以外数组的乘积',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:239': {
     id: 'lc:239',
@@ -1649,6 +1870,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'sliding-window-maximum',
     title: '滑动窗口最大值',
     difficulty: 'hard',
+    tags: ['hot100'],
   },
   'lc:240': {
     id: 'lc:240',
@@ -1656,6 +1878,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'search-a-2d-matrix-ii',
     title: '搜索二维矩阵 II',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:242': {
     id: 'lc:242',
@@ -1663,6 +1886,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'valid-anagram',
     title: '有效的字母异位词',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:253': {
     id: 'lc:253',
@@ -1705,6 +1929,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'perfect-squares',
     title: '完全平方数',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:283': {
     id: 'lc:283',
@@ -1712,6 +1937,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'move-zeroes',
     title: '移动零',
     difficulty: 'easy',
+    tags: ['hot100'],
   },
   'lc:284': {
     id: 'lc:284',
@@ -1726,6 +1952,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'word-pattern',
     title: '单词规律',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:292': {
     id: 'lc:292',
@@ -1740,6 +1967,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'find-median-from-data-stream',
     title: '数据流的中位数',
     difficulty: 'hard',
+    tags: ['hot100', 'interview150'],
   },
   'lc:297': {
     id: 'lc:297',
@@ -1754,6 +1982,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'longest-increasing-subsequence',
     title: '最长递增子序列',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:303': {
     id: 'lc:303',
@@ -1803,6 +2032,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'coin-change',
     title: '零钱兑换',
     difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
   },
   'lc:323': {
     id: 'lc:323',
@@ -1838,6 +2068,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'top-k-frequent-elements',
     title: '前 K 个高频元素',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:354': {
     id: 'lc:354',
@@ -1880,6 +2111,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'find-k-pairs-with-smallest-sums',
     title: '查找和最小的 K 对数字',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:378': {
     id: 'lc:378',
@@ -1929,6 +2161,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'is-subsequence',
     title: '判断子序列',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:395': {
     id: 'lc:395',
@@ -1971,6 +2204,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'partition-equal-subset-sum',
     title: '分割等和子集',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:424': {
     id: 'lc:424',
@@ -1992,6 +2226,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'minimum-genetic-mutation',
     title: '最小基因变化',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:435': {
     id: 'lc:435',
@@ -2006,6 +2241,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'find-all-anagrams-in-a-string',
     title: '找到字符串中所有字母异位词',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:442': {
     id: 'lc:442',
@@ -2048,6 +2284,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'minimum-number-of-arrows-to-burst-balloons',
     title: '用最少数量的箭引爆气球',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:473': {
     id: 'lc:473',
@@ -2160,6 +2397,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'diameter-of-binary-tree',
     title: '二叉树的直径',
     difficulty: 'easy',
+    tags: ['hot100'],
   },
   'lc:547': {
     id: 'lc:547',
@@ -2174,6 +2412,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'subarray-sum-equals-k',
     title: '和为 K 的子数组',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:566': {
     id: 'lc:566',
@@ -2230,6 +2469,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'average-of-levels-in-binary-tree',
     title: '二叉树的层平均值',
     difficulty: 'easy',
+    tags: ['interview150'],
   },
   'lc:641': {
     id: 'lc:641',
@@ -2356,6 +2596,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'daily-temperatures',
     title: '每日温度',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:743': {
     id: 'lc:743',
@@ -2545,6 +2786,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'maximum-sum-circular-subarray',
     title: '环形子数组的最大和',
     difficulty: 'medium',
+    tags: ['interview150'],
   },
   'lc:919': {
     id: 'lc:919',
@@ -2727,6 +2969,7 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
     slug: 'longest-common-subsequence',
     title: '最长公共子序列',
     difficulty: 'medium',
+    tags: ['hot100'],
   },
   'lc:1161': {
     id: 'lc:1161',
@@ -3045,8 +3288,560 @@ const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
   },
 }
 
+const STUDY_PLAN_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
+  'lc:4': {
+    id: 'lc:4',
+    number: '4',
+    slug: 'median-of-two-sorted-arrays',
+    title: '寻找两个正序数组的中位数',
+    difficulty: 'hard',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:6': {
+    id: 'lc:6',
+    number: '6',
+    slug: 'zigzag-conversion',
+    title: 'Z 字形变换',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:12': {
+    id: 'lc:12',
+    number: '12',
+    slug: 'integer-to-roman',
+    title: '整数转罗马数字',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:13': {
+    id: 'lc:13',
+    number: '13',
+    slug: 'roman-to-integer',
+    title: '罗马数字转整数',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:22': {
+    id: 'lc:22',
+    number: '22',
+    slug: 'generate-parentheses',
+    title: '括号生成',
+    difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:24': {
+    id: 'lc:24',
+    number: '24',
+    slug: 'swap-nodes-in-pairs',
+    title: '两两交换链表中的节点',
+    difficulty: 'medium',
+    tags: ['hot100'],
+  },
+  'lc:28': {
+    id: 'lc:28',
+    number: '28',
+    slug: 'find-the-index-of-the-first-occurrence-in-a-string',
+    title: '找出字符串中第一个匹配项的下标',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:30': {
+    id: 'lc:30',
+    number: '30',
+    slug: 'substring-with-concatenation-of-all-words',
+    title: '串联所有单词的子串',
+    difficulty: 'hard',
+    tags: ['interview150'],
+  },
+  'lc:31': {
+    id: 'lc:31',
+    number: '31',
+    slug: 'next-permutation',
+    title: '下一个排列',
+    difficulty: 'medium',
+    tags: ['hot100'],
+  },
+  'lc:32': {
+    id: 'lc:32',
+    number: '32',
+    slug: 'longest-valid-parentheses',
+    title: '最长有效括号',
+    difficulty: 'hard',
+    tags: ['hot100'],
+  },
+  'lc:36': {
+    id: 'lc:36',
+    number: '36',
+    slug: 'valid-sudoku',
+    title: '有效的数独',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:41': {
+    id: 'lc:41',
+    number: '41',
+    slug: 'first-missing-positive',
+    title: '缺失的第一个正数',
+    difficulty: 'hard',
+    tags: ['hot100'],
+  },
+  'lc:56': {
+    id: 'lc:56',
+    number: '56',
+    slug: 'merge-intervals',
+    title: '合并区间',
+    difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:57': {
+    id: 'lc:57',
+    number: '57',
+    slug: 'insert-interval',
+    title: '插入区间',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:58': {
+    id: 'lc:58',
+    number: '58',
+    slug: 'length-of-last-word',
+    title: '最后一个单词的长度',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:62': {
+    id: 'lc:62',
+    number: '62',
+    slug: 'unique-paths',
+    title: '不同路径',
+    difficulty: 'medium',
+    tags: ['hot100'],
+  },
+  'lc:63': {
+    id: 'lc:63',
+    number: '63',
+    slug: 'unique-paths-ii',
+    title: '不同路径 II',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:64': {
+    id: 'lc:64',
+    number: '64',
+    slug: 'minimum-path-sum',
+    title: '最小路径和',
+    difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:66': {
+    id: 'lc:66',
+    number: '66',
+    slug: 'plus-one',
+    title: '加一',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:68': {
+    id: 'lc:68',
+    number: '68',
+    slug: 'text-justification',
+    title: '文本左右对齐',
+    difficulty: 'hard',
+    tags: ['interview150'],
+  },
+  'lc:69': {
+    id: 'lc:69',
+    number: '69',
+    slug: 'sqrtx',
+    title: 'x 的平方根',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:70': {
+    id: 'lc:70',
+    number: '70',
+    slug: 'climbing-stairs',
+    title: '爬楼梯',
+    difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:73': {
+    id: 'lc:73',
+    number: '73',
+    slug: 'set-matrix-zeroes',
+    title: '矩阵置零',
+    difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:84': {
+    id: 'lc:84',
+    number: '84',
+    slug: 'largest-rectangle-in-histogram',
+    title: '柱状图中最大的矩形',
+    difficulty: 'hard',
+    tags: ['hot100'],
+  },
+  'lc:97': {
+    id: 'lc:97',
+    number: '97',
+    slug: 'interleaving-string',
+    title: '交错字符串',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:100': {
+    id: 'lc:100',
+    number: '100',
+    slug: 'same-tree',
+    title: '相同的树',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:101': {
+    id: 'lc:101',
+    number: '101',
+    slug: 'symmetric-tree',
+    title: '对称二叉树',
+    difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:108': {
+    id: 'lc:108',
+    number: '108',
+    slug: 'convert-sorted-array-to-binary-search-tree',
+    title: '将有序数组转换为二叉搜索树',
+    difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:112': {
+    id: 'lc:112',
+    number: '112',
+    slug: 'path-sum',
+    title: '路径总和',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:118': {
+    id: 'lc:118',
+    number: '118',
+    slug: 'pascals-triangle',
+    title: '杨辉三角',
+    difficulty: 'easy',
+    tags: ['hot100'],
+  },
+  'lc:120': {
+    id: 'lc:120',
+    number: '120',
+    slug: 'triangle',
+    title: '三角形最小路径和',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:121': {
+    id: 'lc:121',
+    number: '121',
+    slug: 'best-time-to-buy-and-sell-stock',
+    title: '买卖股票的最佳时机',
+    difficulty: 'easy',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:122': {
+    id: 'lc:122',
+    number: '122',
+    slug: 'best-time-to-buy-and-sell-stock-ii',
+    title: '买卖股票的最佳时机 II',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:123': {
+    id: 'lc:123',
+    number: '123',
+    slug: 'best-time-to-buy-and-sell-stock-iii',
+    title: '买卖股票的最佳时机 III',
+    difficulty: 'hard',
+    tags: ['interview150'],
+  },
+  'lc:124': {
+    id: 'lc:124',
+    number: '124',
+    slug: 'binary-tree-maximum-path-sum',
+    title: '二叉树中的最大路径和',
+    difficulty: 'hard',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:127': {
+    id: 'lc:127',
+    number: '127',
+    slug: 'word-ladder',
+    title: '单词接龙',
+    difficulty: 'hard',
+    tags: ['interview150'],
+  },
+  'lc:135': {
+    id: 'lc:135',
+    number: '135',
+    slug: 'candy',
+    title: '分发糖果',
+    difficulty: 'hard',
+    tags: ['interview150'],
+  },
+  'lc:137': {
+    id: 'lc:137',
+    number: '137',
+    slug: 'single-number-ii',
+    title: '只出现一次的数字 II',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:139': {
+    id: 'lc:139',
+    number: '139',
+    slug: 'word-break',
+    title: '单词拆分',
+    difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:148': {
+    id: 'lc:148',
+    number: '148',
+    slug: 'sort-list',
+    title: '排序链表',
+    difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:149': {
+    id: 'lc:149',
+    number: '149',
+    slug: 'max-points-on-a-line',
+    title: '直线上最多的点数',
+    difficulty: 'hard',
+    tags: ['interview150'],
+  },
+  'lc:152': {
+    id: 'lc:152',
+    number: '152',
+    slug: 'maximum-product-subarray',
+    title: '乘积最大子数组',
+    difficulty: 'medium',
+    tags: ['hot100'],
+  },
+  'lc:153': {
+    id: 'lc:153',
+    number: '153',
+    slug: 'find-minimum-in-rotated-sorted-array',
+    title: '寻找旋转排序数组中的最小值',
+    difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:173': {
+    id: 'lc:173',
+    number: '173',
+    slug: 'binary-search-tree-iterator',
+    title: '二叉搜索树迭代器',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:188': {
+    id: 'lc:188',
+    number: '188',
+    slug: 'best-time-to-buy-and-sell-stock-iv',
+    title: '买卖股票的最佳时机 IV',
+    difficulty: 'hard',
+    tags: ['interview150'],
+  },
+  'lc:189': {
+    id: 'lc:189',
+    number: '189',
+    slug: 'rotate-array',
+    title: '轮转数组',
+    difficulty: 'medium',
+    tags: ['hot100', 'interview150'],
+  },
+  'lc:190': {
+    id: 'lc:190',
+    number: '190',
+    slug: 'reverse-bits',
+    title: '颠倒二进制位',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:191': {
+    id: 'lc:191',
+    number: '191',
+    slug: 'number-of-1-bits',
+    title: '位 1 的个数',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:201': {
+    id: 'lc:201',
+    number: '201',
+    slug: 'bitwise-and-of-numbers-range',
+    title: '数字范围按位与',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:202': {
+    id: 'lc:202',
+    number: '202',
+    slug: 'happy-number',
+    title: '快乐数',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:205': {
+    id: 'lc:205',
+    number: '205',
+    slug: 'isomorphic-strings',
+    title: '同构字符串',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:212': {
+    id: 'lc:212',
+    number: '212',
+    slug: 'word-search-ii',
+    title: '单词搜索 II',
+    difficulty: 'hard',
+    tags: ['interview150'],
+  },
+  'lc:221': {
+    id: 'lc:221',
+    number: '221',
+    slug: 'maximal-square',
+    title: '最大正方形',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:228': {
+    id: 'lc:228',
+    number: '228',
+    slug: 'summary-ranges',
+    title: '汇总区间',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:274': {
+    id: 'lc:274',
+    number: '274',
+    slug: 'h-index',
+    title: 'H 指数',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:287': {
+    id: 'lc:287',
+    number: '287',
+    slug: 'find-the-duplicate-number',
+    title: '寻找重复数',
+    difficulty: 'medium',
+    tags: ['hot100'],
+  },
+  'lc:289': {
+    id: 'lc:289',
+    number: '289',
+    slug: 'game-of-life',
+    title: '生命游戏',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:380': {
+    id: 'lc:380',
+    number: '380',
+    slug: 'insert-delete-getrandom-o1',
+    title: 'O(1) 时间插入、删除和获取随机元素',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:383': {
+    id: 'lc:383',
+    number: '383',
+    slug: 'ransom-note',
+    title: '赎金信',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:394': {
+    id: 'lc:394',
+    number: '394',
+    slug: 'decode-string',
+    title: '字符串解码',
+    difficulty: 'medium',
+    tags: ['hot100'],
+  },
+  'lc:399': {
+    id: 'lc:399',
+    number: '399',
+    slug: 'evaluate-division',
+    title: '除法求值',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:427': {
+    id: 'lc:427',
+    number: '427',
+    slug: 'construct-quad-tree',
+    title: '建立四叉树',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:437': {
+    id: 'lc:437',
+    number: '437',
+    slug: 'path-sum-iii',
+    title: '路径总和 III',
+    difficulty: 'medium',
+    tags: ['hot100'],
+  },
+  'lc:502': {
+    id: 'lc:502',
+    number: '502',
+    slug: 'ipo',
+    title: 'IPO',
+    difficulty: 'hard',
+    tags: ['interview150'],
+  },
+  'lc:530': {
+    id: 'lc:530',
+    number: '530',
+    slug: 'minimum-absolute-difference-in-bst',
+    title: '二叉搜索树的最小绝对差',
+    difficulty: 'easy',
+    tags: ['interview150'],
+  },
+  'lc:763': {
+    id: 'lc:763',
+    number: '763',
+    slug: 'partition-labels',
+    title: '划分字母区间',
+    difficulty: 'medium',
+    tags: ['hot100'],
+  },
+  'lc:909': {
+    id: 'lc:909',
+    number: '909',
+    slug: 'snakes-and-ladders',
+    title: '蛇梯棋',
+    difficulty: 'medium',
+    tags: ['interview150'],
+  },
+  'lc:994': {
+    id: 'lc:994',
+    number: '994',
+    slug: 'rotting-oranges',
+    title: '腐烂的橘子',
+    difficulty: 'medium',
+    tags: ['hot100'],
+  },
+}
+
+const KNOWLEDGE_PROBLEMS: AlgorithmKnowledgeData['problems'] = {
+  ...KNOWLEDGE_PROBLEMS_BASE,
+  ...STUDY_PLAN_PROBLEMS,
+}
+
 export const ALGORITHM_KNOWLEDGE: AlgorithmKnowledgeData = {
-  version: 1,
+  version: 2,
   groups: KNOWLEDGE_GROUPS,
   topics: KNOWLEDGE_TOPICS,
   problems: KNOWLEDGE_PROBLEMS,
