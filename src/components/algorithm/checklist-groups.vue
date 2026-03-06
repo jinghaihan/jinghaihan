@@ -190,26 +190,26 @@ function problemTags(problemId: string): AlgorithmProblemTag[] {
                   class="rounded-full shrink-0 h-1.5 w-1.5"
                   :style="{ backgroundColor: problemDifficultyColor(problemId) }"
                 />
-                <a
-                  :href="problemUrl(problemId)"
-                  target="_blank"
-                  rel="noreferrer"
-                  class="text-foreground/75 flex-1 min-w-0 transition-colors duration-150 hover:text-foreground hover:underline hover:decoration-foreground/55 hover:underline-offset-3"
-                >
-                  <span class="flex gap-1.5 min-w-0 items-center">
-                    <span class="block truncate">{{ problemLabel(problemId) }}</span>
-                    <span v-if="problemTags(problemId).length > 0" class="flex shrink-0 gap-1 items-center">
-                      <i
-                        v-for="tag in problemTags(problemId)"
-                        :key="`${problemId}-${tag}`"
-                        class="size-3.5"
-                        :class="ALGORITHM_PROBLEM_TAG_ICONS[tag]"
-                        :title="ALGORITHM_PROBLEM_TAG_LABELS[tag]"
-                        :aria-label="ALGORITHM_PROBLEM_TAG_LABELS[tag]"
-                      />
-                    </span>
+                <div class="flex flex-1 gap-1.5 min-w-0 items-center">
+                  <a
+                    :href="problemUrl(problemId)"
+                    target="_blank"
+                    rel="noreferrer"
+                    class="text-foreground/75 max-w-full inline-block truncate transition-colors duration-150 hover:text-foreground hover:underline hover:decoration-foreground/55 hover:underline-offset-3"
+                  >
+                    {{ problemLabel(problemId) }}
+                  </a>
+                  <span v-if="problemTags(problemId).length > 0" class="flex shrink-0 gap-1 items-center">
+                    <i
+                      v-for="tag in problemTags(problemId)"
+                      :key="`${problemId}-${tag}`"
+                      class="size-3.5"
+                      :class="ALGORITHM_PROBLEM_TAG_ICONS[tag]"
+                      :title="ALGORITHM_PROBLEM_TAG_LABELS[tag]"
+                      :aria-label="ALGORITHM_PROBLEM_TAG_LABELS[tag]"
+                    />
                   </span>
-                </a>
+                </div>
               </li>
             </ul>
           </Collapse>
