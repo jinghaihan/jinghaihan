@@ -21,6 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (event: 'selectNode', nodeId: string): void
   (event: 'toggleCheck', nodeId: string, checked: boolean): void
+  (event: 'collapseChange', collapsed: boolean): void
 }>()
 
 interface Props {
@@ -34,6 +35,7 @@ interface Props {
   maxWidth?: number
   collapsedWidth?: number
   defaultWidth?: number
+  expandSignal?: number
 }
 
 const {
@@ -61,6 +63,18 @@ const sidebarStyle = computed(() => {
 })
 
 watch(() => props.node.id, () => {
+  expandSidebar()
+  resizeHovering.value = false
+})
+
+watch(() => collapsed.value, (value) => {
+  emit('collapseChange', value)
+}, { immediate: true })
+
+watch(() => props.expandSignal, () => {
+  if (!collapsed.value)
+    return
+
   expandSidebar()
   resizeHovering.value = false
 })

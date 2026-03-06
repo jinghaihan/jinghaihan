@@ -13,6 +13,7 @@ const props = withDefaults(defineProps<{
   canvas: WorkflowCanvasDefinition<string, string>
   nodes: WorkflowNode<string>[]
   selectedNodeId?: string
+  sidebarCollapsed?: boolean
   checkedNodeProgress?: WorkflowNodeCheckProgress
   kindLabels?: Record<string, string>
   searchPlaceholder?: string
@@ -22,6 +23,7 @@ const props = withDefaults(defineProps<{
   getEdgeBaseWidth?: (kind: string) => number
 }>(), {
   selectedNodeId: '',
+  sidebarCollapsed: false,
   checkedNodeProgress: () => ({}),
   kindLabels: () => ({}),
   searchPlaceholder: '输入节点名、ID、stage...',
@@ -30,6 +32,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (event: 'selectionChange', nodeId: string): void
+  (event: 'requestSidebarExpand'): void
 }>()
 
 const graph = useWorkflowGraph({
@@ -62,6 +65,16 @@ watch(() => props.selectedNodeId, (nodeId) => {
 function onSearchNodeSelect(nodeId: string): void {
   graph.selectedNodeId.value = nodeId
   graph.centerNodeInViewport(nodeId)
+}
+
+function onCanvasNodeClick(nodeId: string, event: MouseEvent): void {
+  if (graph.selectedNodeId.value === nodeId && props.sidebarCollapsed) {
+    event.stopPropagation()
+    emit('requestSidebarExpand')
+    return
+  }
+
+  graph.onFallbackNodeClick(nodeId, event)
 }
 </script>
 
@@ -121,7 +134,7 @@ function onSearchNodeSelect(nodeId: string): void {
             data-no-pan
             @mouseenter="graph.onFallbackNodeEnter(node.id)"
             @mouseleave="graph.onFallbackNodeLeave"
-            @click="graph.onFallbackNodeClick(node.id, $event)"
+            @click="onCanvasNodeClick(node.id, $event)"
           >
             <rect
               :x="-canvas.nodeWidth / 2"

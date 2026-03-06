@@ -40,6 +40,8 @@ const props = withDefaults(defineProps<{
 })
 
 const selectedNodeId = ref('')
+const sidebarCollapsed = ref(false)
+const sidebarExpandSignal = ref(0)
 const checkedNodeProgress = useLocalStorage<WorkflowNodeCheckProgress>(props.checkStorageKey, {}, {
   mergeDefaults: true,
   initOnMounted: true,
@@ -129,6 +131,12 @@ watch(() => [selectedNodeId.value, props.loadNodeContent] as const, async ([node
   }
 }, { immediate: true })
 
+watch(() => selectedNodeId.value, (nodeId) => {
+  if (!nodeId) {
+    sidebarCollapsed.value = false
+  }
+})
+
 function onSelectionChange(nodeId: string): void {
   if (nodeId === selectedNodeId.value)
     return
@@ -142,6 +150,17 @@ function onSidebarNodeSelect(nodeId: string): void {
 
 function onSidebarToggleCheck(nodeId: string, checked: boolean): void {
   setNodeChecked(nodeId, checked)
+}
+
+function onSidebarCollapseChange(collapsed: boolean): void {
+  sidebarCollapsed.value = collapsed
+}
+
+function onCanvasRequestSidebarExpand(): void {
+  if (!selectedNode.value)
+    return
+
+  sidebarExpandSignal.value += 1
 }
 
 function setNodeChecked(nodeId: string, checked: boolean): void {
@@ -181,6 +200,7 @@ function normalizeCheckProgress(value: unknown, validNodeIdSet: Set<string>): Wo
         :nodes="nodes"
         :canvas="canvas"
         :selected-node-id="selectedNodeId"
+        :sidebar-collapsed="sidebarCollapsed"
         :checked-node-progress="checkedNodeProgress"
         :kind-labels="kindLabels"
         :search-placeholder="searchPlaceholder"
@@ -189,6 +209,7 @@ function normalizeCheckProgress(value: unknown, validNodeIdSet: Set<string>): Wo
         :get-node-stroke-color="getNodeStrokeColor"
         :get-edge-base-width="getEdgeBaseWidth"
         @selection-change="onSelectionChange"
+        @request-sidebar-expand="onCanvasRequestSidebarExpand"
       />
     </section>
     <div
@@ -206,8 +227,10 @@ function normalizeCheckProgress(value: unknown, validNodeIdSet: Set<string>): Wo
         :max-width="sidebarMaxWidth"
         :collapsed-width="sidebarCollapsedWidth"
         :default-width="sidebarDefaultWidth"
+        :expand-signal="sidebarExpandSignal"
         @select-node="onSidebarNodeSelect"
         @toggle-check="onSidebarToggleCheck"
+        @collapse-change="onSidebarCollapseChange"
       />
     </div>
   </div>
