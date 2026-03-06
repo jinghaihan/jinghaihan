@@ -2,6 +2,7 @@
 import type { WorkflowNode, WorkflowNodeCheckProgress } from '@/types/workflow'
 import { onClickOutside, useMagicKeys, whenever } from '@vueuse/core'
 import { computed, nextTick, ref, watch } from 'vue'
+import WorkflowCompletionBadge from './completion-badge.vue'
 
 interface SearchResultItem {
   id: string
@@ -204,18 +205,25 @@ function onInputKeydown(event: KeyboardEvent): void {
     ref="panelRef"
     class="pointer-events-auto left-6 top-4 absolute z-40"
   >
-    <button
-      type="button"
-      class="text-xs text-muted-foreground px-2.5 border border-border/70 rounded-md flex gap-2 h-8 shadow-sm transition-colors items-center backdrop-blur hover:text-foreground bg-card!"
-      aria-label="查找节点"
-      @click="togglePanel"
-    >
-      <span class="i-ri:search-line text-sm" />
-      <span class="font-medium">搜索节点</span>
-      <span class="text-xs font-mono px-1.5 py-0.5 border border-border/60 rounded tabular-nums">
-        ⌘ K
-      </span>
-    </button>
+    <div class="flex gap-2 items-center">
+      <button
+        type="button"
+        class="text-xs text-muted-foreground px-2.5 border border-border/70 rounded-md flex gap-2 h-8 shadow-sm transition-colors items-center backdrop-blur hover:text-foreground bg-card!"
+        aria-label="查找节点"
+        @click="togglePanel"
+      >
+        <span class="i-ri:search-line text-sm" />
+        <span class="font-medium">搜索节点</span>
+        <span class="text-xs font-mono px-1.5 py-0.5 border border-border/60 rounded tabular-nums">
+          ⌘ K
+        </span>
+      </button>
+
+      <WorkflowCompletionBadge
+        :nodes="nodes"
+        :checked-node-progress="checkedNodeProgress"
+      />
+    </div>
 
     <div
       v-if="open"
