@@ -107,3 +107,11 @@ async function toggleAndMeasure(el: HTMLElement) {
 7. keep-alive 中的生命周期哪些
 - 标准答案：结论是被缓存组件会额外触发 `activated/deactivated`。机制上进入缓存页面走 `activated`，离开但不销毁走 `deactivated`。场景上轮询、订阅在 `deactivated` 暂停，在 `activated` 恢复。
 - 考察点：是否能给出明确结论，并补充机制和业务场景。
+
+8. Vue 的响应式更新是同步还是异步的？
+- 标准答案：结论是默认异步批量更新。机制上同一事件循环内的多次状态变更会进入调度队列合并刷新，再在合适时机提交 DOM。场景上连续赋值只触发一次视图提交，需要读取最新 DOM 时应配合 `nextTick`。
+- 考察点：是否理解“状态修改时刻”和“DOM 提交时刻”的区别。
+
+9. Vue 3 的生命周期钩子有哪些？与 Vue 2 相比有什么变化？
+- 标准答案：结论是 Vue 3 仍按创建、挂载、更新、卸载四阶段组织，但组合式 API 通过 `onMounted/onUpdated/onUnmounted` 等函数注册。机制上钩子语义更一致，废弃了部分旧名称并强化 setup 入口。场景上迁移项目时需做钩子映射和副作用清理策略调整。
+- 考察点：是否能从迁移视角讲清钩子变更点。

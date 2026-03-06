@@ -1,0 +1,90 @@
+---
+id: mini-program-routing-navigation
+title: 路由栈与页面跳转
+nodeId: mini-program-routing-navigation
+type: topic
+priority: P2
+---
+
+## 概念定义
+
+- 本质定义：小程序路由系统通过页面栈管理页面跳转、返回和重置，决定当前页面是保留、替换还是全量重建。
+- 解决问题：解释“为什么不同跳转 API 的返回行为完全不同”，也解释“为什么页面栈超过限制后会出问题”。
+- 边界说明：本节点聚焦页面跳转和路由栈，不展开 TabBar 视觉配置和深链接运营能力。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. `navigateTo` 会把新页面压入栈顶，保留当前页。
+2. `redirectTo` 会关闭当前页并跳到新页面。
+3. `switchTab` 只用于切换 `tabBar` 页面，并清理其他非 `tabBar` 页面。
+4. `reLaunch` 会清空所有页面后重建目标页，`navigateBack` 则按层级回退。
+
+### 2) 关键条件与触发点
+
+- 条件 A：普通页面栈最多 10 层，连续 `navigateTo` 过深会触发限制。
+- 条件 B：`switchTab` 只能跳 `tabBar` 页面，且不能携带普通页面那种路由栈返回关系。
+- 条件 C：参数通常放在 URL 查询里，复杂对象要考虑序列化和长度限制。
+
+### 3) 结果与影响
+
+- 对性能/稳定性/可维护性的影响：跳转 API 用对了，页面返回逻辑和状态恢复会很自然；用错后，最常见的问题就是“返回不到原页”和“页面状态丢了”。
+
+## 相似概念对比
+
+| 维度 | `navigateTo` | `redirectTo` | `switchTab` | `reLaunch` |
+|---|---|---|---|---|
+| 是否保留当前页 | 是 | 否 | 否 | 否 |
+| 是否能返回 | 能 | 不能返回到被替换页面 | 切到 `tabBar` 后按平台规则返回 | 重新起一套栈 |
+| 适用场景 | 详情页、流程页 | 登录后替换页、支付结果页 | 首页、消息页等 `tabBar` 页面 | 登录态重置、全局回首页 |
+| 风险点 | 栈过深 | 状态容易丢 | 只能用于 `tabBar` | 成本最高 |
+
+## 代码
+
+```js
+wx.navigateTo({
+  url: '/pages/detail/detail?id=123',
+})
+
+wx.redirectTo({
+  url: '/pages/result/result',
+})
+
+wx.switchTab({
+  url: '/pages/home/home',
+})
+```
+
+### 示例说明
+
+- 这段代码解决什么问题：展示三种最常见跳转方式的语义差异。
+- 关键语句或参数含义：`url` 决定目标页面；`navigateTo` 压栈，`redirectTo` 替换当前页，`switchTab` 切 `tabBar`。
+- 常见错误写法：在非 `tabBar` 页面上调用 `switchTab`、把需要返回的流程页写成 `redirectTo`。
+
+## 真实场景示例
+
+- 场景描述：商品列表跳商品详情，再跳支付结果页。
+- 问题表现：如果支付结果页还用 `navigateTo`，用户返回路径会变长；如果详情页误用 `redirectTo`，列表页状态就丢了。
+- 处理方案：列表到详情用 `navigateTo`，支付成功后用 `redirectTo` 或 `reLaunch` 回收页面栈。
+- 验证方式：观察返回行为、页面栈层数和列表滚动位置是否符合预期。
+
+## 常见误区
+
+- 误区：所有跳转 API 只是名字不同，效果差不多。
+- 正解：它们对页面栈的处理方式完全不同，返回路径和状态保存都受影响。
+- 误区：页面参数越多越方便。
+- 正解：URL 只适合传轻量参数，复杂对象更适合通过缓存或全局状态转交。
+
+## 关联知识点
+
+- 依赖：生命周期、页面栈和全局状态。
+- 影响：页面返回行为、状态保留和首屏体验。
+- 对比：`navigateTo`、`redirectTo`、`switchTab`、`reLaunch`。
+- 组合：登录重定向、详情页跳转、TabBar 设计。
+
+## 相关面试题
+
+1. 小程序的路由跳转方式有哪些？
+- 标准答案：常见跳转方式有 `wx.navigateTo()`、`wx.redirectTo()`、`wx.switchTab()`、`wx.reLaunch()` 和 `wx.navigateBack()`。区别核心在于页面栈怎么处理：是压栈、替换、切 Tab 还是重建整套栈。场景上详情页常用 `navigateTo`，登录完成或结果页常用 `redirectTo` 或 `reLaunch`。
+- 考察点：是否真正理解各跳转 API 对页面栈的影响。

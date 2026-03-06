@@ -1,0 +1,122 @@
+---
+id: nodejs-web-service
+title: Express 与服务端通信
+nodeId: nodejs-web-service
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：Express 把 Node.js 原生 HTTP 能力封装成中间件链和路由系统，用来快速搭建 RESTful API、处理跨域和承接实时通信。
+- 解决问题：解释“为什么大多数 Node.js 服务端项目会从 Express 一类框架起步”，也解释“一个请求进入服务后到底经过了哪些处理层”。
+- 边界说明：本节点聚焦服务端请求处理和通信模式，不展开数据库、鉴权细节和容器部署。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 请求进入 Node.js 服务后，先按注册顺序通过应用级中间件，如日志、解析和跨域处理。
+2. 命中某条路由后，再执行路由级中间件和处理函数，决定返回 JSON、文件或错误。
+3. 如果接口遵循 RESTful API 设计，资源路径、HTTP 方法和状态码语义会一起约束接口行为。
+4. 跨域请求需要服务端按规则返回 CORS 头；长连接场景则会通过 WebSocket 升级协议，进入双向通信模式。
+
+### 2) 关键条件与触发点
+
+- 条件 A：中间件顺序就是执行顺序，注册位置错误会直接影响解析、鉴权和错误处理。
+- 条件 B：RESTful API 不是只有 URL 漂亮，还要求方法语义、状态码和资源模型一致。
+- 条件 C：CORS 必须由服务端响应头控制，前端只能触发，不能单方面“关闭跨域”。
+
+### 3) 结果与影响
+
+- 对性能/稳定性/可维护性的影响：请求链路设计清晰后，日志、鉴权、错误处理和跨域策略都能稳定插入；链路设计混乱时，后续加能力会越来越难。
+
+## 相似概念对比
+
+| 维度 | RESTful API | WebSocket | 结论 |
+|---|---|---|---|
+| 通信方向 | 典型请求响应 | 双向长连接 | 交互模式不同 |
+| 连接特征 | 每次请求独立处理 | 建连后持续收发消息 | 状态管理不同 |
+| 适用场景 | 常规增删改查、资源接口 | 聊天、协同、推送 | 按实时性选型 |
+| 服务端治理重点 | 路由、中间件、状态码、CORS | 连接生命周期、心跳、广播 | 运维重点不同 |
+
+## 代码
+
+```js
+const express = require('express')
+const cors = require('cors')
+
+const app = express()
+
+app.use(cors({ origin: 'https://example.com', credentials: true }))
+app.use(express.json())
+app.use((req, res, next) => {
+  console.log(req.method, req.path)
+  next()
+})
+
+app.get('/users/:id', (req, res) => {
+  res.json({ id: req.params.id })
+})
+```
+
+```js
+const WebSocket = require('ws')
+
+const wss = new WebSocket.Server({ port: 8080 })
+
+wss.on('connection', (ws) => {
+  ws.send('connected')
+})
+```
+
+### 示例说明
+
+- 这段代码解决什么问题：第一个示例展示 Express 的中间件链、JSON 解析和 CORS 处理；第二个示例展示 WebSocket 连接建立后的最小通信入口。
+- 关键语句或参数含义：`app.use()` 注册中间件；`express.json()` 解析请求体；`cors()` 负责返回跨域响应头；`connection` 事件表示 WebSocket 建连完成。
+- 常见错误写法：把错误处理中间件放在最前面、CORS 不处理 `credentials`、WebSocket 没有心跳和断线治理。
+
+## 真实场景示例
+
+- 场景描述：前端团队搭一个中台 BFF，同时要提供普通查询接口和客服实时消息通道。
+- 问题表现：如果 RESTful API 和 WebSocket 混在一个不清晰的处理链里，日志、鉴权、跨域和异常返回都会越来越乱。
+- 处理方案：普通资源接口走 Express 中间件链和 RESTful API 约定，实时消息单独走 WebSocket 连接管理和广播逻辑。
+- 验证方式：看接口状态码和返回体是否统一、预检请求是否通过、WebSocket 连接断开后能否恢复。
+
+## 常见误区
+
+- 误区：Express 就是 Node.js。
+- 正解：Express 只是构建在 Node.js 之上的 Web 框架，Node.js 自身还能做脚本、CLI 和流处理。
+- 误区：跨域问题只和前端有关。
+- 正解：CORS 决策权在服务端，前端只能按浏览器规则触发预检和携带凭证。
+- 误区：WebSocket 建好连接后就不用再管。
+- 正解：心跳、断线重连、权限校验和广播范围都是长期治理点。
+
+## 关联知识点
+
+- 依赖：事件循环、模块系统和网络协议语义。
+- 影响：接口治理、跨域策略、实时通信和服务扩展性。
+- 对比：RESTful API 与 WebSocket。
+- 组合：中间件、日志、鉴权、缓存和网关。
+
+## 相关面试题
+
+1. 什么是中间件？在 Express 中如何使用？
+- 标准答案：中间件是在请求响应周期中按顺序执行的函数，可以拿到 `req`、`res` 和 `next`，常用于日志、解析、鉴权、限流和错误处理。Express 通过 `app.use()` 或路由级写法把中间件串成链路，谁先注册谁先执行，所以顺序本身就是机制的一部分。
+- 考察点：是否理解中间件是请求链路的扩展点，而不是普通工具函数。
+
+2. 什么是 Express.js？它的核心特性有哪些？
+- 标准答案：Express 是 Node.js 上常用的 Web 框架，核心特性包括路由系统、中间件机制、静态资源服务和统一错误处理。它的价值不在“功能多”，而在于把原生 HTTP 服务组织成可扩展的处理链，非常适合快速搭建 API 服务和中间层。
+- 考察点：是否知道 Express 的核心抽象是什么。
+
+3. 什么是 RESTful API？如何在 Node.js 中实现？
+- 标准答案：RESTful API 是按资源来设计接口的风格，强调统一接口、无状态、方法语义清晰和状态码一致。在 Node.js 里通常用 Express 的路由系统实现，例如用 `GET /users` 查询资源、`POST /users` 创建资源，再配合统一的响应格式和错误处理落地。
+- 考察点：是否理解 RESTful API 不是口号，而是一套资源和方法的设计约束。
+
+4. 如何在 Node.js 中处理跨域问题？
+- 标准答案：跨域问题本质上通过服务端返回 CORS 响应头解决，常见做法是用 `cors` 中间件或手动设置 `Access-Control-Allow-Origin`、`Access-Control-Allow-Methods` 等字段。带凭证时还要同步约束具体域名，不能简单写 `*`。场景上预检请求失败往往不是前端 bug，而是服务端策略没配对。
+- 考察点：是否知道跨域治理必须落在服务端响应头上。
+
+5. 如何在 Node.js 中实现 WebSocket 通信？
+- 标准答案：WebSocket 通过一次 HTTP 升级握手建立长连接，之后客户端和服务端都可以主动发消息。在 Node.js 里常用 `ws` 或 Socket.IO 管理连接、消息和广播。它适合聊天、协同编辑和实时推送，但必须补上鉴权、心跳和断线恢复，不然线上稳定性会很差。
+- 考察点：是否理解 WebSocket 和普通接口在连接模型上的根本区别。

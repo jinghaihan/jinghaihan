@@ -128,3 +128,7 @@ const emit = defineEmits<{ 'update:name': [value: string] }>()
 8. Vue-router 跳转和 location.href 有什么区别
 - 标准答案：结论是 Vue Router 跳转是前端路由更新，`location.href` 是整页刷新。机制上前者复用 SPA 运行时并保留应用状态，后者会重新请求文档。场景上站内导航优先 Router，跨站或强制刷新才用 `location.href`。
 - 考察点：是否能从定义、触发时机、性能影响和适用场景四个维度做对比。
+
+9. Vue 3 中有哪些主要的组件通信方式？
+- 标准答案：结论是主通道包括 `props/emits`、`provide/inject`、`v-model`、`ref` 暴露、状态管理（Pinia）。机制上应优先单向数据流，跨层共享再引入注入或全局状态。场景上父子通信先用 props/emits，复杂跨层通信再升级方案。
+- 考察点：是否能按组件关系选择合适通信协议。

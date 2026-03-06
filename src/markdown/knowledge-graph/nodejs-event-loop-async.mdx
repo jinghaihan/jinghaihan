@@ -1,0 +1,105 @@
+---
+id: nodejs-event-loop-async
+title: 事件循环与异步编程
+nodeId: nodejs-event-loop-async
+type: topic
+priority: P1
+---
+
+## 概念定义
+
+- 本质定义：Node.js 的事件循环负责在单个主线程上调度定时器、I/O 回调、微任务和事件通知，是异步编程成立的核心前提。
+- 解决问题：解释“为什么 Node.js 能在单线程里处理大量连接”，也解释“为什么一段同步耗时逻辑就能把整个服务拖慢”。
+- 边界说明：本节点聚焦调度模型、异步写法和事件发布订阅，不展开多进程和 Worker Threads。
+
+## 核心机制拆解
+
+### 1) 机制/流程
+
+1. 主线程执行同步代码，遇到定时器、网络、文件等异步任务时，把底层工作交给系统或线程池。
+2. 事件循环按阶段推进，常见阶段依次是 Timer、Pending callbacks、Poll、Check 和 Close callbacks。
+3. 每个阶段执行完当前回调后，还会穿插处理微任务，如 Promise 回调。
+4. 业务层用回调、Promise 或 `async/await` 组织异步流程，用 `EventEmitter` 组织事件驱动协作。
+5. 只要主线程没有被长任务堵死，事件循环就能持续取出回调，维持吞吐。
+
+### 2) 关键条件与触发点
+
+- 条件 A：同步 CPU 密集型逻辑一旦执行过久，后续所有回调都会排队。
+- 条件 B：回调层层嵌套时，可读性和错误传播会迅速恶化，所以常要升级到 Promise 或 `async/await`。
+- 条件 C：`EventEmitter.emit()` 默认是同步触发监听器的，监听器里写重逻辑同样会阻塞当前调用栈。
+
+### 3) 结果与影响
+
+- 对性能/稳定性/可维护性的影响：理解阶段顺序和异步模型后，才能定位延迟、长任务和错误传播问题；否则“明明是异步，为什么还是卡”会一直说不清。
+
+## 相似概念对比
+
+| 维度 | 回调函数 | Promise / `async` / `await` | 结论 |
+|---|---|---|---|
+| 表达方式 | 直接把后续逻辑作为参数传入 | 用状态机和语法糖组织流程 | 后者更易维护 |
+| 错误处理 | 容易分散在各层回调里 | 可统一用 `catch` 或 `try/catch` | 后者更稳 |
+| 可读性 | 嵌套深时快速下降 | 更接近同步流程 | 中大型项目优先后者 |
+| 适用场景 | 简单一次性异步 | 多步骤串并行控制 | 复杂流程优先 Promise 体系 |
+
+## 代码
+
+```js
+const { EventEmitter } = require('events')
+const fs = require('fs/promises')
+
+const emitter = new EventEmitter()
+
+emitter.on('loaded', (content) => {
+  console.log('data length:', content.length)
+})
+
+async function loadConfig() {
+  const content = await fs.readFile('./package.json', 'utf8')
+  emitter.emit('loaded', content)
+}
+
+loadConfig().catch(console.error)
+```
+
+### 示例说明
+
+- 这段代码解决什么问题：把 Promise 风格的文件读取和事件驱动通知串起来。
+- 关键语句或参数含义：`await` 负责等待异步结果；`emit` 负责通知监听器；监听器会在当前调用栈里同步执行。
+- 常见错误写法：在监听器里执行长时间同步任务，或者 Promise 只写 `then` 不做统一错误处理。
+
+## 真实场景示例
+
+- 场景描述：网关服务需要并发请求多个后端接口，再把结果聚合返回。
+- 问题表现：如果使用嵌套回调，错误处理分散且难维护；如果某一步用了大循环做同步计算，整个接口 RT 会突然抬高。
+- 处理方案：统一改成 Promise 和 `async/await`，把 CPU 密集型逻辑移出主线程或拆批处理，并用事件总线通知边缘状态。
+- 验证方式：观察事件循环延迟、接口 RT 分位数和错误链路是否可追踪。
+
+## 常见误区
+
+- 误区：异步代码就一定不会阻塞。
+- 正解：异步只是不在当前点等待结果，主线程里的同步重逻辑照样会阻塞事件循环。
+- 误区：`EventEmitter` 的事件天然是异步派发。
+- 正解：默认 `emit` 是同步执行监听器的，是否异步取决于监听器内部是否再调度任务。
+- 误区：`async/await` 比 Promise 多了一套机制。
+- 正解：`async/await` 本质上是 Promise 的语法糖，底层仍然走 Promise 状态机。
+
+## 关联知识点
+
+- 依赖：JavaScript 事件循环、闭包和 Promise 基础。
+- 影响：网络服务吞吐、I/O 延迟、错误边界和事件驱动架构。
+- 对比：回调、Promise、`async/await`。
+- 组合：`EventEmitter`、定时器、I/O 回调、微任务。
+
+## 相关面试题
+
+1. 解释 Node.js 的事件循环机制
+- 标准答案：事件循环是 Node.js 处理非阻塞 I/O 的核心调度模型。主线程先执行同步代码，异步任务交给系统或线程池处理，完成后再按 Timer、Pending callbacks、Poll、Check、Close callbacks 等阶段回到事件循环执行回调，中间还会穿插 Promise 微任务。结论是 Node.js 靠调度和非阻塞 I/O 获得高并发，不是靠多线程硬并发。
+- 考察点：是否理解事件循环阶段、主线程职责和高并发的真实来源。
+
+2. 解释 Node.js 中的异步编程模式
+- 标准答案：Node.js 常见异步模式有回调、Promise 和 `async/await`。回调最底层但容易形成回调地狱；Promise 统一了状态和错误传递；`async/await` 让异步代码更接近同步流程。项目里通常会优先用 Promise 和 `async/await`，只在对接底层 API 时保留回调风格。
+- 考察点：是否知道三种模式的关系、优缺点和迁移方向。
+
+3. 什么是 EventEmitter？如何使用？
+- 标准答案：`EventEmitter` 是 Node.js 事件驱动模型里的发布订阅基类，用 `on` 注册监听器，用 `emit` 触发事件，用 `once` 注册一次性监听器。它适合做进程内状态通知、流和框架内部事件协作，但监听器本身仍跑在主线程里，写重逻辑会阻塞当前流程。
+- 考察点：是否理解发布订阅模式在 Node.js 里的使用边界。
