@@ -3,7 +3,12 @@ import type { AlgorithmProblemTag, AlgorithmProgress, Problem, Topic, TopicGroup
 import { ref } from 'vue'
 import Checkbox from '@/components/ui/checkbox.vue'
 import Collapse from '@/components/ui/collapse.vue'
-import { ALGORITHM_PROBLEM_TAG_LABELS, ALGORITHM_PROBLEM_TAG_ORDER, getAlgorithmDifficultyColor } from '@/constants/algorithm'
+import {
+  ALGORITHM_PROBLEM_TAG_ICONS,
+  ALGORITHM_PROBLEM_TAG_LABELS,
+  ALGORITHM_PROBLEM_TAG_ORDER,
+  getAlgorithmDifficultyColor,
+} from '@/constants/algorithm'
 import CompletionStat from './completion-stat.vue'
 import ProblemSeq from './problem-seq.vue'
 
@@ -27,11 +32,6 @@ const emit = defineEmits<{
   selectTopic: [topicId: string]
   clearTopic: [topicId: string]
 }>()
-
-const ALGORITHM_PROBLEM_TAG_ICONS: Record<AlgorithmProblemTag, string> = {
-  hot100: 'i-ri:fire-fill text-red-500/90',
-  interview150: 'i-ri:trophy-fill text-amber-500/90',
-}
 
 const collapsedGroupIds = ref<Set<string>>(new Set())
 const collapsedTopicIds = ref<Set<string>>(new Set())

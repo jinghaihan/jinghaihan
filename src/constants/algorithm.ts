@@ -227,6 +227,11 @@ export const ALGORITHM_STUDY_PLAN_TITLES: Record<AlgorithmProblemTag, string> = 
 
 export const ALGORITHM_PROBLEM_TAG_ORDER: AlgorithmProblemTag[] = ['hot100', 'interview150']
 
+export const ALGORITHM_PROBLEM_TAG_ICONS: Record<AlgorithmProblemTag, string> = {
+  hot100: 'i-ri:fire-fill text-red-500/90',
+  interview150: 'i-ri:trophy-fill text-amber-500/90',
+}
+
 const KNOWLEDGE_TOPICS_RAW: AlgorithmKnowledgeData['topics'] = [
   {
     id: 'diff-array',

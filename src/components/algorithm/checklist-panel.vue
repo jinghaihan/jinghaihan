@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AlgorithmProgress, Difficulty, Problem, Topic, TopicGroup } from '@/types'
+import type { AlgorithmProblemTag, AlgorithmProgress, Difficulty, Problem, Topic, TopicGroup } from '@/types'
 import { computed, ref, toRef } from 'vue'
 import { useChecklistFiltering } from '@/composables/algorithm/use-checklist-filtering'
 import { useChecklistPogressStats } from '@/composables/algorithm/use-checklist-pogress-stats'
@@ -30,6 +30,7 @@ const emit = defineEmits<{
 const ALL_DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard']
 
 const selectedDifficulties = ref<Difficulty[]>([...ALL_DIFFICULTIES])
+const selectedProblemTags = ref<AlgorithmProblemTag[]>([])
 const selectedTopicIds = ref<string[]>([])
 
 const searchKeywordModel = computed({
@@ -39,6 +40,7 @@ const searchKeywordModel = computed({
 
 const {
   filteredGroups,
+  hasTagFilters,
   selectedTopics,
   hasTopicFilters,
   removeTopicFilter,
@@ -50,6 +52,7 @@ const {
   problems: toRef(props, 'problems'),
   searchKeyword: searchKeywordModel,
   selectedDifficulties,
+  selectedProblemTags,
   selectedTopicIds,
 })
 
@@ -69,7 +72,9 @@ const {
   problems: toRef(props, 'problems'),
 })
 
-const forceOpen = computed(() => searchKeywordModel.value.trim().length > 0 || hasTopicFilters.value)
+const forceOpen = computed(() =>
+  searchKeywordModel.value.trim().length > 0 || hasTagFilters.value || hasTopicFilters.value,
+)
 
 function onProblemChange(problemId: string, checked: boolean): void {
   emit('toggleProblem', problemId, checked)
@@ -105,6 +110,7 @@ function onSelectAll(): void {
     <ChecklistToolbar
       v-model:search-keyword="searchKeywordModel"
       v-model:selected-difficulties="selectedDifficulties"
+      v-model:selected-problem-tags="selectedProblemTags"
       :topics="props.topics"
       :progress="props.progress"
       :selected-topic-ids="selectedTopicIds"

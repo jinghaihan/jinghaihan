@@ -1,5 +1,5 @@
 import type { ComputedRef, Ref } from 'vue'
-import type { Difficulty, Problem, Topic, TopicGroup } from '@/types'
+import type { AlgorithmProblemTag, Difficulty, Problem, Topic, TopicGroup } from '@/types'
 import { computed } from 'vue'
 import { ALGORITHM_PROBLEM_TAG_LABELS, ALGORITHM_STUDY_PLAN_TITLES } from '@/constants/algorithm'
 
@@ -9,12 +9,14 @@ interface UseChecklistFilteringOptions {
   problems: Ref<Record<string, Problem>>
   searchKeyword: Ref<string>
   selectedDifficulties: Ref<Difficulty[]>
+  selectedProblemTags: Ref<AlgorithmProblemTag[]>
   selectedTopicIds: Ref<string[]>
 }
 
 interface UseChecklistFilteringReturn {
   filteredGroups: ComputedRef<TopicGroup[]>
   selectedTopics: ComputedRef<Topic[]>
+  hasTagFilters: ComputedRef<boolean>
   hasTopicFilters: ComputedRef<boolean>
   addTopicFilter: (topicId: string) => void
   removeTopicFilter: (topicId: string) => void
@@ -25,7 +27,9 @@ interface UseChecklistFilteringReturn {
 export function useChecklistFiltering(options: UseChecklistFilteringOptions): UseChecklistFilteringReturn {
   const normalizedSearchKeyword = computed(() => options.searchKeyword.value.trim().toLowerCase())
   const selectedDifficultySet = computed(() => new Set(options.selectedDifficulties.value))
+  const selectedProblemTagSet = computed(() => new Set(options.selectedProblemTags.value))
   const selectedTopicIdSet = computed(() => new Set(options.selectedTopicIds.value))
+  const hasTagFilters = computed(() => selectedProblemTagSet.value.size > 0)
   const hasTopicFilters = computed(() => selectedTopicIdSet.value.size > 0)
   const topicById = computed(() => new Map(options.topics.value.map(topic => [topic.id, topic])))
 
@@ -65,6 +69,14 @@ export function useChecklistFiltering(options: UseChecklistFilteringOptions): Us
     return selectedDifficultySet.value.has(difficulty)
   }
 
+  function matchProblemTags(problemId: string): boolean {
+    if (selectedProblemTagSet.value.size === 0)
+      return true
+
+    const tags = getProblem(problemId)?.tags ?? []
+    return tags.some(tag => selectedProblemTagSet.value.has(tag))
+  }
+
   const filteredGroups = computed<TopicGroup[]>(() => {
     const keyword = normalizedSearchKeyword.value
     const hasKeyword = Boolean(keyword)
@@ -81,6 +93,8 @@ export function useChecklistFiltering(options: UseChecklistFilteringOptions): Us
         const topicMatched = hasKeyword && topic.title.toLowerCase().includes(keyword)
         const matchedProblemIds = topic.problemIds.filter((problemId) => {
           if (!matchProblemDifficulty(problemId))
+            return false
+          if (!matchProblemTags(problemId))
             return false
           if (!hasKeyword || groupMatched || topicMatched)
             return true
@@ -122,6 +136,7 @@ export function useChecklistFiltering(options: UseChecklistFilteringOptions): Us
   return {
     filteredGroups,
     selectedTopics,
+    hasTagFilters,
     hasTopicFilters,
     addTopicFilter,
     removeTopicFilter,
