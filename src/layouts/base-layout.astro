@@ -75,7 +75,9 @@ const isFullscreen = layout === 'fullscreen'
     <title>{title}</title>
   </head>
   <body>
-    <div class:list={[
+    <div
+      style="height: 100dvh;"
+      class:list={[
       'mx-auto flex flex-col h-screen w-full overflow-hidden',
       isFullscreen ? 'max-w-none' : isWide ? 'max-w-[80rem]' : 'max-w-160',
     ]}

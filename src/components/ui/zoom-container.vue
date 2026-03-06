@@ -25,7 +25,7 @@ const emit = defineEmits<{
 
 const viewportClass = 'size-full min-h-0 relative overflow-hidden touch-none select-none'
 const contentClass = 'absolute left-0 top-0 origin-top-left'
-const controlsClass = 'absolute bottom-3 right-3 z-20 flex items-center gap-1 rounded-lg border border-border/70 bg-background/85 p-1 backdrop-blur'
+const controlsClass = 'absolute bottom-3 right-3 z-20 flex items-center gap-1 rounded-lg bg-card border border-border/70 bg-background/85 p-1 backdrop-blur'
 const controlButtonClass = 'size-7 flex items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
 const zoomLevelButtonClass = 'h-7 min-w-14 px-2 inline-flex items-center justify-center gap-1 rounded-md text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
 const presetPanelClass = 'absolute right-0 bottom-[calc(100%+0.4rem)] z-30 w-16 rounded-md border border-border/70 bg-background/96 p-1 shadow-sm backdrop-blur'
