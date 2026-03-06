@@ -42,40 +42,6 @@ priority: P2
 | 引用关系 | 强引用 | 弱引用键 | WeakMap 适合临时元数据 |
 | 泄漏风险 | 忘记 `delete` 可能累积 | 键对象回收后记录会自动释放 | WeakMap 降低泄漏风险但不等于无泄漏 |
 
-## 代码
-
-```ts
-function myNew<T extends object>(Ctor: new (...args: any[]) => T, ...args: any[]): T {
-  const obj = Object.create(Ctor.prototype)
-  const ret = Ctor.apply(obj, args) as unknown
-  return (ret && (typeof ret === 'object' || typeof ret === 'function')) ? ret : obj
-}
-
-const strongCache = new Map<object, { expensive: number }>()
-const weakCache = new WeakMap<object, { expensive: number }>()
-
-function getWithMap(key: object) {
-  if (!strongCache.has(key))
-    strongCache.set(key, { expensive: Date.now() })
-  return strongCache.get(key)!
-}
-
-function getWithWeakMap(key: object) {
-  if (!weakCache.has(key))
-    weakCache.set(key, { expensive: Date.now() })
-  return weakCache.get(key)!
-}
-
-const arrLike = { 0: 'a', 1: 'b', length: 2 }
-console.log(Array.from(arrLike))
-```
-
-### 示例说明
-
-- `myNew` 展示了实例化四步：建对象、挂原型、执行构造函数、返回结果裁决。
-- Map 与 WeakMap 示例展示了“强引用缓存”与“弱引用缓存”的本质区别。
-- WeakMap 可以降低“缓存忘记清理”导致的泄漏风险，但如果值对象又强引用大对象，仍可能泄漏。
-
 ## 相关面试题
 
 1. new 操作符的实现原理

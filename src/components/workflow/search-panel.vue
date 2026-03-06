@@ -206,7 +206,7 @@ function onInputKeydown(event: KeyboardEvent): void {
   >
     <button
       type="button"
-      class="text-xs text-muted-foreground px-2.5 border border-border/70 rounded-md bg-background/92 flex gap-2 h-8 shadow-sm transition-colors items-center backdrop-blur hover:text-foreground hover:bg-muted/45"
+      class="text-xs text-muted-foreground px-2.5 border border-border/70 rounded-md flex gap-2 h-8 shadow-sm transition-colors items-center backdrop-blur hover:text-foreground bg-card!"
       aria-label="查找节点"
       @click="togglePanel"
     >
