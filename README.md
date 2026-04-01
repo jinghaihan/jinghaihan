@@ -11,5 +11,5 @@
 </p>
 
 <p align="center">
-Feel free to chat with me on Discord (octohash).
+Feel free to chat with me on <a href="https://t.me/octohash">Telegram</a>.
 </p>
