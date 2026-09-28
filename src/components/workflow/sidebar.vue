@@ -115,7 +115,7 @@ function onToggleCheck(): void {
       <button
         type="button"
         aria-label="展开侧边栏"
-        class="text-muted-foreground border border-r-0 border-border/70 rounded-l-md bg-background/92 flex h-9 w-8 shadow-sm transition-colors items-center right-0 top-1/2 justify-center absolute z-30 hover:text-foreground hover:bg-muted -translate-y-1/2"
+        class="text-muted-foreground border border-border/70 border-r-0 rounded-l-md bg-background/92 flex h-9 w-8 shadow-sm transition-colors items-center right-0 top-1/2 justify-center absolute z-30 hover:text-foreground hover:bg-muted -translate-y-1/2"
         @click="toggleCollapsed"
       >
         <span class="i-ri:arrow-left-s-line text-base text-current" />

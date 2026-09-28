@@ -4,5 +4,6 @@ export default defineConfig({
   astro: true,
   unocss: true,
   formatters: true,
+  antislop: false,
   ignores: [],
 })
